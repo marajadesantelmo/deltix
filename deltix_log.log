@@ -403,3 +403,6 @@ telegram.error.TimedOut: Timed out
 2023-10-04 20:21:26,896 - 672134330 - facu se inscribió a mareas en chat 672134330
 2023-10-04 20:23:11,272 - Application is stopping. This might take a moment.
 2023-10-04 20:23:11,272 - Application.stop() complete
+2023-10-05 09:59:39,961 - Application started
+2023-10-05 09:59:50,920 - Application is stopping. This might take a moment.
+2023-10-05 09:59:50,920 - Application.stop() complete
