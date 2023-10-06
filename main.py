@@ -416,7 +416,9 @@ if __name__ == '__main__':
     start_handler = CommandHandler('start', start)
     
     conv_handler = ConversationHandler(
-        entry_points=[CommandHandler('charlar', charlar),
+        entry_points=[
+            
+            CommandHandler('charlar', charlar),
             CommandHandler('mareas', mareas),
             CommandHandler('desuscribirme', desuscribirme), 
             CommandHandler('memes', memes), 
@@ -431,7 +433,11 @@ if __name__ == '__main__':
             MessageHandler(filters.Regex(r'^(Colaborar|colaborar|COLABORAR)$'), colaborar),
             MessageHandler(filters.Regex(r'^(Informacion|informacion|INFORMACION)$'), informacion),
             MessageHandler(filters.Regex(r'^(Mensajear|mensajear|MENSAJEAR)$'), mensajear),
-            MessageHandler(filters.TEXT, start2)],
+            MessageHandler(filters.Regex(r'^(Hola|hola|HOLA)$'), start),  
+            MessageHandler(filters.TEXT, start2)
+            
+            ],
+        
         states={
             ANSWER_charlar: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), answer_charlar)],
             ANSWER_meme: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), answer_meme)],
@@ -457,8 +463,8 @@ if __name__ == '__main__':
             MessageHandler(filters.Regex(r'^(Colaborar|colaborar|COLABORAR)$'), colaborar),
             MessageHandler(filters.Regex(r'^(Informacion|informacion|INFORMACION)$'), informacion),
             MessageHandler(filters.Regex(r'^(Mensajear|mensajear|MENSAJEAR)$'), mensajear),
+            MessageHandler(filters.Regex(r'^(Hola|hola|HOLA)$'), start), 
             MessageHandler(filters.TEXT, start2)
-            
             ], 
     )
     
