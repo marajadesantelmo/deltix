@@ -435,3 +435,5 @@ telegram.error.TimedOut: Timed out
 2023-10-06 13:34:26,951 - 672134330 - facu pidiÃ³ informe de mareas en chat 672134330
 2023-10-06 13:35:14,250 - Application is stopping. This might take a moment.
 2023-10-06 13:35:14,251 - Application.stop() complete
+2023-10-06 13:48:32,954 - Application started
+2023-10-06 13:48:33,655 - 672134330 - facu pidió informe de mareas en chat 672134330
