@@ -1,17 +1,13 @@
-
 import pandas as pd
 from telegram import Bot
-import os 
 import urllib.request
 import asyncio
 import nest_asyncio
 nest_asyncio.apply()
 
-os.chdir('C:/Users/facun/OneDrive/Documentos/deltix/')
 urllib.request.urlretrieve('https://alerta.ina.gob.ar/ina/42-RIODELAPLATA/productos/Prono_SanFernando.png', "marea.png")
 
-
-subscribers = pd.read_csv("subscribers.csv")
+subscribers = pd.read_csv("C://Users//Usuario//Documents//GitHub//deltix//subscribers.csv")
 
 bot = Bot(token="5712079875:AAHhIWwnHN5ws0DEUggA8-STWKmM-ZJ5hQE")  
 
