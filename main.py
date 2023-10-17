@@ -6,6 +6,7 @@ import urllib.request
 import random
 import time
 import nest_asyncio
+import re
 
 import smtplib
 from email.message import EmailMessage
@@ -409,15 +410,17 @@ async def answer_informacion(update: Update, context: ContextTypes.DEFAULT_TYPE)
                                         )
         return ConversationHandler.END    
     
-  
+
+
+
 if __name__ == '__main__':
-    application = ApplicationBuilder().token("5712079875:AAHhIWwnHN5ws0DEUggA8-STWKmM-ZJ5hQE").build()
+    application = ApplicationBuilder().token('pone_la_token_wacho').build()
     
     start_handler = CommandHandler('start', start)
     
-    conv_handler = ConversationHandler(
-        entry_points=[
-            
+    handlers = [
+            #Handlers de comandos
+            CommandHandler("cancel", cancel), 
             CommandHandler('charlar', charlar),
             CommandHandler('mareas', mareas),
             CommandHandler('desuscribirme', desuscribirme), 
@@ -426,6 +429,7 @@ if __name__ == '__main__':
             CommandHandler('informacion', informacion), 
             CommandHandler('mensajear', mensaje_trigger), 
             CommandHandler('menu', menu), 
+            #Handlers matcheo de palabra exacta
             MessageHandler(filters.Regex(r'^(Charlar|charlar|CHARLAR)$'), charlar),
             MessageHandler(filters.Regex(r'^(Mareas|mareas|MAREAS)$'), mareas),
             MessageHandler(filters.Regex(r'^(Desuscribirme|desuscribirme|DESUSCRIBIRME)$'), desuscribirme),
@@ -434,10 +438,21 @@ if __name__ == '__main__':
             MessageHandler(filters.Regex(r'^(Informacion|informacion|INFORMACION)$'), informacion),
             MessageHandler(filters.Regex(r'^(Mensajear|mensajear|MENSAJEAR)$'), mensajear),
             MessageHandler(filters.Regex(r'^(Hola|hola|HOLA)$'), start),  
+            #Handlers contiene palabra en minuscula
+            MessageHandler(filters.Regex(r'(?i)(.*\bcharlar\b.*)'), charlar),
+            MessageHandler(filters.Regex(r'(?i)(.*\bmareas\b.*)'), mareas),
+            MessageHandler(filters.Regex(r'(?i)(.*\bdesuscribirme\b.*)'), desuscribirme),
+            MessageHandler(filters.Regex(r'(?i)(.*\bmemes\b.*)'), memes),
+            MessageHandler(filters.Regex(r'(?i)(.*\bcolaborar\b.*)'), colaborar),
+            MessageHandler(filters.Regex(r'(?i)(.*\binformacion\b.*)'), informacion),
+            MessageHandler(filters.Regex(r'(?i)(.*\bmensajear\b.*)'), mensajear),
+            MessageHandler(filters.Regex(r'(?i)(.*\bhola\b.*)'), start),
+            #Handlers otros
             MessageHandler(filters.TEXT, start2)
-            
-            ],
-        
+             ]
+
+    conv_handler = ConversationHandler(
+        entry_points= handlers,
         states={
             ANSWER_charlar: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), answer_charlar)],
             ANSWER_meme: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), answer_meme)],
@@ -446,26 +461,7 @@ if __name__ == '__main__':
             ANSWER_mareas_suscribir: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), mareas_suscribir)], 
             ANSWER_mensajear: [MessageHandler(filters.TEXT, mensajear)],
         },
-        fallbacks=[CommandHandler("cancel", cancel), 
-                   
-            CommandHandler('charlar', charlar),
-            CommandHandler('mareas', mareas),
-            CommandHandler('desuscribirme', desuscribirme), 
-            CommandHandler('memes', memes), 
-            CommandHandler('colaborar', colaborar), 
-            CommandHandler('informacion', informacion), 
-            CommandHandler('mensajear', mensaje_trigger), 
-            CommandHandler('menu', menu), 
-            MessageHandler(filters.Regex(r'^(Charlar|charlar|CHARLAR)$'), charlar),
-            MessageHandler(filters.Regex(r'^(Mareas|mareas|MAREAS)$'), mareas),
-            MessageHandler(filters.Regex(r'^(Desuscribirme|desuscribirme|DESUSCRIBIRME)$'), desuscribirme),
-            MessageHandler(filters.Regex(r'^(Memes|memes|MEMES)$'), memes),
-            MessageHandler(filters.Regex(r'^(Colaborar|colaborar|COLABORAR)$'), colaborar),
-            MessageHandler(filters.Regex(r'^(Informacion|informacion|INFORMACION)$'), informacion),
-            MessageHandler(filters.Regex(r'^(Mensajear|mensajear|MENSAJEAR)$'), mensajear),
-            MessageHandler(filters.Regex(r'^(Hola|hola|HOLA)$'), start), 
-            MessageHandler(filters.TEXT, start2)
-            ], 
+        fallbacks= handlers, 
     )
     
     application.add_handler(start_handler)
