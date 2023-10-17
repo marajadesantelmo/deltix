@@ -7,15 +7,19 @@ nest_asyncio.apply()
 
 urllib.request.urlretrieve('https://alerta.ina.gob.ar/ina/42-RIODELAPLATA/productos/Prono_SanFernando.png', "marea.png")
 
-subscribers = pd.read_csv("C://Users//Usuario//Documents//GitHub//deltix//subscribers.csv")
+#subscribers = pd.read_csv("C://Users//Usuario//Documents//GitHub//deltix//subscribers.csv")
+subscribers = pd.read_csv("subscribers.csv")
 
-bot = Bot(token="5712079875:AAHhIWwnHN5ws0DEUggA8-STWKmM-ZJ5hQE")  
+bot = Bot(token="5712079875:AAHhIWwnHN5ws0DEUggA8-STWKmM-ZJ5hQE") 
 
 async def send_image_to_subscribers():
     try:
         # Your code to send the image here
         for user_id in subscribers['User ID']:
-            await bot.send_photo(user_id, open("Marea.png", "rb"))
+            print(f'enviando a {user_id}')
+            await asyncio.wait_for(bot.send_photo(user_id, open("Marea.png", "rb")), timeout=60)  # Adjust the timeout as needed
+    except asyncio.TimeoutError:
+        print("Operation timed out")
     except Exception as e:
         # Handle any exceptions here
         print(f"Error sending image: {str(e)}")
