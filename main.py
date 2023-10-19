@@ -345,7 +345,7 @@ async def mensajear(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
    
     server = smtplib.SMTP("smtp.gmail.com", 587)
     server.starttls()
-    server.login("marajadesantelmo@gmail.com", "gtntzxopfiedfoex")
+    server.login("marajadesantelmo@gmail.com", "TOKEN")
     server.send_message(message)
     
     # context.bot.send_message(chat_id=672134330, text=f'Mensaje de {user.first_name}: {message_text}')
@@ -411,7 +411,12 @@ async def answer_informacion(update: Update, context: ContextTypes.DEFAULT_TYPE)
         return ConversationHandler.END    
     
 
-
+async def de_nada(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    '''
+    Respuesta a agradecimiento por parte del usuario
+    '''
+    await update.message.reply_text('De nada! es un placeer a ayudar a lxs humanos que visitan el humedal &#128057')
+    return ConversationHandler.END
 
 if __name__ == '__main__':
     application = ApplicationBuilder().token('pone_la_token_wacho').build()
@@ -436,8 +441,9 @@ if __name__ == '__main__':
             MessageHandler(filters.Regex(r'^(Memes|memes|MEMES)$'), memes),
             MessageHandler(filters.Regex(r'^(Colaborar|colaborar|COLABORAR)$'), colaborar),
             MessageHandler(filters.Regex(r'^(Informacion|informacion|INFORMACION)$'), informacion),
-            MessageHandler(filters.Regex(r'^(Mensajear|mensajear|MENSAJEAR)$'), mensajear),
-            MessageHandler(filters.Regex(r'^(Hola|hola|HOLA)$'), start),  
+            MessageHandler(filters.Regex(r'^(Mensajear|mensajear|MENSAJEAR)$'), mensaje_trigger),
+            MessageHandler(filters.Regex(r'^(Hola|hola|HOLA)$'), start), 
+            MessageHandler(filters.Regex(r'^(Gracias|gracias|GRACIAS)$'), de_nada),  
             #Handlers contiene palabra en minuscula
             MessageHandler(filters.Regex(r'(?i)(.*\bcharlar\b.*)'), charlar),
             MessageHandler(filters.Regex(r'(?i)(.*\bmareas\b.*)'), mareas),
@@ -445,8 +451,9 @@ if __name__ == '__main__':
             MessageHandler(filters.Regex(r'(?i)(.*\bmemes\b.*)'), memes),
             MessageHandler(filters.Regex(r'(?i)(.*\bcolaborar\b.*)'), colaborar),
             MessageHandler(filters.Regex(r'(?i)(.*\binformacion\b.*)'), informacion),
-            MessageHandler(filters.Regex(r'(?i)(.*\bmensajear\b.*)'), mensajear),
+            MessageHandler(filters.Regex(r'(?i)(.*\bmensajear\b.*)'), mensaje_trigger),
             MessageHandler(filters.Regex(r'(?i)(.*\bhola\b.*)'), start),
+            MessageHandler(filters.Regex(r'(?i)(.*\bgracias\b.*)'), de_nada),
             #Handlers otros
             MessageHandler(filters.TEXT, start2)
              ]
