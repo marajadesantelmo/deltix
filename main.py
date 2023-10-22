@@ -1,7 +1,7 @@
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, ConversationHandler, filters, MessageHandler
 import pandas as pd
-# import os 
+import os 
 import urllib.request
 import random
 import time
@@ -14,13 +14,14 @@ from email.message import EmailMessage
 import logging
 
 # os.chdir('C:/Users/facun/OneDrive/Documentos/deltix/')
+gmail_token = os.environ.get('gmail_token')
+telegram_token = os.environ.get('telegram_token')
 
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.basicConfig(
     filename='deltix_log.log',
-    level=logging.INFO,
-    format='%(asctime)s - %(message)s'
-)
+    level=logging.WARNING,
+    format='%(asctime)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 
@@ -58,7 +59,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
     '''
     chat_id = update.effective_chat.id
     user = update.effective_user
-    logger.info(f"{user.id} - {user.first_name} comenzó charla con comando start en chat {chat_id}")
+    logger.warning(f"{user.id} - {user.first_name} comenzó charla con comando start en chat {chat_id}")
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=(f"Hola {update.effective_user.first_name}! soy Deltix, el bot del humedal &#128057"),
@@ -79,7 +80,7 @@ async def start2(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
     '''
     chat_id = update.effective_chat.id
     user = update.effective_user
-    logger.info(f"{user.id} - {user.first_name} usó comando start2 en chat {chat_id}")
+    logger.warning(f"{user.id} - {user.first_name} usó comando start2 en chat {chat_id}")
     time.sleep(2)
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
@@ -102,7 +103,7 @@ async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
     '''
     chat_id = update.effective_chat.id
     user = update.effective_user
-    logger.info(f"{user.id} - {user.first_name} usó comando menu en chat {chat_id}")
+    logger.warning(f"{user.id} - {user.first_name} usó comando menu en chat {chat_id}")
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=generate_main_menu(),
@@ -118,7 +119,7 @@ async def charlar(update: Update, context: ContextTypes.DEFAULT_TYPE):
     '''
     chat_id = update.effective_chat.id
     user = update.effective_user
-    logger.info(f"{user.id} - {user.first_name} comenzó charla con comando charlar en chat {chat_id}")
+    logger.warning(f"{user.id} - {user.first_name} comenzó charla con comando charlar en chat {chat_id}")
     await update.message.reply_text("Soy un bot en desarrollo y mi mayor gracia es mandarte una vez por día el pronóstico de mareas del INA. ¿Querés recibir el pronóstico de mareas de San Fernando todos los días?",
     reply_markup=ReplyKeyboardMarkup(
         [["Si", "No"]], one_time_keyboard=True, input_field_placeholder="Si o No?"
@@ -137,7 +138,7 @@ async def answer_charlar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     if user_response == 'si':
         chat_id = update.effective_chat.id
         user = update.effective_user
-        logger.info(f"{user.id} - {user.first_name} se inscribió a mareas en chat {chat_id}")
+        logger.warning(f"{user.id} - {user.first_name} se inscribió a mareas en chat {chat_id}")
         
         #Chequeo si ya está suscrito
         user_id = update.message.from_user.id
@@ -186,7 +187,7 @@ async def mareas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         '''
         user = update.effective_user
         chat_id=update.effective_chat.id
-        logger.info(f"{user.id} - {user.first_name} pidió informe de mareas en chat {chat_id}")
+        logger.warning(f"{user.id} - {user.first_name} pidió informe de mareas en chat {chat_id}")
         await update.message.reply_text("Ahí te mando el informe de mareas del INA para San Fernando")
         await context.bot.send_photo(chat_id, open("Marea.png", "rb"))
         time.sleep(4)
@@ -208,7 +209,7 @@ async def mareas_suscribir(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         subscribers = pd.read_csv("subscribers.csv") 
         chat_id = update.effective_chat.id
         user = update.effective_user
-        logger.info(f"{user.id} - {user.first_name} se inscribió a mareas en chat {chat_id}")
+        logger.warning(f"{user.id} - {user.first_name} se inscribió a mareas en chat {chat_id}")
         #Chequeo si ya está suscrito
         user_id = update.message.from_user.id
         if user_id in subscribers['User ID'].values:
@@ -239,7 +240,7 @@ async def memes(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         '''
         user = update.effective_user
         chat_id=update.effective_chat.id
-        logger.info(f"{user.id} - {user.first_name} pidió memes en chat {chat_id}")
+        logger.warning(f"{user.id} - {user.first_name} pidió memes en chat {chat_id}")
         await update.message.reply_text("...me encantan los memes islenials &#128514 Te mando uno.",
                                         parse_mode='HTML')
         time.sleep(1)
@@ -345,7 +346,7 @@ async def mensajear(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
    
     server = smtplib.SMTP("smtp.gmail.com", 587)
     server.starttls()
-    server.login("marajadesantelmo@gmail.com", "TOKEN")
+    server.login("marajadesantelmo@gmail.com", "gmail_token")
     server.send_message(message)
     
     # context.bot.send_message(chat_id=672134330, text=f'Mensaje de {user.first_name}: {message_text}')
@@ -364,7 +365,7 @@ async def answer_colaborar(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     if user_response == 'aportar':
         user = update.effective_user
         chat_id=update.effective_chat.id
-        logger.info(f"{user.id} - {user.first_name} entró en aportar en chat {chat_id}")
+        logger.warning(f"{user.id} - {user.first_name} entró en aportar en chat {chat_id}")
         await update.message.reply_text("Muchas gracias por pensar en aportar &#128591 Nos viene muy bien para poder seguir dedicándole tiempo a Deltix y hacer que crezca este proyecto", parse_mode='HTML')
         await update.message.reply_text("<a href='https://cafecito.app/deltix' rel='noopener' target='_blank' > 'Podés aportar por medio de la página cafecito:'  </a>", 
                                         parse_mode='HTML')
@@ -415,48 +416,47 @@ async def de_nada(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     '''
     Respuesta a agradecimiento por parte del usuario
     '''
-    await update.message.reply_text('De nada! es un placeer a ayudar a lxs humanos que visitan el humedal &#128057')
+    await update.message.reply_text("De nada! es un placeer a ayudar a lxs humanos que visitan el humedal  &#128057\n", 
+                                     parse_mode='HTML')
     return ConversationHandler.END
 
 if __name__ == '__main__':
-    application = ApplicationBuilder().token('pone_la_token_wacho').build()
-    
+    application = ApplicationBuilder().token(telegram_token).build()
     start_handler = CommandHandler('start', start)
-    
-    handlers = [
-            #Handlers de comandos
-            CommandHandler("cancel", cancel), 
-            CommandHandler('charlar', charlar),
-            CommandHandler('mareas', mareas),
-            CommandHandler('desuscribirme', desuscribirme), 
-            CommandHandler('memes', memes), 
-            CommandHandler('colaborar', colaborar), 
-            CommandHandler('informacion', informacion), 
-            CommandHandler('mensajear', mensaje_trigger), 
-            CommandHandler('menu', menu), 
-            #Handlers matcheo de palabra exacta
-            MessageHandler(filters.Regex(r'^(Charlar|charlar|CHARLAR)$'), charlar),
-            MessageHandler(filters.Regex(r'^(Mareas|mareas|MAREAS)$'), mareas),
-            MessageHandler(filters.Regex(r'^(Desuscribirme|desuscribirme|DESUSCRIBIRME)$'), desuscribirme),
-            MessageHandler(filters.Regex(r'^(Memes|memes|MEMES)$'), memes),
-            MessageHandler(filters.Regex(r'^(Colaborar|colaborar|COLABORAR)$'), colaborar),
-            MessageHandler(filters.Regex(r'^(Informacion|informacion|INFORMACION)$'), informacion),
-            MessageHandler(filters.Regex(r'^(Mensajear|mensajear|MENSAJEAR)$'), mensaje_trigger),
-            MessageHandler(filters.Regex(r'^(Hola|hola|HOLA)$'), start), 
-            MessageHandler(filters.Regex(r'^(Gracias|gracias|GRACIAS)$'), de_nada),  
-            #Handlers contiene palabra en minuscula
-            MessageHandler(filters.Regex(r'(?i)(.*\bcharlar\b.*)'), charlar),
-            MessageHandler(filters.Regex(r'(?i)(.*\bmareas\b.*)'), mareas),
-            MessageHandler(filters.Regex(r'(?i)(.*\bdesuscribirme\b.*)'), desuscribirme),
-            MessageHandler(filters.Regex(r'(?i)(.*\bmemes\b.*)'), memes),
-            MessageHandler(filters.Regex(r'(?i)(.*\bcolaborar\b.*)'), colaborar),
-            MessageHandler(filters.Regex(r'(?i)(.*\binformacion\b.*)'), informacion),
-            MessageHandler(filters.Regex(r'(?i)(.*\bmensajear\b.*)'), mensaje_trigger),
-            MessageHandler(filters.Regex(r'(?i)(.*\bhola\b.*)'), start),
-            MessageHandler(filters.Regex(r'(?i)(.*\bgracias\b.*)'), de_nada),
-            #Handlers otros
-            MessageHandler(filters.TEXT, start2)
-             ]
+    handlers = [#Estos handlers son los que llevan la conversacion de funcion a funcion
+                #Sirven como entry_points de la conversacion o como fallbacks
+    #Handlers de comandos
+    CommandHandler("cancel", cancel), 
+    CommandHandler('charlar', charlar),
+    CommandHandler('mareas', mareas),
+    CommandHandler('desuscribirme', desuscribirme), 
+    CommandHandler('memes', memes), 
+    CommandHandler('colaborar', colaborar), 
+    CommandHandler('informacion', informacion), 
+    CommandHandler('mensajear', mensaje_trigger), 
+    CommandHandler('menu', menu), 
+    #Handlers matcheo de palabra exacta
+    MessageHandler(filters.Regex(r'^(Charlar|charlar|CHARLAR)$'), charlar),
+    MessageHandler(filters.Regex(r'^(Mareas|mareas|MAREAS)$'), mareas),
+    MessageHandler(filters.Regex(r'^(Desuscribirme|desuscribirme|DESUSCRIBIRME)$'), desuscribirme),
+    MessageHandler(filters.Regex(r'^(Memes|memes|MEMES)$'), memes),
+    MessageHandler(filters.Regex(r'^(Colaborar|colaborar|COLABORAR)$'), colaborar),
+    MessageHandler(filters.Regex(r'^(Informacion|informacion|INFORMACION)$'), informacion),
+    MessageHandler(filters.Regex(r'^(Mensajear|mensajear|MENSAJEAR)$'), mensaje_trigger),
+    MessageHandler(filters.Regex(r'^(Hola|hola|HOLA)$'), start), 
+    MessageHandler(filters.Regex(r'^(Gracias|gracias|GRACIAS)$'), de_nada),  
+    #Handlers contiene palabra en minuscula
+    MessageHandler(filters.Regex(r'(?i)(.*\bcharlar\b.*)'), charlar),
+    MessageHandler(filters.Regex(r'(?i)(.*\bmareas\b.*)'), mareas),
+    MessageHandler(filters.Regex(r'(?i)(.*\bdesuscribirme\b.*)'), desuscribirme),
+    MessageHandler(filters.Regex(r'(?i)(.*\bmemes\b.*)'), memes),
+    MessageHandler(filters.Regex(r'(?i)(.*\bcolaborar\b.*)'), colaborar),
+    MessageHandler(filters.Regex(r'(?i)(.*\binformacion\b.*)'), informacion),
+    MessageHandler(filters.Regex(r'(?i)(.*\bmensajear\b.*)'), mensaje_trigger),
+    MessageHandler(filters.Regex(r'(?i)(.*\bhola\b.*)'), start),
+    MessageHandler(filters.Regex(r'(?i)(.*\bgracias\b.*)'), de_nada),
+    #Handlers otros
+    MessageHandler(filters.TEXT, start2)]
 
     conv_handler = ConversationHandler(
         entry_points= handlers,
