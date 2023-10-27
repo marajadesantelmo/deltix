@@ -1,6 +1,5 @@
 import pandas as pd
 from telegram import Bot
-import urllib.request
 import asyncio
 import nest_asyncio
 import datetime
@@ -11,19 +10,23 @@ nest_asyncio.apply()
 telegram_token = os.environ.get('telegram_token')
 bot = Bot(token=telegram_token) 
 
-urllib.request.urlretrieve('https://alerta.ina.gob.ar/ina/42-RIODELAPLATA/productos/Prono_SanFernando.png', "Marea.png")
-# subscribers = pd.read_csv("C://Users//Usuario//Documents//GitHub//deltix//subscribers.csv")
-subscribers = pd.read_csv("subscribers2.csv")
-envio_diarios_log = pd.read_csv('envio_diario_log.csv')
+# subscribers_mareas = pd.read_csv("C://Users//Usuario//Documents//GitHub//deltix//subscribers_mareas.csv")
+subscribers_mareas = pd.read_csv("subscribers_mareas2.csv")
 
+# subscribers_windguru = pd.read_csv("C://Users//Usuario//Documents//GitHub//deltix//subscribers_windguru.csv")
+subscribers_windguru = pd.read_csv("subscribers_windguru2.csv")
+
+envio_diarios_log = pd.read_csv('envio_diario_log.csv')
 
 async def send_image_to_subscribers():
     global envio_diarios_log
     log_entries = []  
+
+    #Envios a suscriptos para mareas
     try:
-        for user_id in subscribers['User ID']:
+        for user_id in subscribers_mareas['User ID']:
             print(f'enviando a {user_id}')
-            user_name = subscribers.loc[subscribers['User ID'] == user_id, 'First Name'].values[0]
+            user_name = subscribers_mareas.loc[subscribers_mareas['User ID'] == user_id, 'First Name'].values[0]
             await asyncio.wait_for(bot.send_photo(user_id, open("Marea.png", "rb")), timeout=12000)
             log_entry = {'Timestamp': datetime.datetime.now(), 
                          'User ID': user_id, 
@@ -42,6 +45,31 @@ async def send_image_to_subscribers():
         log_entry = {'Timestamp': datetime.datetime.now(), 
                      'User ID': user_id, 
                      'user_name': user_name}
+
+    #Envios a suscriptos para windguru
+    try:
+        for user_id in subscribers_windguru['User ID']:
+            print(f'enviando a {user_id}')
+            user_name = subscribers_windguru.loc[subscribers_windguru['User ID'] == user_id, 'First Name'].values[0]
+            await asyncio.wait_for(bot.send_photo(user_id, open("windguru.png", "rb")), timeout=12000)
+            log_entry = {'Timestamp': datetime.datetime.now(), 
+                         'User ID': user_id, 
+                         'user_name': user_name}
+            log_entries.append(log_entry)
+    except asyncio.TimeoutError:                 #Tengo en cuenta excepciones para chequear problemas de conexion
+        user_name = "Operation timed out"
+        print("Operation timed out")
+        log_entry = {'Timestamp': datetime.datetime.now(), 
+                     'User ID': user_id, 
+                     'user_name': user_name}
+        log_entries.append(log_entry)
+    except Exception as e:
+        user_name = f"{str(e)}"
+        print(f"Error sending image to user {user_id}: {str(e)}")
+        log_entry = {'Timestamp': datetime.datetime.now(), 
+                     'User ID': user_id, 
+                     'user_name': user_name}
+
         log_entries.append(log_entry)
 
     envio_diarios_log = pd.concat([envio_diarios_log, pd.DataFrame(log_entries)], ignore_index=True)
