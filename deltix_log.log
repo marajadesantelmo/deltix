@@ -5917,3 +5917,292 @@ Traceback (most recent call last):
   File "C:\Users\facun\anaconda3\lib\site-packages\telegram\request\_httpxrequest.py", line 240, in do_request
     raise NetworkError(f"httpx.{err.__class__.__name__}: {err}") from err
 telegram.error.NetworkError: httpx.ConnectError: [Errno 11001] getaddrinfo failed
+2023-10-27 13:07:40,618 - 1636990412 - Fer pidió informe de mareas en chat 1636990412
+2023-10-27 13:07:46,539 - No error handlers are registered, logging exception.
+Traceback (most recent call last):
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\anyio\streams\tls.py", line 102, in _call_sslobject_method
+    result = func(*args)
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\ssl.py", line 888, in read
+    v = self._sslobj.read(len)
+ssl.SSLWantReadError: The operation did not complete (read) (_ssl.c:2633)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpcore\_backends\anyio.py", line 34, in read
+    return await self._stream.receive(max_bytes=max_bytes)
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\anyio\streams\tls.py", line 152, in receive
+    data = await self._call_sslobject_method(self._ssl_object.read, max_bytes)
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\anyio\streams\tls.py", line 109, in _call_sslobject_method
+    data = await self.transport_stream.receive()
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\anyio\_backends\_asyncio.py", line 1086, in receive
+    await self._protocol.read_event.wait()
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\asyncio\locks.py", line 226, in wait
+    await fut
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\asyncio\futures.py", line 284, in __await__
+    yield self  # This tells Task to wait for completion.
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\asyncio\tasks.py", line 328, in __wakeup
+    future.result()
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\asyncio\futures.py", line 196, in result
+    raise exc
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpcore\_exceptions.py", line 10, in map_exceptions
+    yield
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpcore\_backends\anyio.py", line 36, in read
+    return b""
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\anyio\_core\_tasks.py", line 103, in __exit__
+    raise TimeoutError
+TimeoutError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpx\_transports\default.py", line 60, in map_httpcore_exceptions
+    yield
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpx\_transports\default.py", line 353, in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpcore\_async\connection_pool.py", line 262, in handle_async_request
+    raise exc
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpcore\_async\connection_pool.py", line 245, in handle_async_request
+    response = await connection.handle_async_request(request)
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpcore\_async\connection.py", line 96, in handle_async_request
+    return await self._connection.handle_async_request(request)
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpcore\_async\http11.py", line 121, in handle_async_request
+    raise exc
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpcore\_async\http11.py", line 99, in handle_async_request
+    ) = await self._receive_response_headers(**kwargs)
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpcore\_async\http11.py", line 164, in _receive_response_headers
+    event = await self._receive_event(timeout=timeout)
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpcore\_async\http11.py", line 200, in _receive_event
+    data = await self._network_stream.read(
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpcore\_backends\anyio.py", line 36, in read
+    return b""
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\contextlib.py", line 135, in __exit__
+    self.gen.throw(type, value, traceback)
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpcore\_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.ReadTimeout
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\request\_httpxrequest.py", line 216, in do_request
+    res = await self._client.request(
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpx\_client.py", line 1530, in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpx\_client.py", line 1617, in send
+    response = await self._send_handling_auth(
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpx\_client.py", line 1645, in _send_handling_auth
+    response = await self._send_handling_redirects(
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpx\_client.py", line 1682, in _send_handling_redirects
+    response = await self._send_single_request(request)
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpx\_client.py", line 1719, in _send_single_request
+    response = await transport.handle_async_request(request)
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpx\_transports\default.py", line 353, in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\contextlib.py", line 135, in __exit__
+    self.gen.throw(type, value, traceback)
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpx\_transports\default.py", line 77, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.ReadTimeout
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\ext\_application.py", line 1124, in process_update
+    await coroutine
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\ext\_conversationhandler.py", line 825, in handle_update
+    new_state: object = await handler.handle_update(
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\ext\_handler.py", line 141, in handle_update
+    return await self.callback(update, context)
+  File "C:\Users\Usuario\Documents\GitHub\deltix\main.py", line 189, in mareas
+    await context.bot.send_photo(chat_id, open("Marea.png", "rb"))
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\ext\_extbot.py", line 2675, in send_photo
+    return await super().send_photo(
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\_bot.py", line 381, in decorator
+    result = await func(self, *args, **kwargs)  # skipcq: PYL-E1102
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\_bot.py", line 1042, in send_photo
+    return await self._send_message(
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\ext\_extbot.py", line 507, in _send_message
+    result = await super()._send_message(
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\_bot.py", line 559, in _send_message
+    result = await self._post(
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\_bot.py", line 469, in _post
+    return await self._do_post(
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\ext\_extbot.py", line 325, in _do_post
+    return await super()._do_post(
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\_bot.py", line 497, in _do_post
+    return await request.post(
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\request\_baserequest.py", line 168, in post
+    result = await self._request_wrapper(
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\request\_baserequest.py", line 291, in _request_wrapper
+    raise exc
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\request\_baserequest.py", line 277, in _request_wrapper
+    code, payload = await self.do_request(
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\request\_httpxrequest.py", line 233, in do_request
+    raise TimedOut from err
+telegram.error.TimedOut: Timed out
+2023-10-27 13:07:54,403 - 672134330 - facu comenzó charla con comando start en chat 672134330
+2023-10-27 13:07:57,847 - 672134330 - facu pidió pronóstico de windguru en chat 672134330
+2023-10-27 13:07:58,219 - No error handlers are registered, logging exception.
+Traceback (most recent call last):
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\ext\_application.py", line 1124, in process_update
+    await coroutine
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\ext\_conversationhandler.py", line 825, in handle_update
+    new_state: object = await handler.handle_update(
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\ext\_handler.py", line 141, in handle_update
+    return await self.callback(update, context)
+  File "C:\Users\Usuario\Documents\GitHub\deltix\main.py", line 206, in windguru
+    await context.bot.send_photo(chat_id, open("windguru.png", "rb"))
+FileNotFoundError: [Errno 2] No such file or directory: 'windguru.png'
+2023-10-27 14:53:34,055 - 6410698134 - ® pidió memes en chat 6410698134
+2023-10-27 14:53:47,700 - 1055126412 - Guido comenzó charla con comando charlar en chat 1055126412
+2023-10-27 14:53:48,286 - 1055126412 - Guido comenzó charla con comando start en chat 1055126412
+2023-10-27 14:53:50,471 - 1055126412 - Guido comenzó charla con comando charlar en chat 1055126412
+2023-10-27 15:23:00,495 - 672134330 - facu comenzó charla con comando start en chat 672134330
+2023-10-27 15:23:12,768 - 672134330 - facu pidió pronóstico de windguru en chat 672134330
+2023-10-27 16:56:40,450 - 672134330 - facu pidió pronóstico de windguru en chat 672134330
+2023-10-27 16:57:07,710 - 672134330 - facu pidió informe de mareas en chat 672134330
+2023-10-27 16:57:19,531 - 672134330 - facu pidió pronóstico de windguru en chat 672134330
+2023-10-27 17:01:24,292 - 672134330 - facu pidió pronóstico de windguru en chat 672134330
+2023-10-27 17:01:40,451 - 672134330 - facu pidió informe de mareas en chat 672134330
+2023-10-27 18:00:55,703 - 672134330 - facu comenzó charla con comando start en chat 672134330
+2023-10-27 18:01:12,273 - 672134330 - facu pidió pronóstico de windguru en chat 672134330
+2023-10-27 18:01:23,151 - 672134330 - facu pidió informe de mareas en chat 672134330
+2023-10-27 18:02:05,119 - 672134330 - facu entró en aportar en chat 672134330
+2023-10-27 18:31:46,258 - 1642954045 - Sheila Yael usó comando start2 en chat 1642954045
+2023-10-27 18:31:58,627 - 1642954045 - Sheila Yael pidió informe de mareas en chat 1642954045
+2023-10-27 18:32:08,357 - 1642954045 - Sheila Yael pidió memes en chat 1642954045
+2023-10-27 18:34:52,752 - 1642954045 - Sheila Yael pidió memes en chat 1642954045
+2023-10-27 18:35:24,044 - No error handlers are registered, logging exception.
+Traceback (most recent call last):
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\anyio\streams\tls.py", line 102, in _call_sslobject_method
+    result = func(*args)
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\ssl.py", line 888, in read
+    v = self._sslobj.read(len)
+ssl.SSLWantReadError: The operation did not complete (read) (_ssl.c:2633)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpcore\_backends\anyio.py", line 34, in read
+    return await self._stream.receive(max_bytes=max_bytes)
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\anyio\streams\tls.py", line 152, in receive
+    data = await self._call_sslobject_method(self._ssl_object.read, max_bytes)
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\anyio\streams\tls.py", line 109, in _call_sslobject_method
+    data = await self.transport_stream.receive()
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\anyio\_backends\_asyncio.py", line 1086, in receive
+    await self._protocol.read_event.wait()
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\asyncio\locks.py", line 226, in wait
+    await fut
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\asyncio\futures.py", line 284, in __await__
+    yield self  # This tells Task to wait for completion.
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\asyncio\tasks.py", line 328, in __wakeup
+    future.result()
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\asyncio\futures.py", line 196, in result
+    raise exc
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpcore\_exceptions.py", line 10, in map_exceptions
+    yield
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpcore\_backends\anyio.py", line 36, in read
+    return b""
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\anyio\_core\_tasks.py", line 103, in __exit__
+    raise TimeoutError
+TimeoutError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpx\_transports\default.py", line 60, in map_httpcore_exceptions
+    yield
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpx\_transports\default.py", line 353, in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpcore\_async\connection_pool.py", line 262, in handle_async_request
+    raise exc
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpcore\_async\connection_pool.py", line 245, in handle_async_request
+    response = await connection.handle_async_request(request)
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpcore\_async\connection.py", line 96, in handle_async_request
+    return await self._connection.handle_async_request(request)
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpcore\_async\http11.py", line 121, in handle_async_request
+    raise exc
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpcore\_async\http11.py", line 99, in handle_async_request
+    ) = await self._receive_response_headers(**kwargs)
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpcore\_async\http11.py", line 164, in _receive_response_headers
+    event = await self._receive_event(timeout=timeout)
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpcore\_async\http11.py", line 200, in _receive_event
+    data = await self._network_stream.read(
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpcore\_backends\anyio.py", line 36, in read
+    return b""
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\contextlib.py", line 135, in __exit__
+    self.gen.throw(type, value, traceback)
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpcore\_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.ReadTimeout
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\request\_httpxrequest.py", line 216, in do_request
+    res = await self._client.request(
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpx\_client.py", line 1530, in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpx\_client.py", line 1617, in send
+    response = await self._send_handling_auth(
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpx\_client.py", line 1645, in _send_handling_auth
+    response = await self._send_handling_redirects(
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpx\_client.py", line 1682, in _send_handling_redirects
+    response = await self._send_single_request(request)
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpx\_client.py", line 1719, in _send_single_request
+    response = await transport.handle_async_request(request)
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpx\_transports\default.py", line 353, in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\contextlib.py", line 135, in __exit__
+    self.gen.throw(type, value, traceback)
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\httpx\_transports\default.py", line 77, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.ReadTimeout
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\ext\_application.py", line 1124, in process_update
+    await coroutine
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\ext\_conversationhandler.py", line 825, in handle_update
+    new_state: object = await handler.handle_update(
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\ext\_handler.py", line 141, in handle_update
+    return await self.callback(update, context)
+  File "C:\Users\Usuario\Documents\GitHub\deltix\main.py", line 281, in answer_meme
+    await context.bot.send_photo(chat_id, open(f"memes/{numero}.png", "rb"))
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\ext\_extbot.py", line 2675, in send_photo
+    return await super().send_photo(
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\_bot.py", line 381, in decorator
+    result = await func(self, *args, **kwargs)  # skipcq: PYL-E1102
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\_bot.py", line 1042, in send_photo
+    return await self._send_message(
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\ext\_extbot.py", line 507, in _send_message
+    result = await super()._send_message(
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\_bot.py", line 559, in _send_message
+    result = await self._post(
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\_bot.py", line 469, in _post
+    return await self._do_post(
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\ext\_extbot.py", line 325, in _do_post
+    return await super()._do_post(
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\_bot.py", line 497, in _do_post
+    return await request.post(
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\request\_baserequest.py", line 168, in post
+    result = await self._request_wrapper(
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\request\_baserequest.py", line 291, in _request_wrapper
+    raise exc
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\request\_baserequest.py", line 277, in _request_wrapper
+    code, payload = await self.do_request(
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\request\_httpxrequest.py", line 233, in do_request
+    raise TimedOut from err
+telegram.error.TimedOut: Timed out

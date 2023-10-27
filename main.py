@@ -2,7 +2,6 @@ from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, ConversationHandler, filters, MessageHandler
 import pandas as pd
 import os 
-import urllib.request
 import random
 import time
 import nest_asyncio
@@ -26,9 +25,6 @@ logger = logging.getLogger(__name__)
 
 
 nest_asyncio.apply()
-
-
-urllib.request.urlretrieve('https://alerta.ina.gob.ar/ina/42-RIODELAPLATA/productos/Prono_SanFernando.png', "marea.png")
 
 ANSWER_charlar, ANSWER_meme, ANSWER_colaborar, ANSWER_mensajear, ANSWER_informacion, ANSWER_mareas_suscribir  = range(6)
 
@@ -363,7 +359,7 @@ async def mensajear(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
    
     server = smtplib.SMTP("smtp.gmail.com", 587)
     server.starttls()
-    server.login("marajadesantelmo@gmail.com", "gmail_token")
+    server.login("marajadesantelmo@gmail.com", gmail_token)
     server.send_message(message)
     
     # context.bot.send_message(chat_id=672134330, text=f'Mensaje de {user.first_name}: {message_text}')

@@ -12,3 +12,4 @@ deltix_log.log
 envio_diario_log.csv
 seteo_por_cmd.txt
 marea.png
+*.log
