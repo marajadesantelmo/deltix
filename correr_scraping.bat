@@ -1,0 +1,1 @@
+"python.exe" "C:\Users\Usuario\Documents\GitHub\deltix\scraping.py"

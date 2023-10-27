@@ -10,13 +10,13 @@ nest_asyncio.apply()
 telegram_token = os.environ.get('telegram_token')
 bot = Bot(token=telegram_token) 
 
-# subscribers_mareas = pd.read_csv("C://Users//Usuario//Documents//GitHub//deltix//subscribers_mareas.csv")
-subscribers_mareas = pd.read_csv("subscribers_mareas2.csv")
+subscribers_mareas = pd.read_csv("C://Users//Usuario//Documents//GitHub//deltix//subscribers_mareas.csv")
+#subscribers_mareas = pd.read_csv("subscribers_mareas2.csv")
 
-# subscribers_windguru = pd.read_csv("C://Users//Usuario//Documents//GitHub//deltix//subscribers_windguru.csv")
-subscribers_windguru = pd.read_csv("subscribers_windguru2.csv")
+subscribers_windguru = pd.read_csv("C://Users//Usuario//Documents//GitHub//deltix//subscribers_windguru.csv")
+#subscribers_windguru = pd.read_csv("subscribers_windguru2.csv")
 
-envio_diarios_log = pd.read_csv('envio_diario_log.csv')
+envio_diarios_log = pd.read_csv('C://Users//Usuario//Documents//GitHub//deltix//envio_diario_log.csv')
 
 async def send_image_to_subscribers():
     global envio_diarios_log
@@ -27,7 +27,7 @@ async def send_image_to_subscribers():
         for user_id in subscribers_mareas['User ID']:
             print(f'enviando a {user_id}')
             user_name = subscribers_mareas.loc[subscribers_mareas['User ID'] == user_id, 'First Name'].values[0]
-            await asyncio.wait_for(bot.send_photo(user_id, open("Marea.png", "rb")), timeout=12000)
+            await asyncio.wait_for(bot.send_photo(user_id, open("C://Users//Usuario//Documents//GitHub//deltix//marea.png", "rb")), timeout=12000)
             log_entry = {'Timestamp': datetime.datetime.now(), 
                          'User ID': user_id, 
                          'user_name': user_name}
@@ -51,7 +51,7 @@ async def send_image_to_subscribers():
         for user_id in subscribers_windguru['User ID']:
             print(f'enviando a {user_id}')
             user_name = subscribers_windguru.loc[subscribers_windguru['User ID'] == user_id, 'First Name'].values[0]
-            await asyncio.wait_for(bot.send_photo(user_id, open("windguru.png", "rb")), timeout=12000)
+            await asyncio.wait_for(bot.send_photo(user_id, open("C://Users//Usuario//Documents//GitHub//deltix//windguru.png", "rb")), timeout=12000)
             log_entry = {'Timestamp': datetime.datetime.now(), 
                          'User ID': user_id, 
                          'user_name': user_name}
