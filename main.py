@@ -261,7 +261,7 @@ async def memes(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         await update.message.reply_text("...me encantan los memes islenials &#128514 Te mando uno.",
                                         parse_mode='HTML')
         time.sleep(1)
-        numero = random.randint(1, 13)
+        numero = random.randint(1, 56)
         await context.bot.send_photo(chat_id, open(f"memes/{numero}.png", "rb"))
         time.sleep(1)
         await update.message.reply_text("Buenísimo, no? Son de la página Memes Islenials. Te recomiendo que la sigas en las redes",)
@@ -281,7 +281,7 @@ async def answer_meme(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         if user_response == 'si':
             await update.message.reply_text("Dale, te mando")
             time.sleep(2)
-            numero = random.randint(1, 12)
+            numero = random.randint(1, 56)
             await context.bot.send_photo(chat_id, open(f"memes/{numero}.png", "rb"))
             time.sleep(1)
             await update.message.reply_text("Uno más?",
@@ -384,7 +384,8 @@ async def answer_colaborar(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         chat_id=update.effective_chat.id
         logger.warning(f"{user.id} - {user.first_name} entró en aportar en chat {chat_id}")
         await update.message.reply_text("Muchas gracias por pensar en aportar &#128591 Nos viene muy bien para poder seguir dedicándole tiempo a Deltix y hacer que crezca este proyecto", parse_mode='HTML')
-        await update.message.reply_text("<a href='https://cafecito.app/deltix' rel='noopener' target='_blank' > 'Podés aportar por medio de la página cafecito:'  </a>", 
+        await update.message.reply_text("Podés aportar por medio de la página cafecito:", parse_mode='HTML')
+        await update.message.reply_text("<a href='https://cafecito.app/deltix' rel='noopener' target='_blank' > 'Entrá a este enlace para hacer tu aporte'  </a>", 
                                         parse_mode='HTML')
         return ConversationHandler.END    
 
