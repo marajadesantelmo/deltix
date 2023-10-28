@@ -6599,3 +6599,808 @@ Traceback (most recent call last):
   File "C:\Users\Usuario\AppData\Local\Programs\Python\Python39\lib\site-packages\telegram\request\_httpxrequest.py", line 233, in do_request
     raise TimedOut from err
 telegram.error.TimedOut: Timed out
+2023-10-28 08:28:30,208 - 672134330 - facu comenzó charla con comando start en chat 672134330
+2023-10-28 08:28:33,437 - 672134330 - facu pidió memes en chat 672134330
+2023-10-28 08:28:40,637 - No error handlers are registered, logging exception.
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_application.py", line 1124, in process_update
+    await coroutine
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_conversationhandler.py", line 825, in handle_update
+    new_state: object = await handler.handle_update(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_handler.py", line 141, in handle_update
+    return await self.callback(update, context)
+  File "c:\Users\facun\OneDrive\Documentos\GitHub\deltix\main.py", line 290, in memes
+    await context.bot.send_message("Querés otro meme?",
+TypeError: ExtBot.send_message() missing 1 required positional argument: 'text'
+2023-10-28 08:30:03,708 - 672134330 - facu pidió memes en chat 672134330
+2023-10-28 08:30:12,423 - No error handlers are registered, logging exception.
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\anyio\streams\tls.py", line 108, in _call_sslobject_method
+    result = func(*args)
+  File "C:\Users\facun\anaconda3\lib\ssl.py", line 917, in read
+    v = self._sslobj.read(len)
+ssl.SSLWantReadError: The operation did not complete (read) (_ssl.c:2548)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\backends\asyncio.py", line 34, in read
+    return await self._stream.receive(max_bytes=max_bytes)
+  File "C:\Users\facun\anaconda3\lib\site-packages\anyio\streams\tls.py", line 171, in receive
+    data = await self._call_sslobject_method(self._ssl_object.read, max_bytes)
+  File "C:\Users\facun\anaconda3\lib\site-packages\anyio\streams\tls.py", line 115, in _call_sslobject_method
+    data = await self.transport_stream.receive()
+  File "C:\Users\facun\anaconda3\lib\site-packages\anyio\_backends\_asyncio.py", line 1105, in receive
+    await self._protocol.read_event.wait()
+  File "C:\Users\facun\anaconda3\lib\asyncio\locks.py", line 214, in wait
+    await fut
+  File "C:\Users\facun\anaconda3\lib\asyncio\futures.py", line 285, in __await__
+    yield self  # This tells Task to wait for completion.
+  File "C:\Users\facun\anaconda3\lib\asyncio\tasks.py", line 304, in __wakeup
+    future.result()
+  File "C:\Users\facun\anaconda3\lib\asyncio\futures.py", line 196, in result
+    raise exc
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_exceptions.py", line 10, in map_exceptions
+    yield
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\backends\asyncio.py", line 32, in read
+    with anyio.fail_after(timeout):
+  File "C:\Users\facun\anaconda3\lib\site-packages\anyio\_core\_tasks.py", line 103, in __exit__
+    raise TimeoutError
+TimeoutError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_transports\default.py", line 60, in map_httpcore_exceptions
+    yield
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_transports\default.py", line 353, in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\connection_pool.py", line 261, in handle_async_request
+    raise exc
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\connection_pool.py", line 245, in handle_async_request
+    response = await connection.handle_async_request(request)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\connection.py", line 96, in handle_async_request
+    return await self._connection.handle_async_request(request)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\http11.py", line 120, in handle_async_request
+    raise exc
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\http11.py", line 99, in handle_async_request
+    ) = await self._receive_response_headers(**kwargs)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\http11.py", line 163, in _receive_response_headers
+    event = await self._receive_event(timeout=timeout)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\http11.py", line 199, in _receive_event
+    data = await self._network_stream.read(
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\backends\asyncio.py", line 31, in read
+    with map_exceptions(exc_map):
+  File "C:\Users\facun\anaconda3\lib\contextlib.py", line 153, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.ReadTimeout
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\request\_httpxrequest.py", line 216, in do_request
+    res = await self._client.request(
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_client.py", line 1530, in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_client.py", line 1617, in send
+    response = await self._send_handling_auth(
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_client.py", line 1645, in _send_handling_auth
+    response = await self._send_handling_redirects(
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_client.py", line 1682, in _send_handling_redirects
+    response = await self._send_single_request(request)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_client.py", line 1719, in _send_single_request
+    response = await transport.handle_async_request(request)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_transports\default.py", line 352, in handle_async_request
+    with map_httpcore_exceptions():
+  File "C:\Users\facun\anaconda3\lib\contextlib.py", line 153, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_transports\default.py", line 77, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.ReadTimeout
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_application.py", line 1124, in process_update
+    await coroutine
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_conversationhandler.py", line 825, in handle_update
+    new_state: object = await handler.handle_update(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_handler.py", line 141, in handle_update
+    return await self.callback(update, context)
+  File "c:\Users\facun\OneDrive\Documentos\GitHub\deltix\main.py", line 287, in memes
+    await context.bot.send_photo(chat_id, open(f"memes/{numero}.png", "rb"))
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_extbot.py", line 2675, in send_photo
+    return await super().send_photo(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 381, in decorator
+    result = await func(self, *args, **kwargs)  # skipcq: PYL-E1102
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 1042, in send_photo
+    return await self._send_message(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_extbot.py", line 507, in _send_message
+    result = await super()._send_message(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 559, in _send_message
+    result = await self._post(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 469, in _post
+    return await self._do_post(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_extbot.py", line 325, in _do_post
+    return await super()._do_post(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 497, in _do_post
+    return await request.post(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\request\_baserequest.py", line 168, in post
+    result = await self._request_wrapper(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\request\_baserequest.py", line 291, in _request_wrapper
+    raise exc
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\request\_baserequest.py", line 277, in _request_wrapper
+    code, payload = await self.do_request(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\request\_httpxrequest.py", line 233, in do_request
+    raise TimedOut from err
+telegram.error.TimedOut: Timed out
+2023-10-28 08:31:09,995 - 672134330 - facu pidió memes en chat 672134330
+2023-10-28 08:31:17,102 - No error handlers are registered, logging exception.
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\anyio\streams\tls.py", line 108, in _call_sslobject_method
+    result = func(*args)
+  File "C:\Users\facun\anaconda3\lib\ssl.py", line 917, in read
+    v = self._sslobj.read(len)
+ssl.SSLWantReadError: The operation did not complete (read) (_ssl.c:2548)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\backends\asyncio.py", line 34, in read
+    return await self._stream.receive(max_bytes=max_bytes)
+  File "C:\Users\facun\anaconda3\lib\site-packages\anyio\streams\tls.py", line 171, in receive
+    data = await self._call_sslobject_method(self._ssl_object.read, max_bytes)
+  File "C:\Users\facun\anaconda3\lib\site-packages\anyio\streams\tls.py", line 115, in _call_sslobject_method
+    data = await self.transport_stream.receive()
+  File "C:\Users\facun\anaconda3\lib\site-packages\anyio\_backends\_asyncio.py", line 1105, in receive
+    await self._protocol.read_event.wait()
+  File "C:\Users\facun\anaconda3\lib\asyncio\locks.py", line 214, in wait
+    await fut
+  File "C:\Users\facun\anaconda3\lib\asyncio\futures.py", line 285, in __await__
+    yield self  # This tells Task to wait for completion.
+  File "C:\Users\facun\anaconda3\lib\asyncio\tasks.py", line 304, in __wakeup
+    future.result()
+  File "C:\Users\facun\anaconda3\lib\asyncio\futures.py", line 196, in result
+    raise exc
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_exceptions.py", line 10, in map_exceptions
+    yield
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\backends\asyncio.py", line 32, in read
+    with anyio.fail_after(timeout):
+  File "C:\Users\facun\anaconda3\lib\site-packages\anyio\_core\_tasks.py", line 103, in __exit__
+    raise TimeoutError
+TimeoutError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_transports\default.py", line 60, in map_httpcore_exceptions
+    yield
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_transports\default.py", line 353, in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\connection_pool.py", line 261, in handle_async_request
+    raise exc
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\connection_pool.py", line 245, in handle_async_request
+    response = await connection.handle_async_request(request)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\connection.py", line 96, in handle_async_request
+    return await self._connection.handle_async_request(request)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\http11.py", line 120, in handle_async_request
+    raise exc
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\http11.py", line 99, in handle_async_request
+    ) = await self._receive_response_headers(**kwargs)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\http11.py", line 163, in _receive_response_headers
+    event = await self._receive_event(timeout=timeout)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\http11.py", line 199, in _receive_event
+    data = await self._network_stream.read(
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\backends\asyncio.py", line 31, in read
+    with map_exceptions(exc_map):
+  File "C:\Users\facun\anaconda3\lib\contextlib.py", line 153, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.ReadTimeout
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\request\_httpxrequest.py", line 216, in do_request
+    res = await self._client.request(
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_client.py", line 1530, in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_client.py", line 1617, in send
+    response = await self._send_handling_auth(
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_client.py", line 1645, in _send_handling_auth
+    response = await self._send_handling_redirects(
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_client.py", line 1682, in _send_handling_redirects
+    response = await self._send_single_request(request)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_client.py", line 1719, in _send_single_request
+    response = await transport.handle_async_request(request)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_transports\default.py", line 352, in handle_async_request
+    with map_httpcore_exceptions():
+  File "C:\Users\facun\anaconda3\lib\contextlib.py", line 153, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_transports\default.py", line 77, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.ReadTimeout
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_application.py", line 1124, in process_update
+    await coroutine
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_conversationhandler.py", line 825, in handle_update
+    new_state: object = await handler.handle_update(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_handler.py", line 141, in handle_update
+    return await self.callback(update, context)
+  File "c:\Users\facun\OneDrive\Documentos\GitHub\deltix\main.py", line 287, in memes
+    await context.bot.send_photo(chat_id, open(f"memes/{numero}.png", "rb"))
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_extbot.py", line 2675, in send_photo
+    return await super().send_photo(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 381, in decorator
+    result = await func(self, *args, **kwargs)  # skipcq: PYL-E1102
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 1042, in send_photo
+    return await self._send_message(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_extbot.py", line 507, in _send_message
+    result = await super()._send_message(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 559, in _send_message
+    result = await self._post(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 469, in _post
+    return await self._do_post(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_extbot.py", line 325, in _do_post
+    return await super()._do_post(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 497, in _do_post
+    return await request.post(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\request\_baserequest.py", line 168, in post
+    result = await self._request_wrapper(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\request\_baserequest.py", line 291, in _request_wrapper
+    raise exc
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\request\_baserequest.py", line 277, in _request_wrapper
+    code, payload = await self.do_request(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\request\_httpxrequest.py", line 233, in do_request
+    raise TimedOut from err
+telegram.error.TimedOut: Timed out
+2023-10-28 08:32:16,358 - 672134330 - facu pidió memes en chat 672134330
+2023-10-28 08:32:42,939 - No error handlers are registered, logging exception.
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_application.py", line 1124, in process_update
+    await coroutine
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_conversationhandler.py", line 825, in handle_update
+    new_state: object = await handler.handle_update(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_handler.py", line 141, in handle_update
+    return await self.callback(update, context)
+  File "c:\Users\facun\OneDrive\Documentos\GitHub\deltix\main.py", line 306, in answer_meme
+    await context.bot.send_message(chat_id, "Uno más?", reply_markup=ReplyKeyboardMarkup([["Si", "No"]]),
+TypeError: ExtBot.send_message() got an unexpected keyword argument 'one_time_keyboard'
+2023-10-28 08:33:40,393 - 672134330 - facu pidió memes en chat 672134330
+2023-10-28 08:33:47,263 - No error handlers are registered, logging exception.
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\anyio\streams\tls.py", line 108, in _call_sslobject_method
+    result = func(*args)
+  File "C:\Users\facun\anaconda3\lib\ssl.py", line 917, in read
+    v = self._sslobj.read(len)
+ssl.SSLWantReadError: The operation did not complete (read) (_ssl.c:2548)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\backends\asyncio.py", line 34, in read
+    return await self._stream.receive(max_bytes=max_bytes)
+  File "C:\Users\facun\anaconda3\lib\site-packages\anyio\streams\tls.py", line 171, in receive
+    data = await self._call_sslobject_method(self._ssl_object.read, max_bytes)
+  File "C:\Users\facun\anaconda3\lib\site-packages\anyio\streams\tls.py", line 115, in _call_sslobject_method
+    data = await self.transport_stream.receive()
+  File "C:\Users\facun\anaconda3\lib\site-packages\anyio\_backends\_asyncio.py", line 1105, in receive
+    await self._protocol.read_event.wait()
+  File "C:\Users\facun\anaconda3\lib\asyncio\locks.py", line 214, in wait
+    await fut
+  File "C:\Users\facun\anaconda3\lib\asyncio\futures.py", line 285, in __await__
+    yield self  # This tells Task to wait for completion.
+  File "C:\Users\facun\anaconda3\lib\asyncio\tasks.py", line 304, in __wakeup
+    future.result()
+  File "C:\Users\facun\anaconda3\lib\asyncio\futures.py", line 196, in result
+    raise exc
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_exceptions.py", line 10, in map_exceptions
+    yield
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\backends\asyncio.py", line 32, in read
+    with anyio.fail_after(timeout):
+  File "C:\Users\facun\anaconda3\lib\site-packages\anyio\_core\_tasks.py", line 103, in __exit__
+    raise TimeoutError
+TimeoutError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_transports\default.py", line 60, in map_httpcore_exceptions
+    yield
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_transports\default.py", line 353, in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\connection_pool.py", line 261, in handle_async_request
+    raise exc
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\connection_pool.py", line 245, in handle_async_request
+    response = await connection.handle_async_request(request)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\connection.py", line 96, in handle_async_request
+    return await self._connection.handle_async_request(request)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\http11.py", line 120, in handle_async_request
+    raise exc
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\http11.py", line 99, in handle_async_request
+    ) = await self._receive_response_headers(**kwargs)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\http11.py", line 163, in _receive_response_headers
+    event = await self._receive_event(timeout=timeout)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\http11.py", line 199, in _receive_event
+    data = await self._network_stream.read(
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\backends\asyncio.py", line 31, in read
+    with map_exceptions(exc_map):
+  File "C:\Users\facun\anaconda3\lib\contextlib.py", line 153, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.ReadTimeout
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\request\_httpxrequest.py", line 216, in do_request
+    res = await self._client.request(
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_client.py", line 1530, in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_client.py", line 1617, in send
+    response = await self._send_handling_auth(
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_client.py", line 1645, in _send_handling_auth
+    response = await self._send_handling_redirects(
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_client.py", line 1682, in _send_handling_redirects
+    response = await self._send_single_request(request)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_client.py", line 1719, in _send_single_request
+    response = await transport.handle_async_request(request)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_transports\default.py", line 352, in handle_async_request
+    with map_httpcore_exceptions():
+  File "C:\Users\facun\anaconda3\lib\contextlib.py", line 153, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_transports\default.py", line 77, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.ReadTimeout
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_application.py", line 1124, in process_update
+    await coroutine
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_conversationhandler.py", line 825, in handle_update
+    new_state: object = await handler.handle_update(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_handler.py", line 141, in handle_update
+    return await self.callback(update, context)
+  File "c:\Users\facun\OneDrive\Documentos\GitHub\deltix\main.py", line 287, in memes
+    await context.bot.send_photo(chat_id, open(f"memes/{numero}.png", "rb"))
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_extbot.py", line 2675, in send_photo
+    return await super().send_photo(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 381, in decorator
+    result = await func(self, *args, **kwargs)  # skipcq: PYL-E1102
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 1042, in send_photo
+    return await self._send_message(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_extbot.py", line 507, in _send_message
+    result = await super()._send_message(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 559, in _send_message
+    result = await self._post(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 469, in _post
+    return await self._do_post(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_extbot.py", line 325, in _do_post
+    return await super()._do_post(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 497, in _do_post
+    return await request.post(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\request\_baserequest.py", line 168, in post
+    result = await self._request_wrapper(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\request\_baserequest.py", line 291, in _request_wrapper
+    raise exc
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\request\_baserequest.py", line 277, in _request_wrapper
+    code, payload = await self.do_request(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\request\_httpxrequest.py", line 233, in do_request
+    raise TimedOut from err
+telegram.error.TimedOut: Timed out
+2023-10-28 08:34:45,976 - 672134330 - facu comenzó charla con comando start en chat 672134330
+2023-10-28 08:34:50,489 - 672134330 - facu pidió memes en chat 672134330
+2023-10-28 08:35:13,481 - No error handlers are registered, logging exception.
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_application.py", line 1124, in process_update
+    await coroutine
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_conversationhandler.py", line 825, in handle_update
+    new_state: object = await handler.handle_update(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_handler.py", line 141, in handle_update
+    return await self.callback(update, context)
+  File "c:\Users\facun\OneDrive\Documentos\GitHub\deltix\main.py", line 302, in answer_meme
+    await context.bot.send_photo(chat_id, "Dale, te mando")
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_extbot.py", line 2675, in send_photo
+    return await super().send_photo(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 381, in decorator
+    result = await func(self, *args, **kwargs)  # skipcq: PYL-E1102
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 1042, in send_photo
+    return await self._send_message(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_extbot.py", line 507, in _send_message
+    result = await super()._send_message(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 559, in _send_message
+    result = await self._post(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 469, in _post
+    return await self._do_post(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_extbot.py", line 325, in _do_post
+    return await super()._do_post(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 497, in _do_post
+    return await request.post(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\request\_baserequest.py", line 168, in post
+    result = await self._request_wrapper(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\request\_baserequest.py", line 328, in _request_wrapper
+    raise BadRequest(message)
+telegram.error.BadRequest: Wrong remote file identifier specified: wrong character in the string
+2023-10-28 08:35:45,086 - No error handlers are registered, logging exception.
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_application.py", line 1124, in process_update
+    await coroutine
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_conversationhandler.py", line 825, in handle_update
+    new_state: object = await handler.handle_update(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_handler.py", line 141, in handle_update
+    return await self.callback(update, context)
+  File "c:\Users\facun\OneDrive\Documentos\GitHub\deltix\main.py", line 302, in answer_meme
+    await context.bot.send_photo(chat_id, "Dale, te mando")
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_extbot.py", line 2675, in send_photo
+    return await super().send_photo(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 381, in decorator
+    result = await func(self, *args, **kwargs)  # skipcq: PYL-E1102
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 1042, in send_photo
+    return await self._send_message(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_extbot.py", line 507, in _send_message
+    result = await super()._send_message(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 559, in _send_message
+    result = await self._post(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 469, in _post
+    return await self._do_post(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_extbot.py", line 325, in _do_post
+    return await super()._do_post(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 497, in _do_post
+    return await request.post(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\request\_baserequest.py", line 168, in post
+    result = await self._request_wrapper(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\request\_baserequest.py", line 328, in _request_wrapper
+    raise BadRequest(message)
+telegram.error.BadRequest: Wrong remote file identifier specified: wrong character in the string
+2023-10-28 08:36:49,107 - 672134330 - facu pidió memes en chat 672134330
+2023-10-28 08:36:56,424 - No error handlers are registered, logging exception.
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\anyio\streams\tls.py", line 108, in _call_sslobject_method
+    result = func(*args)
+  File "C:\Users\facun\anaconda3\lib\ssl.py", line 917, in read
+    v = self._sslobj.read(len)
+ssl.SSLWantReadError: The operation did not complete (read) (_ssl.c:2548)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\backends\asyncio.py", line 34, in read
+    return await self._stream.receive(max_bytes=max_bytes)
+  File "C:\Users\facun\anaconda3\lib\site-packages\anyio\streams\tls.py", line 171, in receive
+    data = await self._call_sslobject_method(self._ssl_object.read, max_bytes)
+  File "C:\Users\facun\anaconda3\lib\site-packages\anyio\streams\tls.py", line 115, in _call_sslobject_method
+    data = await self.transport_stream.receive()
+  File "C:\Users\facun\anaconda3\lib\site-packages\anyio\_backends\_asyncio.py", line 1105, in receive
+    await self._protocol.read_event.wait()
+  File "C:\Users\facun\anaconda3\lib\asyncio\locks.py", line 214, in wait
+    await fut
+  File "C:\Users\facun\anaconda3\lib\asyncio\futures.py", line 285, in __await__
+    yield self  # This tells Task to wait for completion.
+  File "C:\Users\facun\anaconda3\lib\asyncio\tasks.py", line 304, in __wakeup
+    future.result()
+  File "C:\Users\facun\anaconda3\lib\asyncio\futures.py", line 196, in result
+    raise exc
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_exceptions.py", line 10, in map_exceptions
+    yield
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\backends\asyncio.py", line 32, in read
+    with anyio.fail_after(timeout):
+  File "C:\Users\facun\anaconda3\lib\site-packages\anyio\_core\_tasks.py", line 103, in __exit__
+    raise TimeoutError
+TimeoutError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_transports\default.py", line 60, in map_httpcore_exceptions
+    yield
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_transports\default.py", line 353, in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\connection_pool.py", line 261, in handle_async_request
+    raise exc
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\connection_pool.py", line 245, in handle_async_request
+    response = await connection.handle_async_request(request)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\connection.py", line 96, in handle_async_request
+    return await self._connection.handle_async_request(request)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\http11.py", line 120, in handle_async_request
+    raise exc
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\http11.py", line 99, in handle_async_request
+    ) = await self._receive_response_headers(**kwargs)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\http11.py", line 163, in _receive_response_headers
+    event = await self._receive_event(timeout=timeout)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\http11.py", line 199, in _receive_event
+    data = await self._network_stream.read(
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\backends\asyncio.py", line 31, in read
+    with map_exceptions(exc_map):
+  File "C:\Users\facun\anaconda3\lib\contextlib.py", line 153, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.ReadTimeout
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\request\_httpxrequest.py", line 216, in do_request
+    res = await self._client.request(
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_client.py", line 1530, in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_client.py", line 1617, in send
+    response = await self._send_handling_auth(
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_client.py", line 1645, in _send_handling_auth
+    response = await self._send_handling_redirects(
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_client.py", line 1682, in _send_handling_redirects
+    response = await self._send_single_request(request)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_client.py", line 1719, in _send_single_request
+    response = await transport.handle_async_request(request)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_transports\default.py", line 352, in handle_async_request
+    with map_httpcore_exceptions():
+  File "C:\Users\facun\anaconda3\lib\contextlib.py", line 153, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_transports\default.py", line 77, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.ReadTimeout
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_application.py", line 1124, in process_update
+    await coroutine
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_conversationhandler.py", line 825, in handle_update
+    new_state: object = await handler.handle_update(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_handler.py", line 141, in handle_update
+    return await self.callback(update, context)
+  File "c:\Users\facun\OneDrive\Documentos\GitHub\deltix\main.py", line 287, in memes
+    await context.bot.send_photo(chat_id, open(f"memes/{numero}.png", "rb"))
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_extbot.py", line 2675, in send_photo
+    return await super().send_photo(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 381, in decorator
+    result = await func(self, *args, **kwargs)  # skipcq: PYL-E1102
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 1042, in send_photo
+    return await self._send_message(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_extbot.py", line 507, in _send_message
+    result = await super()._send_message(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 559, in _send_message
+    result = await self._post(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 469, in _post
+    return await self._do_post(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_extbot.py", line 325, in _do_post
+    return await super()._do_post(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 497, in _do_post
+    return await request.post(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\request\_baserequest.py", line 168, in post
+    result = await self._request_wrapper(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\request\_baserequest.py", line 291, in _request_wrapper
+    raise exc
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\request\_baserequest.py", line 277, in _request_wrapper
+    code, payload = await self.do_request(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\request\_httpxrequest.py", line 233, in do_request
+    raise TimedOut from err
+telegram.error.TimedOut: Timed out
+2023-10-28 08:37:28,819 - 672134330 - facu usó comando start2 en chat 672134330
+2023-10-28 08:37:38,639 - 672134330 - facu pidió memes en chat 672134330
+2023-10-28 08:37:52,198 - No error handlers are registered, logging exception.
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_application.py", line 1124, in process_update
+    await coroutine
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_conversationhandler.py", line 825, in handle_update
+    new_state: object = await handler.handle_update(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_handler.py", line 141, in handle_update
+    return await self.callback(update, context)
+  File "c:\Users\facun\OneDrive\Documentos\GitHub\deltix\main.py", line 302, in answer_meme
+    await update.message.reply_text( "Uno más?", reply_markup=ReplyKeyboardMarkup([["Si", "No"]]), one_time_keyboard=True, input_field_placeholder="Querés un meme más?")
+TypeError: Message.reply_text() got an unexpected keyword argument 'one_time_keyboard'
+2023-10-28 08:39:46,931 - 672134330 - facu comenzó charla con comando start en chat 672134330
+2023-10-28 08:40:09,983 - 672134330 - facu pidió memes en chat 672134330
+2023-10-28 08:40:39,002 - No error handlers are registered, logging exception.
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_application.py", line 1124, in process_update
+    await coroutine
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_conversationhandler.py", line 825, in handle_update
+    new_state: object = await handler.handle_update(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_handler.py", line 141, in handle_update
+    return await self.callback(update, context)
+  File "c:\Users\facun\OneDrive\Documentos\GitHub\deltix\main.py", line 303, in answer_meme
+    await update.message.reply_text("Uno más?", reply_markup=ReplyKeyboardMarkup([["Si", "No"]]), one_time_keyboard=True, input_field_placeholder="Querés un meme más?")
+TypeError: Message.reply_text() got an unexpected keyword argument 'one_time_keyboard'
+2023-10-28 08:40:53,546 - No error handlers are registered, logging exception.
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_application.py", line 1124, in process_update
+    await coroutine
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_conversationhandler.py", line 825, in handle_update
+    new_state: object = await handler.handle_update(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_handler.py", line 141, in handle_update
+    return await self.callback(update, context)
+  File "c:\Users\facun\OneDrive\Documentos\GitHub\deltix\main.py", line 303, in answer_meme
+    await update.message.reply_text("Uno más?", reply_markup=ReplyKeyboardMarkup([["Si", "No"]]), one_time_keyboard=True, input_field_placeholder="Querés un meme más?")
+TypeError: Message.reply_text() got an unexpected keyword argument 'one_time_keyboard'
+2023-10-28 08:42:22,186 - 672134330 - facu comenzó charla con comando start en chat 672134330
+2023-10-28 08:42:44,464 - 672134330 - facu pidió memes en chat 672134330
+2023-10-28 08:43:11,584 - No error handlers are registered, logging exception.
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_application.py", line 1124, in process_update
+    await coroutine
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_conversationhandler.py", line 825, in handle_update
+    new_state: object = await handler.handle_update(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_handler.py", line 141, in handle_update
+    return await self.callback(update, context)
+  File "c:\Users\facun\OneDrive\Documentos\GitHub\deltix\main.py", line 306, in answer_meme
+    await update.message.reply_text("Uno más?", reply_markup=ReplyKeyboardMarkup([["Si", "No"]]), one_time_keyboard=True, input_field_placeholder="Querés un meme más?")
+TypeError: Message.reply_text() got an unexpected keyword argument 'one_time_keyboard'
+2023-10-28 08:44:13,964 - No error handlers are registered, logging exception.
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_application.py", line 1124, in process_update
+    await coroutine
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_conversationhandler.py", line 825, in handle_update
+    new_state: object = await handler.handle_update(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_handler.py", line 141, in handle_update
+    return await self.callback(update, context)
+  File "c:\Users\facun\OneDrive\Documentos\GitHub\deltix\main.py", line 306, in answer_meme
+    await update.message.reply_text("Uno más?", reply_markup=ReplyKeyboardMarkup([["Si", "No"]]), one_time_keyboard=True, input_field_placeholder="Querés un meme más?")
+TypeError: Message.reply_text() got an unexpected keyword argument 'one_time_keyboard'
+2023-10-28 08:46:30,883 - No error handlers are registered, logging exception.
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_application.py", line 1124, in process_update
+    await coroutine
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_conversationhandler.py", line 825, in handle_update
+    new_state: object = await handler.handle_update(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_handler.py", line 141, in handle_update
+    return await self.callback(update, context)
+  File "c:\Users\facun\OneDrive\Documentos\GitHub\deltix\main.py", line 306, in answer_meme
+    await update.message.reply_text("Uno más?", reply_markup=ReplyKeyboardMarkup([["Si", "No"]]), one_time_keyboard=True, input_field_placeholder="Querés un meme más?")
+TypeError: Message.reply_text() got an unexpected keyword argument 'one_time_keyboard'
+2023-10-28 08:46:42,858 - No error handlers are registered, logging exception.
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\anyio\streams\tls.py", line 108, in _call_sslobject_method
+    result = func(*args)
+  File "C:\Users\facun\anaconda3\lib\ssl.py", line 917, in read
+    v = self._sslobj.read(len)
+ssl.SSLWantReadError: The operation did not complete (read) (_ssl.c:2548)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\backends\asyncio.py", line 34, in read
+    return await self._stream.receive(max_bytes=max_bytes)
+  File "C:\Users\facun\anaconda3\lib\site-packages\anyio\streams\tls.py", line 171, in receive
+    data = await self._call_sslobject_method(self._ssl_object.read, max_bytes)
+  File "C:\Users\facun\anaconda3\lib\site-packages\anyio\streams\tls.py", line 115, in _call_sslobject_method
+    data = await self.transport_stream.receive()
+  File "C:\Users\facun\anaconda3\lib\site-packages\anyio\_backends\_asyncio.py", line 1105, in receive
+    await self._protocol.read_event.wait()
+  File "C:\Users\facun\anaconda3\lib\asyncio\locks.py", line 214, in wait
+    await fut
+  File "C:\Users\facun\anaconda3\lib\asyncio\futures.py", line 285, in __await__
+    yield self  # This tells Task to wait for completion.
+  File "C:\Users\facun\anaconda3\lib\asyncio\tasks.py", line 304, in __wakeup
+    future.result()
+  File "C:\Users\facun\anaconda3\lib\asyncio\futures.py", line 196, in result
+    raise exc
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_exceptions.py", line 10, in map_exceptions
+    yield
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\backends\asyncio.py", line 32, in read
+    with anyio.fail_after(timeout):
+  File "C:\Users\facun\anaconda3\lib\site-packages\anyio\_core\_tasks.py", line 103, in __exit__
+    raise TimeoutError
+TimeoutError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_transports\default.py", line 60, in map_httpcore_exceptions
+    yield
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_transports\default.py", line 353, in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\connection_pool.py", line 261, in handle_async_request
+    raise exc
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\connection_pool.py", line 245, in handle_async_request
+    response = await connection.handle_async_request(request)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\connection.py", line 96, in handle_async_request
+    return await self._connection.handle_async_request(request)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\http11.py", line 120, in handle_async_request
+    raise exc
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\http11.py", line 99, in handle_async_request
+    ) = await self._receive_response_headers(**kwargs)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\http11.py", line 163, in _receive_response_headers
+    event = await self._receive_event(timeout=timeout)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_async\http11.py", line 199, in _receive_event
+    data = await self._network_stream.read(
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\backends\asyncio.py", line 31, in read
+    with map_exceptions(exc_map):
+  File "C:\Users\facun\anaconda3\lib\contextlib.py", line 153, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpcore\_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.ReadTimeout
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\request\_httpxrequest.py", line 216, in do_request
+    res = await self._client.request(
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_client.py", line 1530, in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_client.py", line 1617, in send
+    response = await self._send_handling_auth(
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_client.py", line 1645, in _send_handling_auth
+    response = await self._send_handling_redirects(
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_client.py", line 1682, in _send_handling_redirects
+    response = await self._send_single_request(request)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_client.py", line 1719, in _send_single_request
+    response = await transport.handle_async_request(request)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_transports\default.py", line 352, in handle_async_request
+    with map_httpcore_exceptions():
+  File "C:\Users\facun\anaconda3\lib\contextlib.py", line 153, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "C:\Users\facun\anaconda3\lib\site-packages\httpx\_transports\default.py", line 77, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.ReadTimeout
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_application.py", line 1124, in process_update
+    await coroutine
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_conversationhandler.py", line 825, in handle_update
+    new_state: object = await handler.handle_update(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_handler.py", line 141, in handle_update
+    return await self.callback(update, context)
+  File "c:\Users\facun\OneDrive\Documentos\GitHub\deltix\main.py", line 304, in answer_meme
+    await context.bot.send_photo(chat_id, open(f"memes/{numero}.png", "rb"))
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_extbot.py", line 2675, in send_photo
+    return await super().send_photo(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 381, in decorator
+    result = await func(self, *args, **kwargs)  # skipcq: PYL-E1102
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 1042, in send_photo
+    return await self._send_message(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_extbot.py", line 507, in _send_message
+    result = await super()._send_message(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 559, in _send_message
+    result = await self._post(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 469, in _post
+    return await self._do_post(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\ext\_extbot.py", line 325, in _do_post
+    return await super()._do_post(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\_bot.py", line 497, in _do_post
+    return await request.post(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\request\_baserequest.py", line 168, in post
+    result = await self._request_wrapper(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\request\_baserequest.py", line 291, in _request_wrapper
+    raise exc
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\request\_baserequest.py", line 277, in _request_wrapper
+    code, payload = await self.do_request(
+  File "C:\Users\facun\anaconda3\lib\site-packages\telegram\request\_httpxrequest.py", line 233, in do_request
+    raise TimedOut from err
+telegram.error.TimedOut: Timed out
