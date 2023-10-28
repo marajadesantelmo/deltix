@@ -305,8 +305,8 @@ async def answer_meme(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
             numero = random.randint(1, 56)
             await context.bot.send_photo(chat_id, open(f"memes/{numero}.png", "rb"))
             time.sleep(1)
-            await update.message.reply_text("Uno más?",
-            reply_markup=ReplyKeyboardMarkup([["Si", "No"]]),)
+            await update.message.reply_text("Uno más?", reply_markup=ReplyKeyboardMarkup([["Si", "No"]]))
+
             return ANSWER_meme
         if user_response == 'no':
             await update.message.reply_text(
