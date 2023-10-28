@@ -280,23 +280,21 @@ async def memes(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         user = update.effective_user
         chat_id=update.effective_chat.id
         logger.warning(f"{user.id} - {user.first_name} pidió memes en chat {chat_id}")
-        await update.message.reply_text("...me encantan los memes islenials &#128514 Te mando uno.",
+        await context.bot.send_message(chat_id, "...me encantan los memes islenials &#128514 Te mando uno.",
                                         parse_mode='HTML')
         time.sleep(1)
         numero = random.randint(1, 56)
         await context.bot.send_photo(chat_id, open(f"memes/{numero}.png", "rb"))
         time.sleep(1)
-        await update.message.reply_text("Buenísimo, no? Son de la página Memes Islenials. Te recomiendo que la sigas en las redes",)
-        await update.message.reply_text("Querés otro meme?",
+        await context.bot.send_message(chat_id, "Buenísimo, no? Son de la página Memes Islenials. Te recomiendo que la sigas en las redes",)
+        await context.bot.send_message("Querés otro meme?",
         reply_markup=ReplyKeyboardMarkup(
-            [["Si", "No"]], one_time_keyboard=True, input_field_placeholder="Si o No?"
-        ),)
+            [["Si", "No"]], one_time_keyboard=True, input_field_placeholder="Un meme mas?" ))
         return ANSWER_meme
     
 async def answer_meme(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         '''
         Respuesta para enviar o no más memes después de haber mandado el 1ero
-        
         '''
         chat_id=update.effective_chat.id
         user_response = update.message.text.lower()
@@ -305,15 +303,14 @@ async def answer_meme(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
             numero = random.randint(1, 56)
             await context.bot.send_photo(chat_id, open(f"memes/{numero}.png", "rb"))
             time.sleep(1)
-            await update.message.reply_text("Uno más?", reply_markup=ReplyKeyboardMarkup([["Si", "No"]]))
-
+            await context.bot.send_message(chat_id, "Uno más?", reply_markup=ReplyKeyboardMarkup([["Si", "No"]]),
+                                             one_time_keyboard=True, input_field_placeholder="Querés un meme más?")
             return ANSWER_meme
         if user_response == 'no':
             await update.message.reply_text(
                 "Bueno... si querés podes elegir otra de las actividades para hacer conmigo",
                 reply_markup=ReplyKeyboardMarkup([["/charlar", "/mareas", "/memes"], 
-                                                  ["/informacion", "/colaborar", "/desuscribirme"] ])
-            )
+                                                  ["/informacion", "/colaborar", "/desuscribirme"] ]))
             return ConversationHandler.END
 
 async def desuscribirme(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
