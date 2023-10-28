@@ -5,7 +5,8 @@ from PIL import Image
 import urllib.request
 
 #Scraping mareas INA
-urllib.request.urlretrieve('https://alerta.ina.gob.ar/ina/42-RIODELAPLATA/productos/Prono_SanFernando.png', "Marea.png")
+urllib.request.urlretrieve('https://alerta.ina.gob.ar/ina/42-RIODELAPLATA/productos/Prono_SanFernando.png',
+                            "C://Users//Usuario//Documents//GitHub//deltix//marea.png")
 print('Obtuvo mareas INA')
 #Scraping windguru
 options = webdriver.FirefoxOptions()

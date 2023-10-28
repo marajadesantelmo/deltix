@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 nest_asyncio.apply()
 
-ANSWER_charlar, ANSWER_meme, ANSWER_colaborar, ANSWER_mensajear, ANSWER_informacion, ANSWER_mareas_suscribir, ANSWER_windguru_suscribir, ANSWER_desuscribir  = range(8)
+ANSWER_charlar, ANSWER_meme, ANSWER_colaborar, ANSWER_mensajear, ANSWER_informacion, ANSWER_mareas_suscribir, ANSWER_windguru_suscribir, ANSWER_desuscribir, ANSWER_meme2  = range(9)
 
 
 def generate_main_menu():
@@ -282,14 +282,11 @@ async def memes(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         logger.warning(f"{user.id} - {user.first_name} pidió memes en chat {chat_id}")
         await context.bot.send_message(chat_id, "...me encantan los memes islenials &#128514 Te mando uno.",
                                         parse_mode='HTML')
-        time.sleep(1)
         numero = random.randint(1, 56)
         await context.bot.send_photo(chat_id, open(f"memes/{numero}.png", "rb"))
-        time.sleep(1)
+        time.sleep(6)
         await context.bot.send_message(chat_id, "Buenísimo, no? Son de la página Memes Islenials. Te recomiendo que la sigas en las redes",)
-        await update.message.reply_text("Querés otro meme?",
-        reply_markup=ReplyKeyboardMarkup(
-            [["Si", "No"]], one_time_keyboard=True, input_field_placeholder="Un meme mas?" ))
+        await context.bot.send_message(chat_id, "Querés otro meme?")
         return ANSWER_meme
     
 async def answer_meme(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -302,9 +299,9 @@ async def answer_meme(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         if user_response == 'si':
             numero = random.randint(1, 56)
             await context.bot.send_photo(chat_id, open(f"memes/{numero}.png", "rb"))
-            time.sleep(1)
-            await update.message.reply_text("Uno más?", reply_markup=ReplyKeyboardMarkup([["Si", "No"]]), one_time_keyboard=True, input_field_placeholder="Querés un meme más?")
-            return ANSWER_meme
+            time.sleep(5)
+            await context.bot.send_message(chat_id,"Uno más?")
+            return ANSWER_meme2
         
         if user_response == 'no':
             await update.message.reply_text(
@@ -529,6 +526,7 @@ if __name__ == '__main__':
         states={
             ANSWER_charlar: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), answer_charlar)],
             ANSWER_meme: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), answer_meme)],
+            ANSWER_meme2: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), answer_meme)],
             ANSWER_informacion: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), answer_informacion)],
             ANSWER_colaborar: [MessageHandler(filters.Regex(r'^(Mensajear|mensajear|MENSAJEAR|Aportar|aportar|APORTAR)$'), answer_colaborar)],
             ANSWER_mareas_suscribir: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), mareas_suscribir)], 
