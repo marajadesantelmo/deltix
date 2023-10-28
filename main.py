@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 nest_asyncio.apply()
 
-ANSWER_charlar, ANSWER_meme, ANSWER_colaborar, ANSWER_mensajear, ANSWER_informacion, ANSWER_mareas_suscribir  = range(6)
+ANSWER_charlar, ANSWER_meme, ANSWER_colaborar, ANSWER_mensajear, ANSWER_informacion, ANSWER_mareas_suscribir, ANSWER_windguru_suscribir, ANSWER_desuscribir  = range(8)
 
 
 def generate_main_menu():
@@ -204,12 +204,12 @@ async def windguru(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         logger.warning(f"{user.id} - {user.first_name} pidió pronóstico de windguru en chat {chat_id}")
         await update.message.reply_text("Ahí te mando el pronóstico de windguru")
         await context.bot.send_photo(chat_id, open("windguru.png", "rb"))
-        #time.sleep(4)
-        #await update.message.reply_text("Querés suscribirte para recibir esto todos los días?",
-        #reply_markup=ReplyKeyboardMarkup(
-        #    [["Si", "No"]], one_time_keyboard=True, input_field_placeholder="Si o No?"
-        #),)
-        return ANSWER_mareas_suscribir     
+        time.sleep(4)
+        await update.message.reply_text("Querés suscribirte para recibir esto todos los días?",
+        reply_markup=ReplyKeyboardMarkup(
+            [["Si", "No"]], one_time_keyboard=True, input_field_placeholder="Si o No?"
+        ),)
+        return ANSWER_windguru_suscribir     
 
 async def mareas_suscribir(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     '''
@@ -246,6 +246,32 @@ async def mareas_suscribir(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             parse_mode='HTML',
             reply_markup=main_menu_keyboard)
     
+async def windguru_suscribir(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    user_response = update.message.text.lower()
+    if user_response == 'si':
+        subscribers_windguru = pd.read_csv("subscribers_windguru.csv") 
+        chat_id = update.effective_chat.id
+        user = update.effective_user
+        logger.warning(f"{user.id} - {user.first_name} se inscribió a windguru en chat {chat_id}")
+        
+        # Check if the user is already subscribed
+        user_id = update.message.from_user.id
+        if user_id in subscribers_windguru['User ID'].values:
+            await update.message.reply_text("Ya estás suscrito a los pronósticos de Windguru. ¡Te los seguiré enviando todos los días!")
+        else:
+            user_info = {"User ID": [update.message.from_user.id],
+                        "Username": [update.message.from_user.username],
+                        "First Name": [update.message.from_user.first_name],
+                        "Last Name": [update.message.from_user.last_name],}
+            user_df = pd.DataFrame(user_info)
+            subscribers_windguru = subscribers_windguru.append(user_df, ignore_index=True)
+            subscribers_windguru.to_csv('subscribers_windguru.csv', index=False)
+            await update.message.reply_text("¡Gracias por suscribirte! Te enviaré el pronóstico de Windguru una vez al día.")
+        return ConversationHandler.END
+    elif user_response == 'no':
+        await update.message.reply_text("Entendido. Si cambias de opinión, siempre puedes suscribirte más tarde. ¿Hay algo más en lo que te pueda ayudar?")
+        return ConversationHandler.END
+
 async def memes(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         '''
         Respuesta cuando el usuario pide directamente memes por comando /memes
@@ -276,35 +302,59 @@ async def answer_meme(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         user_response = update.message.text.lower()
         if user_response == 'si':
             await update.message.reply_text("Dale, te mando")
-            time.sleep(2)
             numero = random.randint(1, 56)
             await context.bot.send_photo(chat_id, open(f"memes/{numero}.png", "rb"))
             time.sleep(1)
             await update.message.reply_text("Uno más?",
-            reply_markup=ReplyKeyboardMarkup(
-                [["Si", "No"]], one_time_keyboard=True, input_field_placeholder="Si o No?"
-            ),)
+            reply_markup=ReplyKeyboardMarkup([["Si", "No"]]),)
             return ANSWER_meme
         if user_response == 'no':
             await update.message.reply_text(
                 "Bueno... si querés podes elegir otra de las actividades para hacer conmigo",
-                reply_markup=ReplyKeyboardMarkup([["/charlar", "/mareas", "/memes"], ["/informacion", "/colaborar", "/desuscribirme"] ])
+                reply_markup=ReplyKeyboardMarkup([["/charlar", "/mareas", "/memes"], 
+                                                  ["/informacion", "/colaborar", "/desuscribirme"] ])
             )
             return ConversationHandler.END
 
-async def desuscribirme(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    '''
-    Desuscripcion a los envios de mareas
-    
-    '''
-    user_id = update.message.from_user.id
-    subscribers_mareas = pd.read_csv("subscribers_mareas.csv")
-    if user_id in subscribers_mareas['User ID'].values:
-        subscribers_mareas = subscribers_mareas[~subscribers_mareas['User ID'].eq(user_id)]
-        subscribers_mareas.to_csv('subscribers_mareas.csv', index=False)
-        await update.message.reply_text("Te has desuscripto correctamente. Avisame y te vuelvo a suscribir cuando quieras :)")
+async def desuscribirme(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    user = update.effective_user
+    chat_id = update.effective_chat.id
+    logger.warning(f"{user.id} - {user.first_name} quiere desuscribirse en chat {chat_id}")
+
+    reply_markup = ReplyKeyboardMarkup([["Mareas", "Windguru"]], one_time_keyboard=True, input_field_placeholder="A cuál envío quieres desuscribirte?")
+    await update.message.reply_text("A cuál envío quieres desuscribirte: Mareas o Windguru?", reply_markup=reply_markup)
+
+    return ANSWER_desuscribir
+
+async def answer_desuscribir(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    user_response = update.message.text.lower()
+    chat_id = update.effective_chat.id
+    user = update.effective_user
+
+    if user_response == "mareas":
+        subscribers_mareas = pd.read_csv("subscribers_mareas.csv")
+        user_id = update.message.from_user.id
+
+        if user_id in subscribers_mareas['User ID'].values:
+            subscribers_mareas = subscribers_mareas[~subscribers_mareas['User ID'].eq(user_id)]
+            subscribers_mareas.to_csv('subscribers_mareas.csv', index=False)
+            await update.message.reply_text("Te has desuscrito con éxito del pronóstico de mareas. Si deseas desuscribirte de Windguru o realizar otra acción, decime nomas")
+        else:
+            await update.message.reply_text("No estabas suscrito previamente al pronóstico de mareas. Si deseas desuscribirte de Windguru o realizar otra acción, decime nomas")
+    elif user_response == "windguru":
+        subscribers_windguru = pd.read_csv("subscribers_windguru.csv")
+        user_id = update.message.from_user.id
+
+        if user_id in subscribers_windguru['User ID'].values:
+            subscribers_windguru = subscribers_windguru[~subscribers_windguru['User ID'].eq(user_id)]
+            subscribers_windguru.to_csv('subscribers_windguru.csv', index=False)
+            await update.message.reply_text("Te has desuscrito con éxito del pronóstico de Windguru. Si deseas desuscribirte de Mareas o realizar otra acción, decime nomas")
+        else:
+            await update.message.reply_text("No estabas suscrito previamente al pronóstico de Windguru. Si deseas desuscribirte de Mareas o realizar otra acción, decime nomas")
     else:
-        await update.message.reply_text("No estabas suscripto previamente")
+        await update.message.reply_text("No comprendí tu elección. Por favor, selecciona 'Mareas' o 'Windguru' para desuscribirte.")
+        return ANSWER_desuscribir
+
     return ConversationHandler.END
 
 
@@ -461,7 +511,8 @@ if __name__ == '__main__':
     MessageHandler(filters.Regex(r'^(Informacion|informacion|INFORMACION)$'), informacion),
     MessageHandler(filters.Regex(r'^(Mensajear|mensajear|MENSAJEAR)$'), mensaje_trigger),
     MessageHandler(filters.Regex(r'^(Hola|hola|HOLA)$'), start), 
-    MessageHandler(filters.Regex(r'^(Gracias|gracias|GRACIAS)$'), de_nada),  
+    MessageHandler(filters.Regex(r'^(Gracias|gracias|GRACIAS)$'), de_nada), 
+
     #Handlers si contiene palabra en minuscula
     MessageHandler(filters.Regex(r'(?i)(.*\bcharlar\b.*)'), charlar),
     MessageHandler(filters.Regex(r'(?i)(.*\bmareas\b.*)'), mareas),
@@ -484,7 +535,9 @@ if __name__ == '__main__':
             ANSWER_informacion: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), answer_informacion)],
             ANSWER_colaborar: [MessageHandler(filters.Regex(r'^(Mensajear|mensajear|MENSAJEAR|Aportar|aportar|APORTAR)$'), answer_colaborar)],
             ANSWER_mareas_suscribir: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), mareas_suscribir)], 
+            ANSWER_windguru_suscribir: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), windguru_suscribir)], 
             ANSWER_mensajear: [MessageHandler(filters.TEXT, mensajear)],
+            ANSWER_desuscribir: [MessageHandler(filters.Regex(r'^(Mareas|MAREAS|Windguru|WINDGURU)$'), answer_desuscribir)], 
         },
         fallbacks= handlers, 
     )
