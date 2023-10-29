@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="boat_icon.png" alt="Ícono del bot" width="200"><br>
+  <img src="bot_icon.png" alt="Ícono del bot" width="200"><br>
   Deltix... el bot del humedal 
   Delta inferior del Paraná - Buenos Aires
 </h1>
