@@ -16,7 +16,8 @@ import logging
 gmail_token = os.environ.get('gmail_token')
 telegram_token = os.environ.get('telegram_token')
 
-user_experience = pd.read_csv('user_experience.csv')
+#user_experience = pd.read_csv('user_experience.csv')
+user_experience = pd.read_csv('C://Users//Usuario//Documents//GitHub//deltix//user_experience.csv')
 
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.basicConfig(
@@ -60,11 +61,11 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
     logger.warning(f"{user.id} - {user.first_name} comenzó charla con comando start en chat {chat_id}")
 
     if user.id not in user_experience['User ID'].values:
-        user_info = {"User ID": [update.message.from_user.id],
-            "Username": [update.message.from_user.username],
-            "First Name": [update.message.from_user.first_name],
-            "Last Name": [update.message.from_user.last_name],
-            "first_interaction":  [datetime.now().strftime('%d-%m-%Y %H:%M')] }
+        user_info = {"User ID": update.message.from_user.id,
+            "Username": update.message.from_user.username,
+            "First Name": update.message.from_user.first_name,
+            "Last Name":update.message.from_user.last_name,
+            "first_interaction":  datetime.now().strftime('%d-%m-%Y %H:%M') }
         user_experience = user_experience.append(user_info, ignore_index=True)
         user_experience.to_csv('user_experience.csv', index=False)
 
