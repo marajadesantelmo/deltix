@@ -20,9 +20,9 @@ options.binary_location = 'C://Program Files//Mozilla Firefox//firefox.exe'
 
 service = Service(executable_path="C://Users//Usuario//Documents//GitHub//deltix//geckodriver.exe")
 driver = webdriver.Firefox(options=options, service=service)
-print('Abre navegador y va a wind guru')
+print('Abre navegador, va a wind guru y espera 20 segundos')
 driver.get('https://www.windguru.cz/632702')
-time.sleep(10)
+time.sleep(20)
 driver.save_screenshot('C://Users//Usuario//Documents//GitHub//deltix//screenshot_windguru.png')
 print('Saca screenshot')
 x = 1  

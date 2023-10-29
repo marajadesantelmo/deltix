@@ -23,21 +23,19 @@ logging.basicConfig(
     format='%(asctime)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-
 nest_asyncio.apply()
 
 ANSWER_charlar, ANSWER_meme, ANSWER_colaborar, ANSWER_mensajear, ANSWER_informacion, ANSWER_mareas_suscribir, ANSWER_windguru_suscribir, ANSWER_desuscribir, ANSWER_meme2  = range(9)
-
 
 def generate_main_menu():
     '''
     Genera el menu principal
     Ese menu se ejecuta desde las funciones /start, /start2 y /menu
-    Las lineas comentadas del menu son proyectos e ideas de funcionalidades 
-    que tendrá Deltix
+    Las lineas comentadas del menu son proyectos e ideas de funcionalidades
+    para agregar a Deltix
     '''
     return ("- <b>/mareas </b>   <i> obtener el pronóstico de mareas &#9875</i>\n"
-            "- <b>/windguru </b>   <i> pronóstico meteorológico de windguru</i>\n"
+            "- <b>/windguru </b>   <i> pronóstico meteorológico de windgurú</i>\n"
             "- <b>/charlar</b>   <i> charlar conmigo y suscribirte a mis envíos </i>\n"
             "- <b>/memes </b>   <i> ver los memes más divertidos de la isla &#129315 </i>\n"
             # "- <b>/voy_y_vuelvo </b>   <i> compartir viajes desde y hacia a la isla</i>\n"
@@ -117,7 +115,7 @@ async def charlar(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     user = update.effective_user
     logger.warning(f"{user.id} - {user.first_name} comenzó charla con comando charlar en chat {chat_id}")
-    await update.message.reply_text("Soy un bot en desarrollo y mi mayor gracia es mandarte una vez por día el pronóstico de mareas del INA. ¿Querés recibir el pronóstico de mareas de San Fernando todos los días?",
+    await update.message.reply_text("Soy un bot en desarrollo y mi mayor gracia es mandarte una vez por día el pronóstico de mareas del INA y del clima de WindGurú. ¿Querés recibir el pronóstico de mareas de San Fernando todos los días?",
     reply_markup=ReplyKeyboardMarkup(
         [["Si", "No"]], one_time_keyboard=True, input_field_placeholder="Si o No?"
     ),)
@@ -299,9 +297,29 @@ async def answer_meme(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         if user_response == 'si':
             numero = random.randint(1, 56)
             await context.bot.send_photo(chat_id, open(f"memes/{numero}.png", "rb"))
-            time.sleep(5)
             await context.bot.send_message(chat_id,"Uno más?")
             return ANSWER_meme2
+        
+        if user_response == 'no':
+            await update.message.reply_text(
+                "Bueno... si querés podes elegir otra de las actividades para hacer conmigo",
+                reply_markup=ReplyKeyboardMarkup([["/charlar", "/mareas", "/memes"], 
+                                                  ["/informacion", "/colaborar", "/desuscribirme"] ]))
+            return ConversationHandler.END
+
+async def answer_meme2(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+        '''
+        Respuesta para enviar o no más memes después de haber mandado otro
+        '''
+        user = update.effective_user
+        chat_id=update.effective_chat.id
+        user_response = update.message.text.lower()
+        if user_response == 'si':
+            numero = random.randint(1, 56)
+            await context.bot.send_photo(chat_id, open(f"memes/{numero}.png", "rb"))
+            time.sleep(5)
+            await context.bot.send_message(chat_id,"Te mando otro?")
+            return ANSWER_meme
         
         if user_response == 'no':
             await update.message.reply_text(
@@ -383,7 +401,8 @@ async def mensaje_trigger(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     Respuesta cuando el usuario quiere mandar un mensaje al desarrollador
     Luego hay que dirigirlo a la funcion mensajear para que el mensaje se mande
     '''
-    await update.message.reply_text("Escribí el mensaje y yo se lo reenvío al desarrollador", parse_mode='HTML')
+    await update.message.reply_text("Escribí el mensaje y yo se lo reenvío al desarrollador", 
+                                    parse_mode='HTML')
     return ANSWER_mensajear
 
 async def mensajear(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -435,7 +454,7 @@ async def informacion(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
     '''
     await update.message.reply_text('Te cuento un poco de mí! Soy un bot en desarrollo que tiene como objetivo ayudar a quienes habitamos en la isla, principalmente en la 1era sección')
     time.sleep(1)
-    await update.message.reply_text('Una de mis primeras funcionalidades es mandar el pronóstico de mareas del Instituto Nacional del Agua. Si te suscribís, lo vas a recibir todos los días')
+    await update.message.reply_text('Mis primeras funcionalidades son mandar el reporte de mareas del Instituto Nacional del Agua y el pronóstico del clima de WindGurú. Si te suscribís, lo vas a recibir todos los días')
     time.sleep(1)
     await update.message.reply_text('En el futuro espero sumar más funcionalidades, como enviar info con notas de interés y eventos de la isla a quienes quieran, o armar un sistema automático de avisos de voy-y-vuelvo para compartir viajes en botes desde y hacia la isla')
     time.sleep(3)
@@ -500,7 +519,7 @@ if __name__ == '__main__':
     MessageHandler(filters.Regex(r'^(Mareas|mareas|MAREAS)$'), mareas),
     MessageHandler(filters.Regex(r'^(Windguru|windguru|WINDGURU)$'), windguru),
     MessageHandler(filters.Regex(r'^(Desuscribirme|desuscribirme|DESUSCRIBIRME)$'), desuscribirme),
-    MessageHandler(filters.Regex(r'^(Memes|memes|MEMES)$'), memes),
+    MessageHandler(filters.Regex(r'^(Memes|memes|MEMES|Meme|meme|MEME)$'), memes),
     MessageHandler(filters.Regex(r'^(Colaborar|colaborar|COLABORAR)$'), colaborar),
     MessageHandler(filters.Regex(r'^(Informacion|informacion|INFORMACION)$'), informacion),
     MessageHandler(filters.Regex(r'^(Mensajear|mensajear|MENSAJEAR)$'), mensaje_trigger),
@@ -513,6 +532,7 @@ if __name__ == '__main__':
     MessageHandler(filters.Regex(r'(?i)(.*\bwindguru\b.*)'), windguru),
     MessageHandler(filters.Regex(r'(?i)(.*\bdesuscribirme\b.*)'), desuscribirme),
     MessageHandler(filters.Regex(r'(?i)(.*\bmemes\b.*)'), memes),
+    MessageHandler(filters.Regex(r'(?i)(.*\bmeme\b.*)'), memes),
     MessageHandler(filters.Regex(r'(?i)(.*\bcolaborar\b.*)'), colaborar),
     MessageHandler(filters.Regex(r'(?i)(.*\binformacion\b.*)'), informacion),
     MessageHandler(filters.Regex(r'(?i)(.*\bmensajear\b.*)'), mensaje_trigger),
@@ -526,7 +546,7 @@ if __name__ == '__main__':
         states={
             ANSWER_charlar: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), answer_charlar)],
             ANSWER_meme: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), answer_meme)],
-            ANSWER_meme2: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), answer_meme)],
+            ANSWER_meme2: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), answer_meme2)],
             ANSWER_informacion: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), answer_informacion)],
             ANSWER_colaborar: [MessageHandler(filters.Regex(r'^(Mensajear|mensajear|MENSAJEAR|Aportar|aportar|APORTAR)$'), answer_colaborar)],
             ANSWER_mareas_suscribir: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), mareas_suscribir)], 
