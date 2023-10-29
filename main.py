@@ -207,6 +207,7 @@ async def mareas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 [["Si", "No"]], one_time_keyboard=True, input_field_placeholder="Si o No?"
             ),)
             user_experience.loc[user_experience['User ID'] == user.id, 'suscr_marea_ofrecida'] =  datetime.now().strftime('%d-%m-%Y %H:%M')
+            user_experience.to_csv('user_experience.csv', index=False)
             return ANSWER_mareas_suscribir
         else:
             return ConversationHandler.END
@@ -230,6 +231,7 @@ async def windguru(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 [["Si", "No"]], one_time_keyboard=True, input_field_placeholder="Si o No?"
             ),)
             user_experience.loc[user_experience['User ID'] == user.id, 'suscr_windguru_ofrecida'] =  datetime.now().strftime('%d-%m-%Y %H:%M')
+            user_experience.to_csv('user_experience.csv', index=False)
             return ANSWER_windguru_suscribir  
         else:
             return ConversationHandler.END   
