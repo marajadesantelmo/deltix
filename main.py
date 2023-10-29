@@ -6,7 +6,7 @@ import random
 import time
 import nest_asyncio
 import re
-
+from datetime import datetime
 import smtplib
 from email.message import EmailMessage
 
@@ -15,6 +15,8 @@ import logging
 # os.chdir('C:/Users/facun/OneDrive/Documentos/deltix/')
 gmail_token = os.environ.get('gmail_token')
 telegram_token = os.environ.get('telegram_token')
+
+user_experience = pd.read_csv('user_experience.csv')
 
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.basicConfig(
@@ -52,9 +54,20 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
     '''
     Respuesta cuando el usuario comienza por /start
     '''
+    global user_experience
     chat_id = update.effective_chat.id
     user = update.effective_user
     logger.warning(f"{user.id} - {user.first_name} comenzó charla con comando start en chat {chat_id}")
+
+    if user.id not in user_experience['User ID'].values:
+        user_info = {"User ID": [update.message.from_user.id],
+            "Username": [update.message.from_user.username],
+            "First Name": [update.message.from_user.first_name],
+            "Last Name": [update.message.from_user.last_name],
+            "first_interaction":  [datetime.now().strftime('%d-%m-%Y %H:%M')] }
+        user_experience = user_experience.append(user_info, ignore_index=True)
+        user_experience.to_csv('user_experience.csv', index=False)
+
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=(f"Hola {update.effective_user.first_name}! soy Deltix, el bot del humedal &#128057"),
@@ -157,7 +170,7 @@ async def answer_charlar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             subscribers_mareas = subscribers_mareas.append(user_df, ignore_index=True)
             subscribers_mareas.to_csv('subscribers_mareas.csv', index=False)
             await update.message.reply_text(
-                "¡Gracias por suscribirte! Voy a intentar mandarte el pronóstico de mareas una vez al día. A veces fallo porque dependende de que me ande la internet isleña",
+                "¡Gracias por suscribirte! Voy a intentar mandarte el pronóstico de mareas una vez al día. A veces fallo porque dependo de que me ande la internet isleña",
             )
             await update.message.reply_text(
                 "Te mando ahora el último pronóstico que tengo...",
@@ -552,7 +565,7 @@ if __name__ == '__main__':
             ANSWER_mareas_suscribir: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), mareas_suscribir)], 
             ANSWER_windguru_suscribir: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), windguru_suscribir)], 
             ANSWER_mensajear: [MessageHandler(filters.TEXT, mensajear)],
-            ANSWER_desuscribir: [MessageHandler(filters.Regex(r'^(Mareas|MAREAS|Windguru|WINDGURU)$'), answer_desuscribir)], 
+            ANSWER_desuscribir: [MessageHandler(filters.Regex(r'^(Mareas|MAREAS|mareas|Windguru|WINDGURU|windguru)$'), answer_desuscribir)], 
         },
         fallbacks= handlers, 
     )
