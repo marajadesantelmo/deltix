@@ -193,34 +193,45 @@ async def mareas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         Envia el pronostico de mareas cuando el usuario elige /mareas
         Luego le ofrece suscripcion
         '''
+        global user_experience
         user = update.effective_user
         chat_id=update.effective_chat.id
         logger.warning(f"{user.id} - {user.first_name} pidió informe de mareas en chat {chat_id}")
         await update.message.reply_text("Ahí te mando el informe de mareas del INA para San Fernando")
         await context.bot.send_photo(chat_id, open("Marea.png", "rb"))
         time.sleep(4)
-        await update.message.reply_text("Querés suscribirte para recibir esto todos los días?",
-        reply_markup=ReplyKeyboardMarkup(
-            [["Si", "No"]], one_time_keyboard=True, input_field_placeholder="Si o No?"
-        ),)
-        return ANSWER_mareas_suscribir        
+        if user.id in user_experience['User ID'][user_experience['suscr_marea_ofrecida'].isna()].values:
+            await update.message.reply_text("Querés suscribirte para recibir esto todos los días?",
+            reply_markup=ReplyKeyboardMarkup(
+                [["Si", "No"]], one_time_keyboard=True, input_field_placeholder="Si o No?"
+            ),)
+            user_experience.loc[user_experience['User ID'] == user.id, 'suscr_marea_ofrecida'] =  datetime.now().strftime('%d-%m-%Y %H:%M')
+            return ANSWER_mareas_suscribir
+        else:
+            return ConversationHandler.END
+
 
 async def windguru(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         ''' 
         Envia el pronostico de windguru cuando el usuario elige /windguru
         Luego le ofrece suscripcion
         '''
+        global user_experience
         user = update.effective_user
         chat_id=update.effective_chat.id
         logger.warning(f"{user.id} - {user.first_name} pidió pronóstico de windguru en chat {chat_id}")
         await update.message.reply_text("Ahí te mando el pronóstico de windguru")
         await context.bot.send_photo(chat_id, open("windguru.png", "rb"))
         time.sleep(4)
-        await update.message.reply_text("Querés suscribirte para recibir esto todos los días?",
-        reply_markup=ReplyKeyboardMarkup(
-            [["Si", "No"]], one_time_keyboard=True, input_field_placeholder="Si o No?"
-        ),)
-        return ANSWER_windguru_suscribir     
+        if user.id in user_experience['User ID'][user_experience['suscr_windguru_ofrecida'].isna()].values:
+            await update.message.reply_text("Querés suscribirte para recibir esto todos los días?",
+            reply_markup=ReplyKeyboardMarkup(
+                [["Si", "No"]], one_time_keyboard=True, input_field_placeholder="Si o No?"
+            ),)
+            user_experience.loc[user_experience['User ID'] == user.id, 'suscr_windguru_ofrecida'] =  datetime.now().strftime('%d-%m-%Y %H:%M')
+            return ANSWER_windguru_suscribir  
+        else:
+            return ConversationHandler.END   
 
 async def mareas_suscribir(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     '''
