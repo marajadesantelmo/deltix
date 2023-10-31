@@ -1,7 +1,7 @@
 <h1 align="center">
   <img src="bot_icon.png" alt="Ícono del bot" width="200"><br>
-  &#127795 **Deltix... el bot del humedal** &#127795<br>
-  _Delta inferior del Paraná - Buenos Aires_
+  &#127795 Deltix... el bot del humedal &#127795<br>
+  Delta inferior del Paraná - Buenos Aires
 </h1>
 
 
