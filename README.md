@@ -5,7 +5,7 @@
 </h1>
 
 
-Soy *Deltix, el bot del humedal!* Mi objetivo es ayudar a quienes habitan y visitan el delta inferior del Paraná. Fui diseñado para proporcionar información y servicios útiles a las personas que habitan o visitan la hermosa región del Delta del Tigre, en Buenos Aires. Por ahora mis principales funcionalidades son enviar pronósticos meteorológico y de maraes, y mandar los Memes Islenials más divertidos de la isla :P En el futuro te voy a poder ayudar también cuando estés buscando recomendaciones locales, información sobre actividades en el delta o simplemente deseas mantenerte al tanto de las novedades de la zona.
+Soy *Deltix, el bot del humedal!* Mi objetivo es ayudar a quienes habitan y visitan el delta inferior del Paraná. Fui diseñado para proporcionar información y servicios útiles a las personas que habitan o visitan la hermosa región del Delta del Tigre, en Buenos Aires. Por ahora mis principales funcionalidades son enviar pronósticos meteorológico y de maraes, y mandar los Memes Islenials más divertidos de la isla :P En el futuro te voy a poder ayudar también cuando estés buscando recomendaciones locales, información sobre actividades en el delta o simplemente quieras mantenerte al tanto de las novedades de la zona.
 
 *Deltix es un proyecto abierto para colaborar. Contactanos si querés aportar con nuevas funcionalidades!*
 
