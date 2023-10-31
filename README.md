@@ -9,16 +9,24 @@ Soy *Deltix, el bot del humedal!* Mi objetivo es ayudar a quienes habitan y visi
 
 *Deltix es un proyecto abierto para colaborar. Contactanos si querés aportar con nuevas funcionalidades!*
 
-## Características Destacadas
-
-- 🌊 **Información de Mareas**: Tené el pronóstico de mareas en tiempo real para la región del Delta del Tigre.
-- 🌦️ **Pronóstico Meteorológico**: Consultá el pronóstico meteorológico de WindGurú para la zona.
-- 🗨️ **Charlar con el Bot**: Suscribite para recibir actualizaciones diarias, como mareas y más.
-- 🤣 **Memes Islenials**: Descubrí los memes más divertidos de la isla.
-- ℹ️ **Información sobre Delta**: Información relevante sobre el Delta del Tigre.
-- 🤝 **Colaborar y Sugerir**: Comparte tus sugerencias y colabora con el bot para mejorarlo.
-- 📤 **Desuscribirte**: Si deseas dejar de recibir actualizaciones, podés hacerlo en cualquier momento.
-- ✉️ **Mensajear al Desarrollador**: Envía mensajes directos al desarrollador del bot.
+<div style="display: flex; justify-content: space-between;">
+  <div style="width: 70%;">
+    <h2>Características Destacadas</h2>
+    <ul>
+      <li>🌊 **Información de Mareas**: Tené el pronóstico de mareas en tiempo real para la región del Delta del Tigre.</li>
+      <li>🌦️ **Pronóstico Meteorológico**: Consultá el pronóstico meteorológico de WindGurú para la zona.</li>
+      <li>🗨️ **Charlar con el Bot**: Suscribite para recibir actualizaciones diarias, como mareas y más.</li>
+      <li>🤣 **Memes Islenials**: Descubrí los memes más divertidos de la isla.</li>
+      <li>ℹ️ **Información sobre Delta**: Información relevante sobre el Delta del Tigre.</li>
+      <li>🤝 **Colaborar y Sugerir**: Comparte tus sugerencias y colabora con el bot para mejorarlo.</li>
+      <li>📤 **Desuscribirte**: Si deseas dejar de recibir actualizaciones, podés hacerlo en cualquier momento.</li>
+      <li>✉️ **Mensajear al Desarrollador**: Envía mensajes directos al desarrollador del bot.</li>
+    </ul>
+  </div>
+  <div style="width: 30%;">
+    <img src="bot_qr.png" alt="Código QR del bot" width="150">
+  </div>
+</div>
 
 ## Podés interactuar con el bot en Telegram buscando a @deltix_del_humedal_bot
 
