@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 nest_asyncio.apply()
 
-ANSWER_charlar, ANSWER_meme, ANSWER_colaborar, ANSWER_mensajear, ANSWER_informacion, ANSWER_mareas_suscribir, ANSWER_windguru_suscribir, ANSWER_desuscribir, ANSWER_meme2  = range(9)
+ANSWER_charlar, ANSWER_meme, ANSWER_colaborar, ANSWER_mensajear, ANSWER_informacion, ANSWER_mareas_suscribir, ANSWER_windguru_suscribir, ANSWER_desuscribir, ANSWER_meme2, ANSWER_charlar_windguru  = range(10)
 
 def generate_main_menu():
     '''
@@ -129,10 +129,8 @@ async def charlar(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     user = update.effective_user
     logger.warning(f"{user.id} - {user.first_name} comenzó charla con comando charlar en chat {chat_id}")
-    await update.message.reply_text("Soy un bot en desarrollo y mi mayor gracia es mandarte una vez por día el pronóstico de mareas del INA y del clima de WindGurú. ¿Querés recibir el pronóstico de mareas de San Fernando todos los días?",
-    reply_markup=ReplyKeyboardMarkup(
-        [["Si", "No"]], one_time_keyboard=True, input_field_placeholder="Si o No?"
-    ),)
+    await update.message.reply_text("Soy un bot en desarrollo. Puedo mandarte una vez por día el pronóstico de mareas del INA y del clima de WindGurú. ¿Querés recibir el pronóstico de mareas de San Fernando todos los días?",
+    reply_markup=ReplyKeyboardMarkup([["Si", "No"]], one_time_keyboard=True, input_field_placeholder="Si o No?"))
     return ANSWER_charlar
 
 async def answer_charlar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -158,8 +156,9 @@ async def answer_charlar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             await context.bot.send_photo(chat_id, open("Marea.png", "rb"))
             time.sleep(5)
             await update.message.reply_text(
-                "aii... tengo unas ganas de verme unos memes &#128057. Vemos uno?", parse_mode='HTML')
-            return ANSWER_meme
+                "También te puedo mandar todos los días una captura de pantalla del pronóstico de Windgurú para la zona de las islas. Querés?", 
+                reply_markup=ReplyKeyboardMarkup([["Si", "No"]], one_time_keyboard=True, input_field_placeholder="Si o No?"))
+            return ANSWER_charlar_windguru
         
         #Si no está suscrito lo subo a la lista   
         else:
@@ -171,22 +170,48 @@ async def answer_charlar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             subscribers_mareas = subscribers_mareas.append(user_df, ignore_index=True)
             subscribers_mareas.to_csv('subscribers_mareas.csv', index=False)
             await update.message.reply_text(
-                "¡Gracias por suscribirte! Voy a intentar mandarte el pronóstico de mareas una vez al día. A veces fallo porque dependo de que me ande la internet isleña",
-            )
+                "¡Gracias por suscribirte! Voy a intentar mandarte el pronóstico de mareas una vez al día. A veces fallo porque dependo de que me ande la internet isleña")
             await update.message.reply_text(
                 "Te mando ahora el último pronóstico que tengo...",
             )
             await context.bot.send_photo(chat_id, open("Marea.png", "rb"))
             time.sleep(5)
             await update.message.reply_text(
-                "aii... tengo unas ganas de verme unos memes &#128057 Vemos uno?",
-            )        
-            return ANSWER_meme
+                "También te puedo mandar todos los días una captura de pantalla del pronóstico de Windgurú para la zona de las islas. Querés?", 
+                reply_markup=ReplyKeyboardMarkup([["Si", "No"]], one_time_keyboard=True, input_field_placeholder="Si o No?"))    
+            return ANSWER_charlar_windguru
         
     if user_response == 'no':
         await update.message.reply_text(
-            "Bueno... otra cosa que puedo ofrecerte es un meme de la isla.. querés?",
-        )
+            "Bueno... otra cosa que puedo ofrecerte es mandarte todos los días una captura de pantalla del pronóstico de Windgurú para la zona de las islas. Querés?",
+        reply_markup=ReplyKeyboardMarkup([["Si", "No"]], one_time_keyboard=True, input_field_placeholder="Si o No?"))
+        return ANSWER_charlar_windguru
+
+async def charlar_windguru(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    user_response = update.message.text.lower()
+    if user_response == 'si':
+        subscribers_windguru = pd.read_csv("subscribers_windguru.csv") 
+        chat_id = update.effective_chat.id
+        user = update.effective_user
+        logger.warning(f"{user.id} - {user.first_name} se inscribió a windguru en charla {chat_id}")
+        
+        # Check if the user is already subscribed
+        user_id = update.message.from_user.id
+        if user_id in subscribers_windguru['User ID'].values:
+            await update.message.reply_text("Creo que ya estabas suscritx a los pronósticos de Windguru... ¡Te los seguiré enviando todos los días! Siemmpre y cuando wired.com me lo permita &#129315 ",
+                                            parse_mode='HTML')
+        else:
+            user_info = {"User ID": [update.message.from_user.id],
+                        "Username": [update.message.from_user.username],
+                        "First Name": [update.message.from_user.first_name],
+                        "Last Name": [update.message.from_user.last_name],}
+            user_df = pd.DataFrame(user_info)
+            subscribers_windguru = subscribers_windguru.append(user_df, ignore_index=True)
+            subscribers_windguru.to_csv('subscribers_windguru.csv', index=False)
+            await update.message.reply_text("Ya te anoté!!! aiiii... tengo unas ganas de verme unos memes &#128057 Vemos uno?", parse_mode='HTML')        
+            return ANSWER_meme
+    elif user_response == 'no':
+        await update.message.reply_text("Bueno... otra cosa que puedo ofrecerte es un meme de la isla.. querés?")
         return ANSWER_meme
 
 async def mareas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
