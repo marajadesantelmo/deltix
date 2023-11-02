@@ -605,6 +605,7 @@ if __name__ == '__main__':
             ANSWER_windguru_suscribir: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), windguru_suscribir)], 
             ANSWER_mensajear: [MessageHandler(filters.TEXT, mensajear)],
             ANSWER_desuscribir: [MessageHandler(filters.Regex(r'^(Mareas|MAREAS|mareas|Windguru|WINDGURU|windguru)$'), answer_desuscribir)], 
+            ANSWER_charlar_windguru : [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), charlar_windguru)],                                 
         },
         fallbacks= handlers, 
     )
