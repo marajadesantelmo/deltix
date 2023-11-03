@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="bot_icon.png" alt="Ícono del bot" width="200"><br>
+  <img src="bot_icon.png" alt="soy deltix" width="200"><br>
   &#127795 Deltix... el bot del humedal &#127795<br>
   Delta inferior del Paraná - Buenos Aires
 </h1>
@@ -29,7 +29,7 @@ Soy *Deltix, el bot del humedal!* Mi objetivo es ayudar a quienes habitan y visi
   </tr>
 </table>
 
-## Podés interactuar con el bot en Telegram buscando a @deltix_del_humedal_bot
+## Podés interactuar con el bot en Telegram buscando a @deltix_del_humedal_bot o haciendo [click acá](https://t.me/deltix_del_humedal_bot)
 <h1 align="center">
 <img src="https://github.com/marajadesantelmo/deltix/assets/50368116/3a2ce1a0-0fc6-483d-a164-d2f89e92ba65" alt="Otra imagen" width="400">
 </h1>
