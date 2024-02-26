@@ -14,7 +14,7 @@ Soy *Deltix, el bot del humedal!* Mi objetivo es ayudar a quienes habitan y visi
     <td style="width: 70%;">
       <h2>Características Destacadas</h2>
       <ul>
-        <li>🌊 **Información de Mareas**: Tené el pronóstico de mareas en tiempo real para la región del Delta del Tigre.</li>
+        <li>🌊 *Información de Mareas*: Tené el pronóstico de mareas en tiempo real para la región del Delta del Tigre.</li>
         <li>🌦️ **Pronóstico Meteorológico**: Consultá el pronóstico meteorológico de WindGurú para la zona.</li>
         <li>🗨️ **Charlar con el Bot**: Suscribite para recibir actualizaciones diarias, como mareas y más.</li>
         <li>🤣 **Memes Islenials**: Descubrí los memes más divertidos de la isla.</li>
