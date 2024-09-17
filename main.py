@@ -10,8 +10,8 @@ from email.message import EmailMessage
 
 import logging
 
-gmail_token = "crzqeminnwxgzevd"
-telegram_token = "5712079875:AAHhIWwnHN5ws0DEUggA8-STWKmM-ZJ5hQE"
+gmail_token = "xxxx"
+telegram_token = "xxxx"
 
 user_experience = pd.read_csv('/home/facundol/deltix/user_experience.csv')
 
