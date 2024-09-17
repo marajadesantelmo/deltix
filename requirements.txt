@@ -1,0 +1,5 @@
+telegram
+python-telegram-bot==20.3
+pandas
+urllib3
+nest_asyncio
