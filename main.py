@@ -10,10 +10,24 @@ from email.message import EmailMessage
 
 import logging
 
-gmail_token = "xxxx"
-telegram_token = "xxxx"
+gmail_token = "crzxxxxxx"
+telegram_token = "xxxxx"
 
-user_experience = pd.read_csv('/home/facundol/deltix/user_experience.csv')
+# Defino paths segun donde se ejecute el bot
+# base_path = '/home/facundol/deltix/'
+base_path = 'C:/Users/facun/OneDrive/Documentos/GitHub/deltix/'
+
+# Paths
+user_experience_path = base_path + 'user_experience.csv'
+subscribers_mareas_path = base_path + 'subscribers_mareas.csv'
+subscribers_windguru_path = base_path + 'subscribers_windguru.csv'
+marea_image_path = base_path + 'marea.png'
+windguru_image_path = base_path + 'windguru.png'
+memes_path = base_path + 'memes/'
+jilguero_ida_path = base_path + 'colectivas/jilguero_ida.png'
+jilguero_vuelta_path = base_path + 'colectivas/jilguero_vuelta.png'
+
+user_experience = pd.read_csv(user_experience_path)
 
 
 logging.getLogger("httpx").setLevel(logging.WARNING)
@@ -25,7 +39,7 @@ logger = logging.getLogger(__name__)
 
 nest_asyncio.apply()
 
-ANSWER_charlar, ANSWER_meme, ANSWER_colaborar, ANSWER_mensajear, ANSWER_informacion, ANSWER_mareas_suscribir, ANSWER_windguru_suscribir, ANSWER_desuscribir, ANSWER_meme2, ANSWER_charlar_windguru, ANSWER_colectivas  = range(11)
+ANSWER_charlar, ANSWER_meme, ANSWER_colaborar, ANSWER_mensajear, ANSWER_informacion, ANSWER_mareas_suscribir, ANSWER_windguru_suscribir, ANSWER_desuscribir, ANSWER_meme2, ANSWER_charlar_windguru, ANSWER_colectivas, ANSWER_jilguero  = range(12)
 
 def generate_main_menu():
     '''
@@ -66,7 +80,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
             "Last Name":update.message.from_user.last_name,
             "first_interaction":  datetime.now().strftime('%d-%m-%Y %H:%M') }
         user_experience = user_experience.append(user_info, ignore_index=True)
-        user_experience.to_csv('/home/facundol/deltix/user_experience.csv', index=False)
+        user_experience.to_csv(user_experience_path, index=False)
 
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
@@ -89,21 +103,31 @@ async def start2(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
     chat_id = update.effective_chat.id
     user = update.effective_user
     logger.warning(f"{user.id} - {user.first_name} usó comando start2 en chat {chat_id}")
+    responses = [
+        "upss.. perdón! estaba distraído chapoteando en el pantanix &#129439 No entendí lo que dijiste",
+        "upsss... no entendí eso",
+        "Hmm... eso no lo entendí bien",
+        "Perdón, no capté eso. Itentemos de vuelta"
+    ]
+    response = random.choice(responses)
     time.sleep(2)
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text=("upss.. perdón! estaba distraído chapoteando en el pantanix &#129439 No entendí lo que dijiste"),
-        parse_mode='HTML')
+        text=response,
+        parse_mode='HTML'
+    )
     time.sleep(2)
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=("En qué te puedo ayudar? Elegí alguna actividad para continuar:\n "),
-        parse_mode='HTML')
+        parse_mode='HTML'
+    )
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=generate_main_menu(),
         parse_mode='HTML',
-        reply_markup=main_menu_keyboard)
+        reply_markup=main_menu_keyboard
+    )
 
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
     '''
@@ -140,7 +164,7 @@ async def answer_charlar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     '''
     user_response = update.message.text.lower()
     chat_id=update.effective_chat.id
-    subscribers_mareas = pd.read_csv("/home/facundol/deltix/subscribers_mareas.csv")
+    subscribers_mareas = pd.read_csv(subscribers_mareas_path)
     if user_response == 'si':
         chat_id = update.effective_chat.id
         user = update.effective_user
@@ -152,7 +176,7 @@ async def answer_charlar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             await update.message.reply_text(
                 "Me parece que ya estabas suscriptx vos! Igual te voy a estar enviando los reportes todos los días. Ahí te mando el reporte actual"
             )
-            await context.bot.send_photo(chat_id, open("/home/facundol/deltix/marea.png", "rb"))
+            await context.bot.send_photo(chat_id, open(marea_image_path, "rb"))
             time.sleep(5)
             await update.message.reply_text(
                 "También te puedo mandar todos los días una captura de pantalla del pronóstico de Windgurú para la zona de las islas. Querés?",
@@ -167,13 +191,13 @@ async def answer_charlar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
                         "Last Name": [update.message.from_user.last_name],}
             user_df = pd.DataFrame(user_info)
             subscribers_mareas = subscribers_mareas.append(user_df, ignore_index=True)
-            subscribers_mareas.to_csv('/home/facundol/deltix/subscribers_mareas.csv', index=False)
+            subscribers_mareas.to_csv(subscribers_mareas_path, index=False)
             await update.message.reply_text(
                 "¡Gracias por suscribirte! Voy a intentar mandarte el pronóstico de mareas una vez al día. A veces fallo porque dependo de que me ande la internet isleña")
             await update.message.reply_text(
                 "Te mando ahora el último pronóstico que tengo...",
             )
-            await context.bot.send_photo(chat_id, open("/home/facundol/deltix/marea.png", "rb"))
+            await context.bot.send_photo(chat_id, open(marea_image_path, "rb"))
             time.sleep(5)
             await update.message.reply_text(
                 "También te puedo mandar todos los días una captura de pantalla del pronóstico de Windgurú para la zona de las islas. Querés?",
@@ -189,7 +213,7 @@ async def answer_charlar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 async def charlar_windguru(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user_response = update.message.text.lower()
     if user_response == 'si':
-        subscribers_windguru = pd.read_csv("/home/facundol/deltix/subscribers_windguru.csv")
+        subscribers_windguru = pd.read_csv(subscribers_windguru_path)
         chat_id = update.effective_chat.id
         user = update.effective_user
         logger.warning(f"{user.id} - {user.first_name} se inscribió a windguru en charla {chat_id}")
@@ -224,7 +248,7 @@ async def mareas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         logger.warning(f"{user.id} - {user.first_name} pidió informe de mareas en chat {chat_id}")
         # await update.message.reply_text("No estoy enviando reporte de mareas :( El INA no está publicando su pronóstico debido a los recortes de personal en el estado")
         await update.message.reply_text("Ahí te mando el informe de mareas del INA para San Fernando")
-        await context.bot.send_photo(chat_id, open("/home/facundol/deltix/marea.png", "rb"))
+        await context.bot.send_photo(chat_id, open(marea_image_path, "rb"))
         time.sleep(4)
         if user.id in user_experience['User ID'][user_experience['suscr_marea_ofrecida'].isna()].values:
             await update.message.reply_text("Querés suscribirte para recibir esto todos los días?",
@@ -232,7 +256,7 @@ async def mareas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 [["Si", "No"]], one_time_keyboard=True, input_field_placeholder="Si o No?"
             ),)
             user_experience.loc[user_experience['User ID'] == user.id, 'suscr_marea_ofrecida'] =  datetime.now().strftime('%d-%m-%Y %H:%M')
-            user_experience.to_csv('/home/facundol/deltix/user_experience.csv', index=False)
+            user_experience.to_csv(user_experience_path, index=False)
             return ANSWER_mareas_suscribir
         else:
             return ConversationHandler.END
@@ -248,7 +272,7 @@ async def windguru(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         chat_id=update.effective_chat.id
         logger.warning(f"{user.id} - {user.first_name} pidió pronóstico de windguru en chat {chat_id}")
         await update.message.reply_text("Ahí te mando el pronóstico de windguru")
-        await context.bot.send_photo(chat_id, open("/home/facundol/deltix/windguru.png", "rb"))
+        await context.bot.send_photo(chat_id, open(windguru_image_path, "rb"))
         time.sleep(4)
         if user.id in user_experience['User ID'][user_experience['suscr_windguru_ofrecida'].isna()].values:
             await update.message.reply_text("Querés suscribirte para recibir esto todos los días?",
@@ -256,7 +280,7 @@ async def windguru(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 [["Si", "No"]], one_time_keyboard=True, input_field_placeholder="Si o No?"
             ),)
             user_experience.loc[user_experience['User ID'] == user.id, 'suscr_windguru_ofrecida'] =  datetime.now().strftime('%d-%m-%Y %H:%M')
-            user_experience.to_csv('/home/facundol/deltix/user_experience.csv', index=False)
+            user_experience.to_csv(user_experience_path, index=False)
             return ANSWER_windguru_suscribir
         else:
             return ConversationHandler.END
@@ -269,7 +293,7 @@ async def mareas_suscribir(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     '''
     user_response = update.message.text.lower()
     if user_response == 'si':
-        subscribers_mareas = pd.read_csv("/home/facundol/deltix/subscribers_mareas.csv")
+        subscribers_mareas = pd.read_csv(subscribers_mareas_path)
         chat_id = update.effective_chat.id
         user = update.effective_user
         logger.warning(f"{user.id} - {user.first_name} se inscribió a mareas en chat {chat_id}")
@@ -285,7 +309,7 @@ async def mareas_suscribir(update: Update, context: ContextTypes.DEFAULT_TYPE) -
                         "Last Name": [update.message.from_user.last_name],}
             user_df = pd.DataFrame(user_info)
             subscribers_mareas = subscribers_mareas.append(user_df, ignore_index=True)
-            subscribers_mareas.to_csv('/home/facundol/deltix/subscribers_mareas.csv', index=False)
+            subscribers_mareas.to_csv(subscribers_mareas_path, index=False)
             await update.message.reply_text("¡Gracias por suscribirte! Voy a intentar mandarte el pronóstico de mareas una vez al día. A veces fallo porque dependende de que me ande la internet isleña")
         return ConversationHandler.END
     if user_response == 'no':
@@ -296,10 +320,10 @@ async def mareas_suscribir(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             parse_mode='HTML',
             reply_markup=main_menu_keyboard)
 
-async def windguru_suscribir(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def windguru_suscribir(update: Update) -> int:
     user_response = update.message.text.lower()
     if user_response == 'si':
-        subscribers_windguru = pd.read_csv("/home/facundol/deltix/subscribers_windguru.csv")
+        subscribers_windguru = pd.read_csv(subscribers_windguru_path)
         chat_id = update.effective_chat.id
         user = update.effective_user
         logger.warning(f"{user.id} - {user.first_name} se inscribió a windguru en chat {chat_id}")
@@ -325,7 +349,6 @@ async def windguru_suscribir(update: Update, context: ContextTypes.DEFAULT_TYPE)
 async def memes(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         '''
         Respuesta cuando el usuario pide directamente memes por comando /memes
-
         '''
         user = update.effective_user
         chat_id=update.effective_chat.id
@@ -333,7 +356,7 @@ async def memes(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         await context.bot.send_message(chat_id, "...me encantan los memes islenials &#128514 Te mando uno.",
                                         parse_mode='HTML')
         numero = random.randint(1, 56)
-        await context.bot.send_photo(chat_id, open(f"/home/facundol/deltix/memes/{numero}.png", "rb"))
+        await context.bot.send_photo(chat_id, open(f"{memes_path}{numero}.png", "rb"))
         time.sleep(6)
         await context.bot.send_message(chat_id, "Buenísimo, no? Son de la página Memes Islenials. Te recomiendo que la sigas en las redes",)
         await context.bot.send_message(chat_id, "Querés otro meme?")
@@ -347,7 +370,7 @@ async def answer_meme(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         user_response = update.message.text.lower()
         if user_response == 'si':
             numero = random.randint(1, 56)
-            await context.bot.send_photo(chat_id, open(f"/home/facundol/deltix/memes/{numero}.png", "rb"))
+            await context.bot.send_photo(chat_id, open(f"{memes_path}{numero}.png", "rb"))
             await context.bot.send_message(chat_id,"Uno más?")
             return ANSWER_meme2
 
@@ -366,7 +389,7 @@ async def answer_meme2(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
         user_response = update.message.text.lower()
         if user_response == 'si':
             numero = random.randint(1, 56)
-            await context.bot.send_photo(chat_id, open(f"/home/facundol/deltix/memes/{numero}.png", "rb"))
+            await context.bot.send_photo(chat_id, open(f"{memes_path}{numero}.png", "rb"))
             time.sleep(5)
             await context.bot.send_message(chat_id,"Te mando otro?")
             return ANSWER_meme
@@ -378,7 +401,7 @@ async def answer_meme2(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
                                                   ["/informacion", "/colaborar", "/desuscribirme"] ]))
             return ConversationHandler.END
 
-async def desuscribirme(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def desuscribirme(update: Update) -> int:
     user = update.effective_user
     chat_id = update.effective_chat.id
     logger.warning(f"{user.id} - {user.first_name} quiere desuscribirse en chat {chat_id}")
@@ -388,25 +411,25 @@ async def desuscribirme(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
 
     return ANSWER_desuscribir
 
-async def answer_desuscribir(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def answer_desuscribir(update: Update) -> int:
     user_response = update.message.text.lower()
     if user_response == "mareas":
-        subscribers_mareas = pd.read_csv("/home/facundol/deltix/subscribers_mareas.csv")
+        subscribers_mareas = pd.read_csv(subscribers_mareas_path)
         user_id = update.message.from_user.id
 
         if user_id in subscribers_mareas['User ID'].values:
             subscribers_mareas = subscribers_mareas[~subscribers_mareas['User ID'].eq(user_id)]
-            subscribers_mareas.to_csv('/home/facundol/deltix/subscribers_mareas.csv', index=False)
+            subscribers_mareas.to_csv(subscribers_mareas_path, index=False)
             await update.message.reply_text("Te has desuscrito con éxito del pronóstico de mareas. Si deseas desuscribirte de Windguru o realizar otra acción, decime nomas")
         else:
             await update.message.reply_text("No estabas suscrito previamente al pronóstico de mareas. Si deseas desuscribirte de Windguru o realizar otra acción, decime nomas")
     elif user_response == "windguru":
-        subscribers_windguru = pd.read_csv("/home/facundol/deltix/subscribers_windguru.csv")
+        subscribers_windguru = pd.read_csv(subscribers_windguru_path)
         user_id = update.message.from_user.id
 
         if user_id in subscribers_windguru['User ID'].values:
             subscribers_windguru = subscribers_windguru[~subscribers_windguru['User ID'].eq(user_id)]
-            subscribers_windguru.to_csv('subscribers_windguru.csv', index=False)
+            subscribers_windguru.to_csv(subscribers_windguru_path, index=False)
             await update.message.reply_text("Te has desuscrito con éxito del pronóstico de Windguru. Si deseas desuscribirte de Mareas o realizar otra acción, decime nomas")
         else:
             await update.message.reply_text("No estabas suscrito previamente al pronóstico de Windguru. Si deseas desuscribirte de Mareas o realizar otra acción, decime nomas")
@@ -417,7 +440,7 @@ async def answer_desuscribir(update: Update, context: ContextTypes.DEFAULT_TYPE)
     return ConversationHandler.END
 
 
-async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def cancel(update: Update) -> int:
     '''
     Cierra la conversación cuando el usuario usa /cancel
     '''
@@ -427,7 +450,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return ConversationHandler.END
 
 
-async def colaborar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def colaborar(update: Update) -> int:
     '''
     Respuesta para cuando se usa el comando /colaborar
     '''
@@ -443,7 +466,7 @@ async def colaborar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return ANSWER_colaborar
 
 
-async def mensaje_trigger(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def mensaje_trigger(update: Update) -> int:
     '''
     Respuesta cuando el usuario quiere mandar un mensaje al desarrollador
     Luego hay que dirigirlo a la funcion mensajear para que el mensaje se mande
@@ -452,7 +475,7 @@ async def mensaje_trigger(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
                                     parse_mode='HTML')
     return ANSWER_mensajear
 
-async def mensajear(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def mensajear(update: Update) -> int:
     '''
     Envia mensaje por mail a Facu
     '''
@@ -476,7 +499,7 @@ async def mensajear(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await update.message.reply_text('Mensaje enviado al desarrollador de Deltix con éxito. ¡Gracias!')
     return ConversationHandler.END
 
-async def answer_colaborar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def answer_colaborar(update: Update) -> int:
     '''
     Respuesta a interacción por medio de /colaborar que dirige al usuario a
     mensajear o a colaborar economicamente
@@ -495,7 +518,7 @@ async def answer_colaborar(update: Update, context: ContextTypes.DEFAULT_TYPE) -
                                         parse_mode='HTML')
         return ConversationHandler.END
 
-async def informacion(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def informacion(update: Update) -> int:
     '''
     Respuesta al comando /informacion
     '''
@@ -511,7 +534,7 @@ async def informacion(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
     ),)
     return ANSWER_informacion
 
-async def answer_informacion(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def answer_informacion(update: Update) -> int:
     '''
     Respuesta a si quiere saber más el usuario en /informacion
     '''
@@ -536,7 +559,7 @@ async def answer_informacion(update: Update, context: ContextTypes.DEFAULT_TYPE)
         return ConversationHandler.END
 
 
-async def de_nada(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def de_nada(update: Update) -> int:
     '''
     Respuesta a agradecimiento por parte del usuario
     '''
@@ -559,6 +582,7 @@ async def colectivas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             one_time_keyboard=True,
             input_field_placeholder="Empresa de lanchas"))
 
+
 async def Interislena(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         chat_id=update.effective_chat.id
         await context.bot.send_photo(chat_id, open("/home/facundol/deltix/interislena_invierno.jpg", "rb"))
@@ -568,11 +592,22 @@ async def Interislena(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         return ConversationHandler.END
 
 async def Jilguero(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    await update.message.reply_text("En qué sentido querés viajar? Ida a la isla o vuelta a Tigre?",
+                                    reply_markup=ReplyKeyboardMarkup(
+                                        [["Ida a la isla", "Vuelta a Tigre"]],
+                                        one_time_keyboard=True,
+                                        input_field_placeholder="Ida a la isla o Vuelta a Tigre"))
+    return ANSWER_jilguero
+
+async def answer_jilguero(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     chat_id=update.effective_chat.id
-    await context.bot.send_photo(chat_id, open("/home/facundol/deltix/jilguero.png", "rb"))
-    time.sleep(2)
-    await context.bot.send_message(chat_id, "Esta es la info que tengo. Te recomiendo de todas maneras confirmar los horarios por teléfono con la empresa")
-    await context.bot.send_message(chat_id, "Si ves que hay algún horario incorrecto o información a corregir, no dudes en mandarle un mensajito al equipo Deltix")   ### AGREGAR OPCION PARA MANDAR MENSAJE
+    user_response = update.message.text.lower()
+    if 'ida' in user_response or 'isla' in user_response:
+        await context.bot.send_photo(chat_id, open(jilguero_ida_path, "rb"))
+    elif 'vuelta' in user_response or 'tigre' in user_response:
+        await context.bot.send_photo(chat_id, open(jilguero_vuelta_path, "rb"))
+    else:
+        await update.message.reply_text("No comprendí tu elección")
     return ConversationHandler.END
 
 async def LineasDelta(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -647,6 +682,7 @@ if __name__ == '__main__':
             ANSWER_mensajear: [MessageHandler(filters.TEXT, mensajear)],
             ANSWER_desuscribir: [MessageHandler(filters.Regex(r'^(Mareas|MAREAS|mareas|Windguru|WINDGURU|windguru)$'), answer_desuscribir)],
             ANSWER_charlar_windguru : [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), charlar_windguru)],
+            ANSWER_jilguero: [MessageHandler(filters.TEXT, answer_jilguero)],
         },
         fallbacks= handlers,
     )
