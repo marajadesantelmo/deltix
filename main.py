@@ -10,8 +10,9 @@ from email.message import EmailMessage
 
 import logging
 
-gmail_token = "xxxx"
-telegram_token = "xxxxxxx"
+gmail_token = "xxx"
+telegram_token = "5712079875:AAHhIWxxxxx"
+
 
 # Defino paths segun donde se ejecute el bot
 # base_path = '/home/facundol/deltix/'
@@ -49,7 +50,7 @@ logger.setLevel(logging.WARNING)
 
 nest_asyncio.apply()
 
-ANSWER_charlar, ANSWER_meme, ANSWER_colaborar, ANSWER_mensajear, ANSWER_informacion, ANSWER_mareas_suscribir, ANSWER_windguru_suscribir, ANSWER_desuscribir, ANSWER_meme2, ANSWER_charlar_windguru, ANSWER_colectivas, ANSWER_jilguero, ANSWER_interislena, ANSWER_lineasdelta, DIRECTION, SCHEDULE  = range(16)
+ANSWER_charlar, ANSWER_meme, ANSWER_colaborar, ANSWER_mensajear, ANSWER_informacion, ANSWER_mareas_suscribir, ANSWER_windguru_suscribir, ANSWER_desuscribir, ANSWER_meme2, ANSWER_charlar_windguru, ANSWER_colectivas, ANSWER_jilguero, ANSWER_interislena, ANSWER_lineasdelta, ANSWER_direction, ANSWER_schedule  = range(16)
 
 def generate_main_menu():
     '''
@@ -60,15 +61,15 @@ def generate_main_menu():
     '''
     return ("- <b>/mareas </b>   <i> obtener el pronóstico de mareas &#9875</i>\n"
             "- <b>/windguru </b>   <i> pronóstico meteorológico de windgurú</i>\n"
-            "- <b>/charlar</b>   <i> charlar conmigo y suscribirte a mis envíos </i>\n"
+            "- <b>/colectivas </b>   <i> horarios de lanchas colectivas &#128337</i>\n"
             "- <b>/memes </b>   <i> ver los memes más divertidos de la isla &#129315 </i>\n"
             # "- <b>/voy_y_vuelvo </b>   <i> compartir viajes desde y hacia a la isla</i>\n"
             # "- <b>/notiDeltix </b>   <i> suscribirte al envío de info de interés sobre la isla</i>\n"
-            "- <b>/colectivas </b>   <i> horarios de lanchas colectivas</i>\n"
+            "- <b>/charlar</b>   <i> charlar conmigo y suscribirte a mis envíos </i>\n"
             "- <b>/informacion </b>   <i> saber más sobre Deltix &#128057</i>\n"
             "- <b>/colaborar </b>   <i> hacer sugerencias o aportar</i>\n"
             "- <b>/desuscribirme </b>   <i> darte de baja de mis envíos &#x1F989</i>\n"
-            "- <b>/mensajear </b>   <i> mandarle un mensajito a mi desarrollador</i>\n")
+            "- <b>/mensajear </b>   <i> mandarle un mensajito al equipo Deltix</i>\n")
 
 main_menu_keyboard = ReplyKeyboardMarkup([["/windguru", "/mareas", "/memes"],
                                           ["/colectivas", "/colaborar", "/mensajear"],
@@ -608,7 +609,13 @@ async def answer_interislena(update: Update, context: ContextTypes.DEFAULT_TYPE)
         await context.bot.send_photo(chat_id, open(interislena_ida_invierno_path, "rb"))
         await context.bot.send_message(chat_id, f"Estos son los horarios de {user_response} de Interisleña. Si ves que hay algún horario incorrecto o información a corregir, no dudes en mandarle un mensajito al equipo Deltix")
         time.sleep(1)
-        await context.bot.send_message(chat_id, f"Siempre recomiendo llamar antes a la empresa porque los horarios suelen cambiar. El teléfono es 4749-0900")
+        await context.bot.send_message(chat_id, f"Siempre recomiendo llamar antes a la empresa porque los horarios suelen cambiar. El teléfono es 4749-0900",
+                           reply_markup=ReplyKeyboardMarkup(
+                           [["Jilguero", "LineasDelta", "Interislena"],
+                            ["/mensajear", "/menu", "/memes"] ],  
+                           one_time_keyboard=True,
+                           input_field_placeholder="Querés hacer algo más??"))
+        return ConversationHandler.END
     elif 'verano' in user_response:
         await context.bot.send_photo(chat_id, open(interislena_ida_verano_path, "rb"))
         await context.bot.send_message(chat_id, f"Estos son los horarios de {user_response} de Interisleña. Si ves que hay algún horario incorrecto o información a corregir, no dudes en mandarle un mensajito al equipo Deltix")
@@ -618,10 +625,11 @@ async def answer_interislena(update: Update, context: ContextTypes.DEFAULT_TYPE)
                            [["Jilguero", "LineasDelta", "Interislena"],
                             ["/mensajear", "/menu", "/memes"] ],  
                            one_time_keyboard=True,
-                           input_field_placeholder="Invierno o verano"))
+                           input_field_placeholder="Si querés, elegí otra empresa de lanchas u otra actividad para hacer conmigo"))
+        return ConversationHandler.END
     else:
         await update.message.reply_text("No comprendí tu elección")
-        return ANSWER_interislena
+        return ConversationHandler.END
         
 async def Jilguero(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await update.message.reply_text("En qué sentido querés viajar? Ida a la isla o vuelta a Tigre?",
@@ -644,6 +652,7 @@ async def answer_jilguero(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
                             ["/mensajear", "/menu", "/memes"] ],  
                            one_time_keyboard=True,
                            input_field_placeholder="Elegí otra empresa de lanchas o actividad para hacer conmigo"))
+        return ConversationHandler.END
     elif 'vuelta' in user_response or 'tigre' in user_response:
         await context.bot.send_message(chat_id, f"Estos son los horarios de vuelta a Tigre de Jilguero. Si ves que hay algún horario incorrecto o información a corregir, no dudes en mandarle un mensajito al equipo Deltix")
         await context.bot.send_photo(chat_id, open(jilguero_vuelta_path, "rb"))
@@ -654,9 +663,10 @@ async def answer_jilguero(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
                             ["/mensajear", "/menu", "/memes"] ],  
                            one_time_keyboard=True,
                            input_field_placeholder="Te ayudo en algo más?"))
+        return ConversationHandler.END
     else:
         await update.message.reply_text("No comprendí tu elección")
-        return ANSWER_jilguero
+        return ConversationHandler.END
 
 async def LineasDelta(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     # Ask user for direction (Ida or Vuelta)
@@ -668,9 +678,9 @@ async def LineasDelta(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
             input_field_placeholder="Ida o Vuelta?"
         )
     )
-    return DIRECTION
+    return ANSWER_direction
 
-async def ANSWER_direction(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def direction(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user_choice = update.message.text.lower()
 
     # Match flexible inputs for "Ida" or "Vuelta"
@@ -680,7 +690,7 @@ async def ANSWER_direction(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         context.user_data['direction'] = 'vuelta a tigre'
     else:
         await update.message.reply_text("Por favor, elegí 'Ida' o 'Vuelta'.")
-        return DIRECTION
+        return ANSWER_direction
 
     # Ask if it's during the school period or not
     await update.message.reply_text(
@@ -691,24 +701,19 @@ async def ANSWER_direction(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             input_field_placeholder="Escolar o No escolar?"
         )
     )
-    return SCHEDULE
+    return ANSWER_schedule
 
-async def ANSWER_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     chat_id = update.effective_chat.id
     user_choice = update.message.text.lower()
-
-    # Match flexible inputs for "Escolar" or "No escolar"
     if "escolar" in user_choice:
         context.user_data['epoca'] = 'escolar'
     elif "no escolar" in user_choice:
         context.user_data['epoca'] = 'no escolar'
     else:
         await update.message.reply_text("Por favor, elegí 'Escolar' o 'No escolar'.")
-        return SCHEDULE
-
-    # Reply with the timetable message
+        return ANSWER_schedule
     await update.message.reply_text(f"Estos son los horarios de {context.user_data['direction']} en época {context.user_data['epoca']}.")
-
     # Send the appropriate image based on the user choices
     if context.user_data['epoca'] == 'escolar' and context.user_data['direction'] == 'ida a la isla':
         await context.bot.send_photo(chat_id, open(lineas_delta_ida_escolar_path, "rb"))
@@ -718,7 +723,6 @@ async def ANSWER_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         await context.bot.send_photo(chat_id, open(lineas_delta_vuelta_escolar_path, "rb"))
     elif context.user_data['epoca'] == 'no escolar' and context.user_data['direction'] == 'vuelta a tigre':
         await context.bot.send_photo(chat_id, open(lineas_delta_vuelta_no_escolar_path, "rb"))
-
     return ConversationHandler.END
 
 if __name__ == '__main__':
@@ -754,6 +758,9 @@ if __name__ == '__main__':
     MessageHandler(filters.Regex(r'^(Hola|hola|HOLA)$'), start),
     MessageHandler(filters.Regex(r'^(Colectivas|colectivas|COLECTIVAS|horarios)$'), colectivas),
     MessageHandler(filters.Regex(r'^(Gracias|gracias|GRACIAS)$'), de_nada),
+    MessageHandler(filters.Regex(r'^(Interislena|interislena|INTERISLENA)$'), Interislena),
+    MessageHandler(filters.Regex(r'^(Jilguero|jilguero|JILGUERO)$'), Jilguero),
+    MessageHandler(filters.Regex(r'^(LineasDelta|lineasdelta|LINEASDELTA)$'), LineasDelta),
 
     #Handlers si contiene palabra en minuscula
     MessageHandler(filters.Regex(r'(?i)(.*\bcharlar\b.*)'), charlar),
@@ -768,6 +775,9 @@ if __name__ == '__main__':
     MessageHandler(filters.Regex(r'(?i)(.*\bhola\b.*)'), start),
     MessageHandler(filters.Regex(r'(?i)(.*\bcolectivas\b.*)'), colectivas),
     MessageHandler(filters.Regex(r'(?i)(.*\bgracias\b.*)'), de_nada),
+    MessageHandler(filters.Regex(r'(?i)(.*\bJilguero\b.*)'), Jilguero),
+    MessageHandler(filters.Regex(r'(?i)(.*\bInterislena\b.*)'), Interislena),
+    MessageHandler(filters.Regex(r'(?i)(.*\bLineasDelta\b.*)'), LineasDelta),
     #Handlers otros
     MessageHandler(filters.TEXT, start2)]
 
@@ -786,8 +796,8 @@ if __name__ == '__main__':
             ANSWER_charlar_windguru: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), charlar_windguru)],
             ANSWER_jilguero: [MessageHandler(filters.TEXT, answer_jilguero)],
             ANSWER_interislena: [MessageHandler(filters.TEXT, answer_interislena)],
-            DIRECTION: [MessageHandler(filters.Regex(r'^(Ida a la isla|ida a la isla|IDA A LA ISLA|Vuelta a Tigre|vuelta a Tigre|VUELTA A TIGRE)$'), DIRECTION)],
-            SCHEDULE: [MessageHandler(filters.Regex(r'^(Escolar|escolar|ESCOLAR|No escolar|no escolar|NO ESCOLAR)$'), SCHEDULE)],
+            ANSWER_direction: [MessageHandler(filters.TEXT, direction)],
+            ANSWER_schedule: [MessageHandler(filters.TEXT, schedule)],
         },
         fallbacks=handlers,
     )
