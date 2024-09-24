@@ -10,8 +10,8 @@ from email.message import EmailMessage
 
 import logging
 
-gmail_token = "xxx"
-telegram_token = "5712079875:AAHhIWxxxxx"
+gmail_token = "cxxxxxd"
+telegram_token = "xxxxx"
 
 
 # Defino paths segun donde se ejecute el bot
@@ -35,6 +35,7 @@ lineas_delta_ida_no_escolar_path = base_path + 'colectivas/lineas_delta_ida_no_e
 lineas_delta_ida_escolar_path = base_path + 'colectivas/lineas_delta_ida_escolar.png'
 lineas_delta_vuelta_no_escolar_path = base_path + 'colectivas/lineas_delta_vuelta_no_escolar.png'
 lineas_delta_vuelta_escolar_path = base_path + 'colectivas/lineas_delta_vuelta_escolar.png'
+carpinchix_trabajando_path = base_path + 'carpinchix_trabajando.png'
 
 user_experience = pd.read_csv(user_experience_path)
 
@@ -256,9 +257,13 @@ async def mareas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         global user_experience
         user = update.effective_user
         chat_id=update.effective_chat.id
+        if random.random() < 1/3:
+            await update.message.reply_text(f"Ya te busco el informe del INA {update.effective_user.first_name}")
+            await context.bot.send_photo(chat_id, open(carpinchix_trabajando_path, "rb"))
+            time.sleep(3)
         logger.warning(f"{user.id} - {user.first_name} pidió informe de mareas en chat {chat_id}")
         # await update.message.reply_text("No estoy enviando reporte de mareas :( El INA no está publicando su pronóstico debido a los recortes de personal en el estado")
-        await update.message.reply_text("Ahí te mando el informe de mareas del INA para San Fernando")
+        await update.message.reply_text("Acá tenés el informe de mareas")
         await context.bot.send_photo(chat_id, open(marea_image_path, "rb"))
         time.sleep(4)
         if user.id in user_experience['User ID'][user_experience['suscr_marea_ofrecida'].isna()].values:
@@ -529,23 +534,21 @@ async def answer_colaborar(update: Update) -> int:
                                         parse_mode='HTML')
         return ConversationHandler.END
 
-async def informacion(update: Update) -> int:
+async def informacion(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     '''
     Respuesta al comando /informacion
     '''
     await update.message.reply_text('Te cuento un poco de mí! Soy un bot en desarrollo que tiene como objetivo ayudar a quienes habitamos en la isla, principalmente en la 1era sección')
-    time.sleep(1)
-    await update.message.reply_text('Mis primeras funcionalidades son mandar el reporte de mareas del Instituto Nacional del Agua y el pronóstico del clima de WindGurú. Si te suscribís, lo vas a recibir todos los días')
-    time.sleep(1)
-    await update.message.reply_text('En el futuro espero sumar más funcionalidades, como enviar info con notas de interés y eventos de la isla a quienes quieran, o armar un sistema automático de avisos de voy-y-vuelvo para compartir viajes en botes desde y hacia la isla')
+    await update.message.reply_text('Mis primeras funcionalidades son mandar el reporte de mareas del Instituto Nacional del Agua y el pronóstico del clima de WindGurú. Si te suscribís, lo vas a recibir todos los días. Hace poquito que también mando horarios de lanchas colectivas')
     time.sleep(3)
+    await update.message.reply_text('En el futuro espero sumar más funcionalidades, como enviar info con notas de interés y eventos de la isla a quienes quieran, o armar un sistema automático de avisos de voy-y-vuelvo para compartir viajes en botes desde y hacia la isla')
     await update.message.reply_text('Pero bueno, vamos de a poquito. Soy un proyecto que recién empieza y hacemos todo a pulmón... querés saber más?',
     reply_markup=ReplyKeyboardMarkup(
         [["Si", "No"]], one_time_keyboard=True, input_field_placeholder="Si o No?"
     ),)
     return ANSWER_informacion
 
-async def answer_informacion(update: Update) -> int:
+async def answer_informacion(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     '''
     Respuesta a si quiere saber más el usuario en /informacion
     '''
