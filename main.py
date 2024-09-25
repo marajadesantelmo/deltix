@@ -336,7 +336,7 @@ async def mareas_suscribir(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             parse_mode='HTML',
             reply_markup=main_menu_keyboard)
 
-async def windguru_suscribir(update: Update) -> int:
+async def windguru_suscribir(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user_response = update.message.text.lower()
     if user_response == 'si':
         subscribers_windguru = pd.read_csv(subscribers_windguru_path)
@@ -417,7 +417,7 @@ async def answer_meme2(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
                                                   ["/informacion", "/colaborar", "/desuscribirme"] ]))
             return ConversationHandler.END
 
-async def desuscribirme(update: Update) -> int:
+async def desuscribirme(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user = update.effective_user
     chat_id = update.effective_chat.id
     logger.warning(f"{user.id} - {user.first_name} quiere desuscribirse en chat {chat_id}")
@@ -427,7 +427,7 @@ async def desuscribirme(update: Update) -> int:
 
     return ANSWER_desuscribir
 
-async def answer_desuscribir(update: Update) -> int:
+async def answer_desuscribir(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user_response = update.message.text.lower()
     if user_response == "mareas":
         subscribers_mareas = pd.read_csv(subscribers_mareas_path)
@@ -456,7 +456,7 @@ async def answer_desuscribir(update: Update) -> int:
     return ConversationHandler.END
 
 
-async def cancel(update: Update) -> int:
+async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     '''
     Cierra la conversación cuando el usuario usa /cancel
     '''
@@ -466,7 +466,7 @@ async def cancel(update: Update) -> int:
     return ConversationHandler.END
 
 
-async def colaborar(update: Update) -> int:
+async def colaborar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     '''
     Respuesta para cuando se usa el comando /colaborar
     '''
@@ -482,7 +482,7 @@ async def colaborar(update: Update) -> int:
     return ANSWER_colaborar
 
 
-async def mensaje_trigger(update: Update) -> int:
+async def mensaje_trigger(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     '''
     Respuesta cuando el usuario quiere mandar un mensaje al desarrollador
     Luego hay que dirigirlo a la funcion mensajear para que el mensaje se mande
@@ -491,7 +491,7 @@ async def mensaje_trigger(update: Update) -> int:
                                     parse_mode='HTML')
     return ANSWER_mensajear
 
-async def mensajear(update: Update) -> int:
+async def mensajear(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     '''
     Envia mensaje por mail a Facu
     '''
@@ -515,7 +515,7 @@ async def mensajear(update: Update) -> int:
     await update.message.reply_text('Mensaje enviado con éxito. ¡Gracias!')
     return ConversationHandler.END
 
-async def answer_colaborar(update: Update) -> int:
+async def answer_colaborar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     '''
     Respuesta a interacción por medio de /colaborar que dirige al usuario a
     mensajear o a colaborar economicamente
@@ -573,7 +573,7 @@ async def answer_informacion(update: Update, context: ContextTypes.DEFAULT_TYPE)
         return ConversationHandler.END
 
 
-async def de_nada(update: Update) -> int:
+async def de_nada(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     '''
     Respuesta a agradecimiento por parte del usuario
     '''
