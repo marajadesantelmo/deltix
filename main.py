@@ -7,11 +7,10 @@ import nest_asyncio
 from datetime import datetime
 import smtplib
 from email.message import EmailMessage
-
 import logging
 
-gmail_token = "cxxxxxd"
-telegram_token = "xxxxx"
+gmail_token = "xxx"
+telegram_token = "xxxxE"
 
 
 # Defino paths segun donde se ejecute el bot
@@ -39,6 +38,16 @@ carpinchix_trabajando_path = base_path + 'carpinchix_trabajando.png'
 
 user_experience = pd.read_csv(user_experience_path)
 
+# Function to update user experience
+def update_user_experience(user_id, option):
+    global user_experience
+    timestamp_col = f'timestamp_{option}'
+    q_col = f'q_{option}'
+
+    if user_id in user_experience['User ID'].values:
+        user_experience.loc[user_experience['User ID'] == user_id, timestamp_col] = datetime.now().strftime('%d-%m-%Y %H:%M')
+        user_experience.loc[user_experience['User ID'] == user_id, q_col] += 1
+        user_experience.to_csv(user_experience_path, index=False)
 
 logging.basicConfig(
     filename='deltix_log.log',
@@ -163,6 +172,7 @@ async def charlar(update: Update, context: ContextTypes.DEFAULT_TYPE):
     '''
     chat_id = update.effective_chat.id
     user = update.effective_user
+    update_user_experience(user.id, 'charlar')
     logger.warning(f"{user.id} - {user.first_name} comenzó charla con comando charlar en chat {chat_id}")
     await update.message.reply_text("Soy un bot en desarrollo. Puedo mandarte una vez por día el pronóstico de mareas del INA y del clima de WindGurú. ¿Querés recibir el pronóstico de mareas de San Fernando todos los días?",
     reply_markup=ReplyKeyboardMarkup([["Si", "No"]], one_time_keyboard=True, input_field_placeholder="Si o No?"))
@@ -257,6 +267,7 @@ async def mareas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         global user_experience
         user = update.effective_user
         chat_id=update.effective_chat.id
+        update_user_experience(user.id, 'mareas')
         if random.random() < 1/3:
             await update.message.reply_text(f"Ya te busco el informe del INA {update.effective_user.first_name}")
             await context.bot.send_photo(chat_id, open(carpinchix_trabajando_path, "rb"))
@@ -286,6 +297,7 @@ async def windguru(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         global user_experience
         user = update.effective_user
         chat_id=update.effective_chat.id
+        update_user_experience(user.id, 'windguru')
         logger.warning(f"{user.id} - {user.first_name} pidió pronóstico de windguru en chat {chat_id}")
         await update.message.reply_text("Ahí te mando el pronóstico de windguru")
         await context.bot.send_photo(chat_id, open(windguru_image_path, "rb"))
@@ -368,6 +380,7 @@ async def memes(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         '''
         user = update.effective_user
         chat_id=update.effective_chat.id
+        update_user_experience(user.id, 'memes')
         logger.warning(f"{user.id} - {user.first_name} pidió memes en chat {chat_id}")
         await context.bot.send_message(chat_id, "...me encantan los memes islenials &#128514 Te mando uno.",
                                         parse_mode='HTML')
@@ -420,6 +433,7 @@ async def answer_meme2(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
 async def desuscribirme(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user = update.effective_user
     chat_id = update.effective_chat.id
+    update_user_experience(user.id, 'desuscribirme')
     logger.warning(f"{user.id} - {user.first_name} quiere desuscribirse en chat {chat_id}")
 
     reply_markup = ReplyKeyboardMarkup([["Mareas", "Windguru"]], one_time_keyboard=True, input_field_placeholder="A cuál envío quieres desuscribirte?")
@@ -497,7 +511,7 @@ async def mensajear(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     '''
     user = update.message.from_user
     message_text = update.message.text
-
+    update_user_experience(user.id, 'mensajear')
     body = f'Mensaje de {user.first_name}: {message_text}'
     message = EmailMessage()
 
@@ -586,6 +600,8 @@ async def colectivas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     '''
     Seleccion de empresas de colectiva para pedir horario
     '''
+    user = update.effective_user
+    update_user_experience(user.id, 'colectivas')
     await update.message.reply_text("""Elegí la empresa de lancha colectiva:\n
             - <b>/Jilguero </b>   <i> va por el Carapachay-Angostura</i>
             - <b>/Interislena </b>   <i> Sarmiento, San Antonio y muchos más</i>
