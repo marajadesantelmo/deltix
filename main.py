@@ -8,14 +8,17 @@ from datetime import datetime
 import smtplib
 from email.message import EmailMessage
 import logging
+import os
 
 gmail_token = "xxx"
 telegram_token = "xxxxE"
 
 
 # Defino paths segun donde se ejecute el bot
-# base_path = '/home/facundol/deltix/'
-base_path = 'C:/Users/facun/OneDrive/Documentos/GitHub/deltix/'
+if os.path.exists('/home/facundol/deltix/'):
+    base_path = '/home/facundol/deltix/'
+else:
+    base_path = 'C:/Users/facun/OneDrive/Documentos/GitHub/deltix/'
 
 # Paths
 user_experience_path = base_path + 'user_experience.csv'
@@ -95,11 +98,33 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
     logger.warning(f"{user.id} - {user.first_name} comenzó charla con comando start en chat {chat_id}")
 
     if user.id not in user_experience['User ID'].values:
-        user_info = {"User ID": update.message.from_user.id,
+        user_info = {
+            "User ID": update.message.from_user.id,
             "Username": update.message.from_user.username,
             "First Name": update.message.from_user.first_name,
-            "Last Name":update.message.from_user.last_name,
-            "first_interaction":  datetime.now().strftime('%d-%m-%Y %H:%M') }
+            "Last Name": update.message.from_user.last_name,
+            "first_interaction": datetime.now().strftime('%d-%m-%Y %H:%M'),
+            "suscr_windguru_ofrecida": None,
+            "suscr_marea_ofrecida": None,
+            "q_mareas": 0,
+            "timestamp_mareas": None,
+            "q_windguru": 0,
+            "timestamp_windguru": None,
+            "q_colectivas": 0,
+            "timestamp_colectivas": None,
+            "q_memes": 0,
+            "timestamp_memes": None,
+            "q_charlar": 0,
+            "timestamp_charlar": None,
+            "q_informacion": 0,
+            "timestamp_informacion": None,
+            "q_colaborar": 0,
+            "timestamp_colaborar": None,
+            "q_desuscribirme": 0,
+            "timestamp_desuscribirme": None,
+            "q_mensajear": 0,
+            "timestamp_mensajear": None
+        }
         user_experience = user_experience.append(user_info, ignore_index=True)
         user_experience.to_csv(user_experience_path, index=False)
 
