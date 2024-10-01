@@ -10,8 +10,8 @@ from email.message import EmailMessage
 import logging
 import os
 
-gmail_token = "xxx"
-telegram_token = "xxxxE"
+gmail_token = "xxxx"
+telegram_token = "xxxx"
 
 
 # Defino paths segun donde se ejecute el bot
@@ -656,7 +656,7 @@ async def answer_interislena(update: Update, context: ContextTypes.DEFAULT_TYPE)
         await context.bot.send_message(chat_id, f"Siempre recomiendo llamar antes a la empresa porque los horarios suelen cambiar. El teléfono es 4749-0900",
                            reply_markup=ReplyKeyboardMarkup(
                            [["Jilguero", "LineasDelta", "Interislena"],
-                            ["/mensajear", "/menu", "/memes"] ],  
+                            ["/mensajear", "/menu", "/memes"] ],
                            one_time_keyboard=True,
                            input_field_placeholder="Querés hacer algo más??"))
         return ConversationHandler.END
@@ -667,14 +667,14 @@ async def answer_interislena(update: Update, context: ContextTypes.DEFAULT_TYPE)
         await context.bot.send_message(chat_id, f"Siempre recomiendo llamar antes a la empresa porque los horarios suelen cambiar. El teléfono es 4749-0900",
                            reply_markup=ReplyKeyboardMarkup(
                            [["Jilguero", "LineasDelta", "Interislena"],
-                            ["/mensajear", "/menu", "/memes"] ],  
+                            ["/mensajear", "/menu", "/memes"] ],
                            one_time_keyboard=True,
                            input_field_placeholder="Si querés, elegí otra empresa de lanchas u otra actividad para hacer conmigo"))
         return ConversationHandler.END
     else:
         await update.message.reply_text("No comprendí tu elección")
         return ConversationHandler.END
-        
+
 async def Jilguero(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await update.message.reply_text("En qué sentido querés viajar? Ida a la isla o vuelta a Tigre?",
                                     reply_markup=ReplyKeyboardMarkup(
@@ -693,7 +693,7 @@ async def answer_jilguero(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         await context.bot.send_message(chat_id, f"Siempre recomiendo llamar antes a la empresa porque los horarios suelen cambiar. El teléfono es 4749-0987",
                            reply_markup=ReplyKeyboardMarkup(
                            [["Jilguero", "LineasDelta", "Interislena"],
-                            ["/mensajear", "/menu", "/memes"] ],  
+                            ["/mensajear", "/menu", "/memes"] ],
                            one_time_keyboard=True,
                            input_field_placeholder="Elegí otra empresa de lanchas o actividad para hacer conmigo"))
         return ConversationHandler.END
@@ -704,7 +704,7 @@ async def answer_jilguero(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         await context.bot.send_message(chat_id, f"Siempre recomiendo llamar antes a la empresa porque los horarios suelen cambiar. El teléfono es 4749-0987",
                            reply_markup=ReplyKeyboardMarkup(
                            [["Jilguero", "LineasDelta", "Interislena"],
-                            ["/mensajear", "/menu", "/memes"] ],  
+                            ["/mensajear", "/menu", "/memes"] ],
                            one_time_keyboard=True,
                            input_field_placeholder="Te ayudo en algo más?"))
         return ConversationHandler.END
