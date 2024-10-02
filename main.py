@@ -9,21 +9,13 @@ import smtplib
 from email.message import EmailMessage
 import logging
 import os
+from tokens import gmail_token, telegram_token
 
 # Defino paths segun donde se ejecute el bot
 if os.path.exists('/home/facundol/deltix/'):
     base_path = '/home/facundol/deltix/'
 else:
-    base_path = 'C:/Users/facun/OneDrive/Documentos/GitHub/deltix/'
-
-# Load tokens from the tokens.py file
-tokens_path = os.path.join(base_path, 'tokens.py')
-
-if os.path.exists(tokens_path):
-    # Import tokens directly from tokens.py
-    from tokens import gmail_token, telegram_token
-else:
-    raise FileNotFoundError(f"No se encontró el token en {tokens_path}")
+        base_path = ''
 
 # Paths
 user_experience_path = base_path + 'user_experience.csv'
