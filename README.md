@@ -5,18 +5,18 @@
 </h1>
 
 
-Soy *Deltix, el bot del humedal!* Mi objetivo es ayudar a quienes habitan y visitan el delta inferior del Paraná. Fui diseñado para proporcionar información y servicios útiles a las personas que habitan o visitan la hermosa región del Delta del Tigre, en Buenos Aires. Por ahora mis principales funcionalidades son enviar pronósticos meteorológico y de maraes, y mandar los Memes Islenials más divertidos de la isla :P En el futuro te voy a poder ayudar también cuando estés buscando recomendaciones locales, información sobre actividades en el delta o simplemente quieras mantenerte al tanto de las novedades de la zona.
+Soy *Deltix, el bot del humedal!* Mi objetivo es ayudar a quienes habitan y visitan el delta inferior del Paraná. Fui diseñado para proporcionar información y servicios útiles a las personas que habitan o visitan la hermosa región del Delta del Tigre, en Buenos Aires. Por ahora mis principales funcionalidades son enviar pronósticos meteorológico y de maraes, horarios de lanchas colectivas y mandar los Memes Islenials más divertidos de la isla :P En el futuro te voy a poder ayudar también cuando estés buscando recomendaciones locales, información sobre actividades en el delta o simplemente quieras mantenerte al tanto de las novedades de la zona.
 
-*Deltix es un proyecto abierto para colaborar. Contactanos si querés aportar con nuevas funcionalidades!*
+*Deltix es un proyecto abierto para colaborar. Contactanos si querés aportar con nuevas ideas y funcionalidades!*
 
 <table>
   <tr>
     <td style="width: 70%;">
       <h2>Características Destacadas</h2>
       <ul>
-        <li>🌊 **Información de Mareas**: Tené el pronóstico de mareas en tiempo real para la región del Delta del Tigre.</li>
+        <li>🌊 **Información de Mareas**: Recibí el pronóstico de mareas en tiempo real para la región del Delta del Tigre.</li>
         <li>🌦️ **Pronóstico Meteorológico**: Consultá el pronóstico meteorológico de WindGurú para la zona.</li>
-        <li>🗨️ **Charlar con el Bot**: Suscribite para recibir actualizaciones diarias, como mareas y más.</li>
+        <li>⛵ **Colectivas**: Tené siempre a mano los horarios de lanchas colectivas</li>
         <li>🤣 **Memes Islenials**: Descubrí los memes más divertidos de la isla.</li>
         <li>🤝 **Colaborar y Sugerir**: Compartí tus sugerencias y colaborá con el bot para mejorarlo.</li>
         <li>📤 **Desuscribirte**: Si deseas dejar de recibir actualizaciones, podés hacerlo en cualquier momento.</li>
