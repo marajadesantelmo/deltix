@@ -1,6 +1,6 @@
 <h1 align="center">
   <img src="bot_icon.png" alt="soy deltix" width="200"><br>
-  &#127795 Deltix... el bot del humedal &#127795<br>
+  Deltix... el bot del humedal<br>
   Delta inferior del Paraná - Buenos Aires
 </h1>
 
@@ -14,13 +14,13 @@ Soy *Deltix, el bot del humedal!* Mi objetivo es ayudar a quienes habitan y visi
     <td style="width: 70%;">
       <h2>Características Destacadas</h2>
       <ul>
-        <li>🌊 **Información de Mareas**: Recibí el pronóstico de mareas en tiempo real para la región del Delta del Tigre.</li>
-        <li>🌦️ **Pronóstico Meteorológico**: Consultá el pronóstico meteorológico de WindGurú para la zona.</li>
-        <li>⛵ **Colectivas**: Tené siempre a mano los horarios de lanchas colectivas</li>
-        <li>🤣 **Memes Islenials**: Descubrí los memes más divertidos de la isla.</li>
-        <li>🤝 **Colaborar y Sugerir**: Compartí tus sugerencias y colaborá con el bot para mejorarlo.</li>
-        <li>📤 **Desuscribirte**: Si deseas dejar de recibir actualizaciones, podés hacerlo en cualquier momento.</li>
-        <li>✉️ **Mensajear al Desarrollador**: Mandale un mensajito al desarrollador del bot.</li>
+        <li>🌊 Información de Mareas: Recibí el pronóstico de mareas en tiempo real para la región del Delta del Tigre.</li>
+        <li>🌦️ Pronóstico Meteorológico: Consultá el pronóstico meteorológico de WindGurú para la zona.</li>
+        <li>⛵ Colectivas: Tené siempre a mano los horarios de lanchas colectivas</li>
+        <li>🤣 Memes Islenials: Descubrí los memes más divertidos de la isla.</li>
+        <li>🤝 Colaborar y Sugerir: Compartí tus sugerencias y colaborá con el bot para mejorarlo.</li>
+        <li>📤 Desuscribirte: Si deseas dejar de recibir actualizaciones, podés hacerlo en cualquier momento.</li>
+        <li>✉️ Mensajear al Desarrollador: Mandale un mensajito al desarrollador del bot.</li>
       </ul>
     </td>
     <td style="width: 30%; vertical-align: top;">
