@@ -339,7 +339,6 @@ async def mareas_suscribir(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     '''
     Funcion para obtener respuesta si/no de suscripcion a mareas y realizar
     la suscripción
-
     '''
     user_response = update.message.text.lower()
     if user_response == 'si':
