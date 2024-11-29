@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proyecto de Mejora del Chatbot Deltix</title>
+    <style>
+        /* Colores Solarized adaptados a tonos verdes */
+        :root {
+            --background: #002b36; /* Fondo verde oscuro inspirado */
+            --foreground: #839496; /* Gris claro */
+            --accent: #859900; /* Verde brillante para resaltar */
+            --border-color: #073642; /* Verde más oscuro para bordes */
+            --heading-color: #b58900; /* Amarillo dorado */
+            --code-bg: #073642; /* Fondo para bloques de código */
+            --link-color: #2aa198; /* Verde azulado para enlaces */
+            --link-hover: #93a1a1; /* Gris claro al pasar el cursor */
+        }
+
+        /* Estilo global */
+        body {
+            background-color: var(--background);
+            color: var(--foreground);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        /* Títulos */
+        h1, h2, h3 {
+            color: var(--heading-color);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 1.5em;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        /* Estilo de enlaces */
+        a {
+            color: var(--link-color);
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: var(--link-hover);
+            text-decoration: underline;
+        }
+
+        /* Listas */
+        ul {
+            padding-left: 20px;
+            margin-bottom: 20px;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        /* Código en línea */
+        code {
+            background-color: var(--code-bg);
+            color: var(--foreground);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: "Courier New", Courier, monospace;
+        }
+
+        /* Contenedor de contenido */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--background);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <h1>Improvement Project for the <strong>Deltix</strong> Chatbot</h1>
+
+    <h2>Current State</h2>
+    <p>
+        The <strong>Deltix</strong> chatbot is developed using the Telegram module for Python, 
+        limiting its use exclusively to Telegram. This restricts its reach, especially in the Tigre Delta, 
+        where WhatsApp is the dominant messaging platform. Data management, such as user experiences 
+        and subscriptions, is done through <code>.csv</code> files, which is a suboptimal solution 
+        for handling large volumes of data and scalability. The project is hosted on 
+        <strong>PythonAnywhere</strong>, a platform suitable for initial projects but with limitations 
+        compared to a virtual machine (VM)-based solution with robust databases like PostgreSQL. Lastly, 
+        the chatbot's interactions are based on regular expression (regex) rules, which restrict 
+        the system's fluency and responsiveness. This limitation could be addressed by implementing 
+        <strong>low-cost prompt engineering using OpenAI's service</strong>, enabling more intelligent 
+        and contextual interactions.
+    </p>
+    <p>
+        To enhance Deltix and unlock its full potential, the project proposes three stages, 
+        with an estimated effort of <strong>160 hours per stage (1 month of full-time work per stage)</strong>.
+    </p>
+
+    <h2>Stage 1: Infrastructure Expansion and Multi-Platform Compatibility</h2>
+    <p><strong>Objective:</strong> Migrate to a more robust, scalable, and flexible architecture, enabling interaction with multiple platforms.</p>
+    <ul>
+        <li>
+            <strong>Development of a Custom API:</strong>
+            <ul>
+                <li>Create a RESTful API using <strong>Flask</strong> (Python) to centralize chatbot functionalities.</li>
+                <li>The API will enable integration with various platforms such as WhatsApp, Telegram, and OpenAI's service.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Migration to PostgreSQL:</strong>
+            <ul>
+                <li>Replace data management in <code>.csv</code> files with a PostgreSQL relational database.</li>
+                <li>Improve data handling efficiency, scalability, and security.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Hosting Migration:</strong>
+            <ul>
+                <li>Migrate the project from <strong>PythonAnywhere</strong> to a virtual machine (VM) with PostgreSQL support.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Integration with WhatsApp Business Platform:</strong>
+            <ul>
+                <li>Implement compatibility with the <strong>WhatsApp Business Platform API</strong> to extend the chatbot's reach to the region's most-used platform.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Redesign of Telegram Interaction:</strong>
+            <ul>
+                <li>Rebuild the chatbot functionality on Telegram using the new centralized API.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h2>Stage 2: Prompt Engineering Implementation and Interaction Enhancement</h2>
+    <p><strong>Objective:</strong> Incorporate contextual intelligence to improve user interactions.</p>
+    <ul>
+        <li>
+            <strong>Development of Prompt Engineering:</strong>
+            <ul>
+                <li>Integrate the <strong>OpenAI</strong> API to enable more natural and intelligent interactions.</li>
+                <li>Design prompts to optimize the chatbot's response accuracy and relevance while keeping operational costs low.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h2>Stage 3: Advanced Features and Management Platform</h2>
+    <p><strong>Objective:</strong> Expand the chatbot's capabilities and provide added value to users.</p>
+    <ul>
+        <li>
+            <strong>"Voy y Vuelvo" Feature:</strong>
+            <ul>
+                <li>Enable users to share private boat trips to and from the islands.</li>
+                <li>Incorporate an intuitive interface to manage transportation requests and offers.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Local Products and Services Guide:</strong>
+            <ul>
+                <li>Develop a feature to list products and services available in the Delta.</li>
+                <li>Include filters and categories for quick and efficient searches.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Content Management Service (CMS):</strong>
+            <ul>
+                <li>Implement a CMS in <strong>PHP</strong> for users to add, edit, or remove information about products and services.</li>
+                <li>Design a responsive and mobile-friendly web interface.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h2>Deliverables per Stage</h2>
+    <ul>
+        <li>
+            <strong>Stage 1:</strong>
+            <ul>
+                <li>RESTful API for Deltix implemented in Flask.</li>
+                <li>Data migrated to PostgreSQL, eliminating the use of <code>.csv</code> files.</li>
+                <li>Project migrated to a virtual machine with database configuration.</li>
+                <li>Functional integration with WhatsApp Business Platform.</li>
+                <li>Redesigned interaction with Telegram using the new API.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Stage 2:</strong>
+            <ul>
+                <li>Prompt engineering configured with OpenAI.</li>
+                <li>Chatbot responses optimized for greater accuracy and context adaptability.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Stage 3:</strong>
+            <ul>
+                <li>"Voy y Vuelvo" functionality operational.</li>
+                <li>Fully functional local products and services guide system.</li>
+                <li>CMS implemented with a responsive interface for user-managed content.</li>
+            </ul>
+        </li>
+    </ul>
+</body>
+</html>
