@@ -3,40 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Proyectos Deltix</title>
+    <title>Proyecto de Mejora del Chatbot Deltix</title>
 </head>
 <body>
-    <h1 align="center">
-        <img src="bot_icon.png" alt="soy deltix" width="200"><br>
-        Deltix... el bot del humedal<br>
-        Delta inferior del Paraná - Buenos Aires
-    </h1>
+    <h1>Proyecto de Mejora del Chatbot <strong>Deltix</strong></h1>
 
-    <p>Actualmente deltix está programado con el módulo de telegram de python y está hosteado en pythonanywhere. Las bases de datos de experiencia de usuario y suscripciones están gestionadas en archivos .csv que están almacenados en el mismo servicio de pythonanywhere.</p>
+    <h2>Estado actual</h2>
+    <p>
+        El chatbot <strong>Deltix</strong> está desarrollado utilizando el módulo de Telegram para Python, 
+        lo que restringe su uso exclusivamente a Telegram. Esto limita su alcance, especialmente en el Delta, 
+        donde WhatsApp es la plataforma de mensajería predominante. La gestión de datos, como experiencias 
+        de usuario y suscripciones, se realiza mediante archivos <code>.csv</code>, una solución subóptima 
+        para el manejo de grandes volúmenes de información y escalabilidad. El proyecto se encuentra alojado 
+        en <strong>PythonAnywhere</strong>, una plataforma adecuada para proyectos iniciales, pero que presenta 
+        limitaciones en comparación con una solución basada en una máquina virtual (VM) con bases de datos 
+        robustas como PostgreSQL. Por último, la interacción del chatbot está basada en reglas de expresiones 
+        regulares (regex), lo que restringe la fluidez y la capacidad de respuesta del sistema.
+    </p>
+    <p>
+        Estas limitaciones podrían abordarse mediante la implementación de un 
+        <strong>prompt engineering de bajo costo utilizando el servicio de OpenAI</strong>, lo que permitiría 
+        interacciones más inteligentes y contextuales.
+    </p>
+    <p>
+        Para mejorar Deltix y alcanzar su máximo potencial, se propone un proyecto dividido en tres etapas, 
+        con un esfuerzo estimado de <strong>160 horas por etapa (1 mes de trabajo full-time por etapa)</strong>.
+    </p>
 
-    <p>Para el desarrollo de deltix se podría pensar en un proyecto de 3 etapas cada una de ellas a realizarse en un mes de trabajo part-time (80hs mensuales)</p>
-
-    <h2>Tareas:</h2>
-
-    <h3>Etapa 1:</h3>
+    <h2>Etapa 1: Ampliación de Infraestructura y Compatibilidad Multiplataforma</h2>
+    <p><strong>Objetivo:</strong> Migrar a una arquitectura más robusta, escalable y flexible, habilitando la interacción con múltiples plataformas.</p>
     <ul>
-        <li>Desarrollar una API propia de Deltix en Flask para que luego pueda interactuar con Whatsapp, Telegram y el servicio de OpenAI</li>
-        <li>Desarrollar una base de datos en PostgreSQL para hacer más eficiente la gestión de la información y reemplazar el uso de archivos .csv</li>
-        <li>Cambiar hosting del proyecto desde pythonanywhere a una VM que pueda almacenar base datos postgreSQL</li>
-        <li>Desarrollar interacción del bot con Whatsapp Business Platform</li>
-        <li>Rediseñar interacción del bot con Telegram desde la nueva API</li>
+        <li>
+            <strong>Desarrollo de una API personalizada:</strong>
+            <ul>
+                <li>Crear una API RESTful utilizando <strong>Flask</strong> (Python) para centralizar las funcionalidades del chatbot.</li>
+                <li>La API permitirá la integración con diferentes plataformas como WhatsApp, Telegram y el servicio de OpenAI.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Migración a PostgreSQL:</strong>
+            <ul>
+                <li>Sustituir la gestión de datos en archivos <code>.csv</code> por una base de datos relacional PostgreSQL.</li>
+                <li>Mejorar la eficiencia, escalabilidad y seguridad de la gestión de información.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Cambio de alojamiento:</strong>
+            <ul>
+                <li>Migrar el proyecto desde <strong>PythonAnywhere</strong> a una máquina virtual (VM) en servicios como <strong>AWS</strong>, <strong>Google Cloud</strong> o <strong>Azure</strong>, con soporte para PostgreSQL.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Integración con WhatsApp Business Platform:</strong>
+            <ul>
+                <li>Implementar compatibilidad con <strong>WhatsApp Business Platform API</strong> para ampliar el alcance del chatbot hacia la plataforma más utilizada en la región.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Rediseño de la interacción en Telegram:</strong>
+            <ul>
+                <li>Reconstruir la funcionalidad del chatbot en Telegram utilizando la nueva API centralizada.</li>
+            </ul>
+        </li>
     </ul>
 
-    <h3>Etapa 2:</h3>
+    <h2>Etapa 2: Implementación de Prompt Engineering y Mejora de Interacciones</h2>
+    <p><strong>Objetivo:</strong> Incorporar inteligencia contextual para mejorar la interacción con los usuarios.</p>
     <ul>
-        <li>Desarrollar prompt engineering con servicio de OpenAI desde la API</li>
+        <li>
+            <strong>Desarrollo de prompt engineering:</strong>
+            <ul>
+                <li>Integrar la API de <strong>OpenAI</strong> para permitir interacciones más naturales e inteligentes.</li>
+                <li>Diseñar prompts que optimicen la precisión y relevancia de las respuestas del chatbot, manteniendo bajos costos operativos.</li>
+            </ul>
+        </li>
     </ul>
 
-    <h3>Etapa 3:</h3>
+    <h2>Etapa 3: Funcionalidades Avanzadas y Plataforma de Gestión</h2>
+    <p><strong>Objetivo:</strong> Expandir las capacidades del chatbot y ofrecer valor agregado a los usuarios.</p>
     <ul>
-        <li>Desarrollar funcionalidad de "voy y vuelvo" para compartir viajes en embarcación particular desde y hacia la isla</li>
-        <li>Desarrollar funcionalidad de guía de productos y servicios locales</li>
-        <li>Desarrollar un Content Manager Service en php para que los usuarios puedan subir y modificar información (principalmente oferta de productos y servicios) mediante una página web amigable que se adapte visualmente a cualquier dispositivo móvil</li>
+        <li>
+            <strong>Funcionalidad de "Voy y Vuelvo":</strong>
+            <ul>
+                <li>Permitir a los usuarios compartir viajes en embarcaciones privadas desde y hacia las islas.</li>
+                <li>Incorporar una interfaz intuitiva para gestionar solicitudes y ofertas de transporte.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Guía de productos y servicios locales:</strong>
+            <ul>
+                <li>Desarrollar una funcionalidad para listar productos y servicios ofrecidos en el Delta.</li>
+                <li>Incluir filtros y categorías para una búsqueda rápida y eficiente.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Content Management Service (CMS):</strong>
+            <ul>
+                <li>Implementar un CMS en <strong>PHP</strong> para que los usuarios puedan agregar, editar o eliminar información sobre productos y servicios.</li>
+                <li>Diseñar una interfaz web responsiva y amigable para dispositivos móviles.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h2>Entregables por Etapa</h2>
+    <ul>
+        <li>
+            <strong>Etapa 1:</strong>
+            <ul>
+                <li>API RESTful de Deltix implementada en Flask.</li>
+                <li>Migración de datos a PostgreSQL y eliminación del uso de archivos <code>.csv</code>.</li>
+                <li>Proyecto migrado a una máquina virtual con configuración de base de datos.</li>
+                <li>Integración funcional con WhatsApp Business Platform.</li>
+                <li>Rediseño de la interacción con Telegram utilizando la nueva API.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Etapa 2:</strong>
+            <ul>
+                <li>Prompt engineering configurado con OpenAI.</li>
+                <li>Respuestas del chatbot optimizadas para mayor precisión y adaptabilidad al contexto.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Etapa 3:</strong>
+            <ul>
+                <li>Funcionalidad de "Voy y Vuelvo" operativa.</li>
+                <li>Sistema de guía de productos y servicios locales completamente funcional.</li>
+                <li>CMS implementado con interfaz responsiva para autogestión de contenido por parte de los usuarios.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h2>Beneficios del Proyecto</h2>
+    <ul>
+        <li><strong>Escalabilidad:</strong> La migración a una VM y la adopción de PostgreSQL permiten gestionar grandes volúmenes de datos y añadir nuevas funcionalidades de manera ágil.</li>
+        <li><strong>Mayor Alcance:</strong> La integración con WhatsApp y otras plataformas amplía significativamente la base de usuarios.</li>
+        <li><strong>Interacciones Mejoradas:</strong> La incorporación de OpenAI permite respuestas más precisas y adaptadas al contexto.</li>
+        <li><strong>Valor Agregado:</strong> Funcionalidades como "Voy y Vuelvo" y la guía de servicios locales enriquecen la experiencia del usuario final.</li>
+        <li><strong>Autogestión:</strong> El CMS otorga autonomía a los usuarios para mantener actualizada la información.</li>
     </ul>
 </body>
 </html>
