@@ -9,7 +9,7 @@ from supabase import create_client, Client  # Add Supabase client
 # Initialize Supabase client
 supabase_url = os.getenv('SUPABASE_URL')
 supabase_key = os.getenv('SUPABASE_KEY')
-supabase: Client = create_client(supabase_url, supabase_key)
+supabase = create_client(supabase_url, supabase_key)
 
 openrouter_key = os.getenv('OPENROUTER_API_KEY')
 
