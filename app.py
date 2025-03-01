@@ -1,11 +1,12 @@
 import streamlit as st
-from openai import OpenAI
-from openai import AssistantEventHandler
+from openai import OpenAI, AssistantEventHandler
 from typing_extensions import override
 import os
 import re
+import requests  # Add requests for API calls
 
 openai_key = os.getenv('OPENAI_API_KEY')
+openrouter_key = os.getenv('OPENROUTER_API_KEY')  # Add OpenRouter API key
 
 class EventHandler(AssistantEventHandler):
     @override    
@@ -43,10 +44,10 @@ st.chat_message("assistant", avatar="bot_icon.png").write("Hola! Soy Deltix. En 
 
 def get_help_message():
     return (
-        "- **/mareas**: _obtener el pronóstico de mareas &#9875_\n"
+        "- **/mareas**: _obtener el pronóstico de mareas_\n"
         "- **/windguru**: _pronóstico meteorológico de windgurú_\n"
-        "- **/colectivas**: _horarios de lanchas colectivas &#128337_\n"
-        "- **/memes**: _ver los memes más divertidos de la isla &#129315_\n"
+        "- **/colectivas**: _horarios de lanchas colectivas_\n"
+        "- **/memes**: _ver los memes más divertidos de la isla_\n"
     )
 
 st.chat_message("assistant", avatar="bot_icon.png").write(get_help_message())
@@ -61,31 +62,35 @@ if user_input:
         else:
             st.error("Error: No se encontró el archivo de mareas.")
 
-    if "windguru" in user_input.lower():
+    elif "windguru" in user_input.lower():
         st.chat_message("assistant", avatar="bot_icon.png").write("Sí, ahora te mando...")
         if os.path.exists("windguru.png"):
             st.image("windguru.png")
         else:
             st.error("Error: No se encontró el archivo de Windguru.")
 
-
+    elif "memes" in user_input.lower():
+        st.chat_message("assistant", avatar="bot_icon.png").write("Aquí tienes algunos memes divertidos...")
+        if os.path.exists("memes/1.png"):
+            st.image("memes/1.png")
+        else:
+            st.error("Error: No se encontró el archivo de memes.")
 
     else:
         try:
-            thread = client.beta.threads.create()
-            message = client.beta.threads.messages.create(
-                thread_id=thread.id,
-                role="user",
-                content=user_input
+            response = requests.post(
+                "https://api.openrouter.ai/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {openrouter_key}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": "deepseek/deepseek-chat",
+                    "messages": [{"role": "user", "content": user_input}]
+                }
             )
-            with client.beta.threads.runs.stream(
-                thread_id=thread.id,
-                assistant_id='asst_nnDTLYK0nrjuIBJCdscnA6vb',
-                event_handler=EventHandler()) as stream:
-                    stream.until_done()
-                    bot_response = stream.get_final_messages()
-                    bot_reply = bot_response[0].content[0].text.value
-                    bot_reply = re.sub(r"【.*?】", "", bot_reply)
+            response.raise_for_status()
+            bot_reply = response.json()["choices"][0]["message"]["content"]
             st.chat_message("user").write(user_input)
             st.chat_message("assistant", avatar="bot_icon.png").write(bot_reply)
         except Exception as e:

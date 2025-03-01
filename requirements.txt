@@ -5,3 +5,4 @@ urllib3
 nest_asyncio
 openai
 typing_extensions
+requests
