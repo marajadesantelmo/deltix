@@ -4,9 +4,7 @@ from typing_extensions import override
 import os
 import re
 import requests  # Add requests for API calls
-import time  # Add time for retry delays
 
-openai_key = os.getenv('OPENAI_API_KEY')
 openrouter_key = os.getenv('OPENROUTER_API_KEY')  # Add OpenRouter API key
 
 class EventHandler(AssistantEventHandler):
@@ -37,8 +35,11 @@ with col_title:
 with col_logo:
   st.image('bot_icon.png')
 
+# Initialize OpenAI client with OpenRouter base URL
 client = OpenAI(
-    api_key=openai_key)
+    base_url="https://openrouter.ai/api/v1",
+    api_key=openrouter_key,
+)
 
 # Initial bot message
 st.chat_message("assistant", avatar="bot_icon.png").write("Hola! Soy Deltix. En qué te puedo ayudar? 🐱")
@@ -56,27 +57,24 @@ st.chat_message("assistant", avatar="bot_icon.png").write(get_help_message())
 user_input = st.chat_input("Ingresa tu mensaje...")
 
 def make_api_call(user_input):
-    retries = 3
-    for attempt in range(retries):
-        try:
-            response = requests.post(
-                "https://api.openrouter.ai/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {openrouter_key}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": "deepseek/deepseek-chat",
-                    "messages": [{"role": "user", "content": user_input}]
+    try:
+        completion = client.chat.completions.create(
+            extra_headers={
+                "HTTP-Referer": "<YOUR_SITE_URL>",  # Optional. Site URL for rankings on openrouter.ai.
+                "X-Title": "<YOUR_SITE_NAME>",  # Optional. Site title for rankings on openrouter.ai.
+            },
+            extra_body={},
+            model="deepseek/deepseek-chat:free",
+            messages=[
+                {
+                    "role": "user",
+                    "content": user_input
                 }
-            )
-            response.raise_for_status()
-            return response.json()["choices"][0]["message"]["content"]
-        except requests.exceptions.RequestException as e:
-            if attempt < retries - 1:
-                time.sleep(2 ** attempt)  # Exponential backoff
-            else:
-                raise e
+            ]
+        )
+        return completion.choices[0].message.content
+    except Exception as e:
+        raise e
 
 if user_input:
     if "marea" in user_input.lower():
