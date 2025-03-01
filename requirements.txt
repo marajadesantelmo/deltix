@@ -6,3 +6,4 @@ nest_asyncio
 openai
 typing_extensions
 requests
+supabase
