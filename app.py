@@ -120,6 +120,9 @@ project_id = st.session_state.project_id
 
 # Show initial bot messages only once per session
 if "initial_messages_shown" not in st.session_state:
+    st.session_state.initial_messages_shown = False
+
+if not st.session_state.initial_messages_shown:
     st.chat_message("assistant", avatar="bot_icon.png").write("Hola! Soy Deltix. En qué te puedo ayudar? 🐱")
     st.chat_message("assistant", avatar="bot_icon.png").write(get_help_message())
     st.session_state.initial_messages_shown = True
