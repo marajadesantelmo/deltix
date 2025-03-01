@@ -45,7 +45,10 @@ user_input = st.chat_input("Ingresa tu mensaje...")
 
 if user_input and "mareas" in user_input.lower():
     st.chat_message("assistant", avatar="bot_icon.png").write("Sí, ahora te mando...")
-    st.image("mareas.png")
+    if os.path.exists("mareas.png"):
+        st.image("mareas.png")
+    else:
+        st.error("Error: No se encontró el archivo de mareas.")
 else:
     try:
         thread = client.beta.threads.create()
