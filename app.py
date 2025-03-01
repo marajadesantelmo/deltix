@@ -133,7 +133,7 @@ if user_input:
     else:
         try:
             documents = retrieve_documents(user_input)
-            bot_reply = make_api_call(user_input, "New Conversation", documents)
+            bot_reply = make_api_call(user_input, project_id, documents)
             st.chat_message("user").write(user_input)
             st.chat_message("assistant", avatar="bot_icon.png").write(bot_reply)
             store_chat_message(project_id, "assistant", bot_reply)
