@@ -142,6 +142,8 @@ if user_input:
         store_chat_message(project_id, "assistant", "Sí, ahora te mando...")
 
     elif "memes" in user_input.lower() or st.session_state.get("wants_more_memes", False):
+        st.chat_message("assistant", avatar="bot_icon.png").write("Ya te mando un meme")
+        store_chat_message(project_id, "assistant", "Ya te mando un meme")
         if "memes" in user_input.lower():
             st.session_state.wants_more_memes = True
         if user_input.lower() == "no":
@@ -157,9 +159,9 @@ if user_input:
                     st.chat_message("assistant", avatar="bot_icon.png").write("Buenísimo, no? Son de la página Memes Islenials. Te recomiendo que la sigas en las redes")
                     store_chat_message(project_id, "assistant", "Buenísimo, no? Son de la página Memes Islenials. Te recomiendo que la sigas en las redes")
                     st.session_state.meme_message_shown = True
-                st.chat_message("assistant", avatar="bot_icon.png").write("¿Quieres ver más memes? (Si/No)")
+                st.chat_message("assistant", avatar="bot_icon.png").write("¿Queres ver más memes? (Si/No)")
                 time.sleep(1)
-                store_chat_message(project_id, "assistant", "¿Quieres ver más memes? (Si/No)")
+                store_chat_message(project_id, "assistant", "¿Queres ver más memes? (Si/No)")
             else:
                 st.error("Error: No se encontraron archivos de memes.")
                 st.session_state.wants_more_memes = False
@@ -173,7 +175,6 @@ if user_input:
                 store_chat_message(project_id, "assistant", bot_reply)
             except Exception as e:
                 st.error(f"Error: {e}")
-
     else:
         try:
             documents = retrieve_documents(user_input)
@@ -185,6 +186,7 @@ if user_input:
             st.error(f"Error: {e}")
 
 chat_history = supabase.from_("chat_history").select("*").eq("project_id", project_id).execute().data
+
 for message in chat_history:
     if message["role"] == "user":
         st.chat_message("user").write(message["content"])
