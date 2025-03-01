@@ -4,6 +4,7 @@ from typing_extensions import override
 import os
 import re
 import requests  # Add requests for API calls
+import time  # Add time for retry delays
 
 openai_key = os.getenv('OPENAI_API_KEY')
 openrouter_key = os.getenv('OPENROUTER_API_KEY')  # Add OpenRouter API key
@@ -54,6 +55,29 @@ st.chat_message("assistant", avatar="bot_icon.png").write(get_help_message())
 
 user_input = st.chat_input("Ingresa tu mensaje...")
 
+def make_api_call(user_input):
+    retries = 3
+    for attempt in range(retries):
+        try:
+            response = requests.post(
+                "https://api.openrouter.ai/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {openrouter_key}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": "deepseek/deepseek-chat",
+                    "messages": [{"role": "user", "content": user_input}]
+                }
+            )
+            response.raise_for_status()
+            return response.json()["choices"][0]["message"]["content"]
+        except requests.exceptions.RequestException as e:
+            if attempt < retries - 1:
+                time.sleep(2 ** attempt)  # Exponential backoff
+            else:
+                raise e
+
 if user_input:
     if "marea" in user_input.lower():
         st.chat_message("assistant", avatar="bot_icon.png").write("Sí, ahora te mando...")
@@ -78,19 +102,7 @@ if user_input:
 
     else:
         try:
-            response = requests.post(
-                "https://api.openrouter.ai/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {openrouter_key}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": "deepseek/deepseek-chat",
-                    "messages": [{"role": "user", "content": user_input}]
-                }
-            )
-            response.raise_for_status()
-            bot_reply = response.json()["choices"][0]["message"]["content"]
+            bot_reply = make_api_call(user_input)
             st.chat_message("user").write(user_input)
             st.chat_message("assistant", avatar="bot_icon.png").write(bot_reply)
         except Exception as e:
