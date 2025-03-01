@@ -7,18 +7,14 @@ import re
 import requests
 import time
 
-# Initialize Supabase client
 supabase_url = os.getenv('SUPABASE_URL')
 supabase_key = os.getenv('SUPABASE_KEY')
-
 if not supabase_url or not supabase_key:
     raise ValueError("Supabase URL and Key must be set in environment variables")
 
-# Remove options to avoid passing unexpected arguments
 supabase = create_client(supabase_url, supabase_key)
 
 openrouter_key = os.getenv('OPENROUTER_API_KEY')
-
 if not openrouter_key:
     raise ValueError("OpenRouter API Key must be set in environment variables")
 
@@ -50,14 +46,10 @@ with col_title:
 with col_logo:
   st.image('bot_icon.png')
 
-# Initialize OpenAI client with OpenRouter base URL
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=openrouter_key,
 )
-
-# Initial bot message
-st.chat_message("assistant", avatar="bot_icon.png").write("Hola! Soy Deltix. En qué te puedo ayudar? 🐱")
 
 def get_help_message():
     return (
@@ -66,10 +58,6 @@ def get_help_message():
         "- **/colectivas**: _horarios de lanchas colectivas_\n"
         "- **/memes**: _ver los memes más divertidos de la isla_\n"
     )
-
-st.chat_message("assistant", avatar="bot_icon.png").write(get_help_message())
-
-user_input = st.chat_input("Ingresa tu mensaje...")
 
 def retrieve_documents(query):
     response = supabase.from_("documents").select("*").ilike("content", f"%{query}%").execute()
@@ -122,6 +110,14 @@ if "project_id" not in st.session_state:
 
 project_id = st.session_state.project_id
 
+# Show initial bot messages only once per session
+if "initial_messages_shown" not in st.session_state:
+    st.chat_message("assistant", avatar="bot_icon.png").write("Hola! Soy Deltix. En qué te puedo ayudar? 🐱")
+    st.chat_message("assistant", avatar="bot_icon.png").write(get_help_message())
+    st.session_state.initial_messages_shown = True
+
+user_input = st.chat_input("Ingresa tu mensaje...")
+
 if user_input:
     store_chat_message(project_id, "user", user_input)
     if "marea" in user_input.lower():
@@ -157,3 +153,11 @@ if user_input:
             store_chat_message(project_id, "assistant", bot_reply)
         except Exception as e:
             st.error(f"Error: {e}")
+
+# Display chat history
+chat_history = supabase.from_("chat_history").select("*").eq("project_id", project_id).execute().data
+for message in chat_history:
+    if message["role"] == "user":
+        st.chat_message("user").write(message["content"])
+    else:
+        st.chat_message("assistant", avatar="bot_icon.png").write(message["content"])
