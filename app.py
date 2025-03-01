@@ -41,6 +41,14 @@ client = OpenAI(
 # Initial bot message
 st.chat_message("assistant", avatar="bot_icon.png").write("Hola! Soy Deltix. En qué te puedo ayudar? 🐱")
 
+def get_help_message():
+    return ("- <b>/mareas </b>   <i> obtener el pronóstico de mareas &#9875</i>\n"
+            "- <b>/windguru </b>   <i> pronóstico meteorológico de windgurú</i>\n"
+            "- <b>/colectivas </b>   <i> horarios de lanchas colectivas &#128337</i>\n"
+            "- <b>/memes </b>   <i> ver los memes más divertidos de la isla &#129315 </i>\n")
+
+st.chat_message("assistant", avatar="bot_icon.png").write(get_help_message())
+
 user_input = st.chat_input("Ingresa tu mensaje...")
 
 if user_input:
@@ -50,6 +58,16 @@ if user_input:
             st.image("marea.png")
         else:
             st.error("Error: No se encontró el archivo de mareas.")
+
+    if "windguru" in user_input.lower():
+        st.chat_message("assistant", avatar="bot_icon.png").write("Sí, ahora te mando...")
+        if os.path.exists("windguru.png"):
+            st.image("windguru.png")
+        else:
+            st.error("Error: No se encontró el archivo de Windguru.")
+
+
+
     else:
         try:
             thread = client.beta.threads.create()
