@@ -5,3 +5,6 @@ user_experience.csv
 subscribers_mareas.csv
 subscribers_windguru.csv
 user_experience_backup.csv
+subscribers_mareas_backup.csv
+subscribers_windguru_backup.csv
+*.csv
