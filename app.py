@@ -55,20 +55,6 @@ client = OpenAI(
     api_key=openrouter_key,
 )
 
-# Sidebar for project management
-st.sidebar.title("Projects")
-projects = st.sidebar.selectbox("Select a project", options=["Project 1", "Project 2", "Add new project..."])
-
-if projects == "Add new project...":
-    new_project_name = st.sidebar.text_input("Enter new project name")
-    if st.sidebar.button("Add Project"):
-        # Add new project logic
-        st.sidebar.success(f"Project '{new_project_name}' added!")
-
-if st.sidebar.button("Delete Project"):
-    # Delete project logic
-    st.sidebar.warning(f"Project '{projects}' deleted!")
-
 # Initial bot message
 st.chat_message("assistant", avatar="bot_icon.png").write("Hola! Soy Deltix. En qué te puedo ayudar? 🐱")
 
@@ -109,13 +95,24 @@ def make_api_call(user_input, project, documents):
     except Exception as e:
         raise e
 
+def store_chat_message(project_id, role, content):
+    supabase.from_("chat_history").insert({"project_id": project_id, "role": role, "content": content}).execute()
+
+def create_project():
+    response = supabase.from_("projects").insert({"name": "New Conversation"}).execute()
+    return response.data[0]["id"]
+
+project_id = create_project()
+
 if user_input:
+    store_chat_message(project_id, "user", user_input)
     if "marea" in user_input.lower():
         st.chat_message("assistant", avatar="bot_icon.png").write("Sí, ahora te mando...")
         if os.path.exists("marea.png"):
             st.image("marea.png")
         else:
             st.error("Error: No se encontró el archivo de mareas.")
+        store_chat_message(project_id, "assistant", "Sí, ahora te mando...")
 
     elif "windguru" in user_input.lower():
         st.chat_message("assistant", avatar="bot_icon.png").write("Sí, ahora te mando...")
@@ -123,6 +120,7 @@ if user_input:
             st.image("windguru.png")
         else:
             st.error("Error: No se encontró el archivo de Windguru.")
+        store_chat_message(project_id, "assistant", "Sí, ahora te mando...")
 
     elif "memes" in user_input.lower():
         st.chat_message("assistant", avatar="bot_icon.png").write("Aquí tienes algunos memes divertidos...")
@@ -130,12 +128,14 @@ if user_input:
             st.image("memes/1.png")
         else:
             st.error("Error: No se encontró el archivo de memes.")
+        store_chat_message(project_id, "assistant", "Aquí tienes algunos memes divertidos...")
 
     else:
         try:
             documents = retrieve_documents(user_input)
-            bot_reply = make_api_call(user_input, projects, documents)
+            bot_reply = make_api_call(user_input, "New Conversation", documents)
             st.chat_message("user").write(user_input)
             st.chat_message("assistant", avatar="bot_icon.png").write(bot_reply)
+            store_chat_message(project_id, "assistant", bot_reply)
         except Exception as e:
             st.error(f"Error: {e}")
