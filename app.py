@@ -43,29 +43,30 @@ st.chat_message("assistant", avatar="bot_icon.png").write("Hola! Soy Deltix. En 
 
 user_input = st.chat_input("Ingresa tu mensaje...")
 
-if user_input and "mareas" in user_input.lower():
-    st.chat_message("assistant", avatar="bot_icon.png").write("Sí, ahora te mando...")
-    if os.path.exists("mareas.png"):
-        st.image("mareas.png")
+if user_input:
+    if "mareas" in user_input.lower():
+        st.chat_message("assistant", avatar="bot_icon.png").write("Sí, ahora te mando...")
+        if os.path.exists("mareas.png"):
+            st.image("mareas.png")
+        else:
+            st.error("Error: No se encontró el archivo de mareas.")
     else:
-        st.error("Error: No se encontró el archivo de mareas.")
-else:
-    try:
-        thread = client.beta.threads.create()
-        message = client.beta.threads.messages.create(
-            thread_id=thread.id,
-            role="user",
-            content=user_input
-        )
-        with client.beta.threads.runs.stream(
-            thread_id=thread.id,
-            assistant_id='asst_nnDTLYK0nrjuIBJCdscnA6vb',
-            event_handler=EventHandler()) as stream:
-                stream.until_done()
-                bot_response = stream.get_final_messages()
-                bot_reply = bot_response[0].content[0].text.value
-                bot_reply = re.sub(r"【.*?】", "", bot_reply)
-        st.chat_message("user").write(user_input)
-        st.chat_message("assistant", avatar="bot_icon.png").write(bot_reply)
-    except Exception as e:
-        st.error(f"Error: {e}")
+        try:
+            thread = client.beta.threads.create()
+            message = client.beta.threads.messages.create(
+                thread_id=thread.id,
+                role="user",
+                content=user_input
+            )
+            with client.beta.threads.runs.stream(
+                thread_id=thread.id,
+                assistant_id='asst_nnDTLYK0nrjuIBJCdscnA6vb',
+                event_handler=EventHandler()) as stream:
+                    stream.until_done()
+                    bot_response = stream.get_final_messages()
+                    bot_reply = bot_response[0].content[0].text.value
+                    bot_reply = re.sub(r"【.*?】", "", bot_reply)
+            st.chat_message("user").write(user_input)
+            st.chat_message("assistant", avatar="bot_icon.png").write(bot_reply)
+        except Exception as e:
+            st.error(f"Error: {e}")
