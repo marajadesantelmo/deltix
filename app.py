@@ -44,10 +44,10 @@ st.chat_message("assistant", avatar="bot_icon.png").write("Hola! Soy Deltix. En 
 user_input = st.chat_input("Ingresa tu mensaje...")
 
 if user_input:
-    if "mareas" in user_input.lower():
+    if "marea" in user_input.lower():
         st.chat_message("assistant", avatar="bot_icon.png").write("Sí, ahora te mando...")
-        if os.path.exists("mareas.png"):
-            st.image("mareas.png")
+        if os.path.exists("marea.png"):
+            st.image("marea.png")
         else:
             st.error("Error: No se encontró el archivo de mareas.")
     else:
