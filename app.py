@@ -41,6 +41,20 @@ client = OpenAI(
     api_key=openrouter_key,
 )
 
+# Sidebar for project management
+st.sidebar.title("Projects")
+projects = st.sidebar.selectbox("Select a project", options=["Project 1", "Project 2", "Add new project..."])
+
+if projects == "Add new project...":
+    new_project_name = st.sidebar.text_input("Enter new project name")
+    if st.sidebar.button("Add Project"):
+        # Add new project logic
+        st.sidebar.success(f"Project '{new_project_name}' added!")
+
+if st.sidebar.button("Delete Project"):
+    # Delete project logic
+    st.sidebar.warning(f"Project '{projects}' deleted!")
+
 # Initial bot message
 st.chat_message("assistant", avatar="bot_icon.png").write("Hola! Soy Deltix. En qué te puedo ayudar? 🐱")
 
@@ -56,7 +70,7 @@ st.chat_message("assistant", avatar="bot_icon.png").write(get_help_message())
 
 user_input = st.chat_input("Ingresa tu mensaje...")
 
-def make_api_call(user_input):
+def make_api_call(user_input, project):
     try:
         completion = client.chat.completions.create(
             extra_headers={
@@ -68,7 +82,7 @@ def make_api_call(user_input):
             messages=[
                 {
                     "role": "user",
-                    "content": user_input
+                    "content": f"[{project}] {user_input}"
                 }
             ]
         )
@@ -100,7 +114,7 @@ if user_input:
 
     else:
         try:
-            bot_reply = make_api_call(user_input)
+            bot_reply = make_api_call(user_input, projects)
             st.chat_message("user").write(user_input)
             st.chat_message("assistant", avatar="bot_icon.png").write(bot_reply)
         except Exception as e:
