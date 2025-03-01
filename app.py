@@ -9,9 +9,16 @@ from supabase import create_client, Client  # Add Supabase client
 # Initialize Supabase client
 supabase_url = os.getenv('SUPABASE_URL')
 supabase_key = os.getenv('SUPABASE_KEY')
+
+if not supabase_url or not supabase_key:
+    raise ValueError("Supabase URL and Key must be set in environment variables")
+
 supabase = create_client(supabase_url, supabase_key)
 
 openrouter_key = os.getenv('OPENROUTER_API_KEY')
+
+if not openrouter_key:
+    raise ValueError("OpenRouter API Key must be set in environment variables")
 
 class EventHandler(AssistantEventHandler):
     @override    
