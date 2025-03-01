@@ -153,6 +153,10 @@ if user_input:
             if meme_file:
                 st.image(meme_file)
                 store_chat_message(project_id, "meme", f"{meme_file}")
+                if "meme_message_shown" not in st.session_state:
+                    st.chat_message("assistant", avatar="bot_icon.png").write("Buenísimo, no? Son de la página Memes Islenials. Te recomiendo que la sigas en las redes")
+                    store_chat_message(project_id, "assistant", "Buenísimo, no? Son de la página Memes Islenials. Te recomiendo que la sigas en las redes")
+                    st.session_state.meme_message_shown = True
                 st.chat_message("assistant", avatar="bot_icon.png").write("¿Quieres ver más memes? (Si/No)")
                 time.sleep(1)
                 store_chat_message(project_id, "assistant", "¿Quieres ver más memes? (Si/No)")
