@@ -66,10 +66,13 @@ def retrieve_documents(query):
 
 def make_api_call(user_input, project_id, documents, retries=3, delay=2):
     try:
-        context = "\n".join([doc["content"] for doc in documents])
+        #context_supabase = "\n".join([doc["content"] for doc in documents])
+        context = []
+        if any(keyword in user_input.lower() for keyword in ['seguridad', 'policia', 'emergencia', 'telefono']):
+            with open("rag/policia.txt", "r") as file:
+                context.append(file.read())
         previous_messages = supabase.from_("chat_history").select("*").eq("project_id", project_id).execute().data
         previous_messages_content = "\n".join([msg["content"] for msg in previous_messages if msg["role"] == "user"])
-        context = f"{previous_messages_content}\n{context}"
         
         for attempt in range(retries):
             completion = client.chat.completions.create(
@@ -86,7 +89,7 @@ def make_api_call(user_input, project_id, documents, retries=3, delay=2):
                     },
                     {
                         "role": "user",
-                        "content": f"{user_input}\n\nMensajes anteriores:\n{context}"
+                        "content": f"{user_input}\n\nMensajes anteriores:\n{previous_messages_content}\n\nContexto:\n{context}"
                     }
                 ]
             )
