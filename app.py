@@ -30,7 +30,8 @@ def on_tool_call_delta(self, delta, snapshot):
 
 col_title, col_logo = st.columns([5, 1])
 with col_title:
-  st.title("DASSA Bot")
+  st.title("Deltix!")
+  st.write("El bot del humedal")
 with col_logo:
   st.image('bot_icon.png')
 
