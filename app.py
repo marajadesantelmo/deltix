@@ -152,8 +152,8 @@ if user_input:
             meme_file = get_random_meme()
             if meme_file:
                 st.image(meme_file)
+                store_chat_message(project_id, "meme", f"{meme_file}")
                 st.chat_message("assistant", avatar="bot_icon.png").write("¿Quieres ver más memes? (Si/No)")
-                store_chat_message(project_id, "assistant", "Acá te mando un meme:")
                 time.sleep(1)
                 store_chat_message(project_id, "assistant", "¿Quieres ver más memes? (Si/No)")
             else:
@@ -180,10 +180,11 @@ if user_input:
         except Exception as e:
             st.error(f"Error: {e}")
 
-# Display chat history
 chat_history = supabase.from_("chat_history").select("*").eq("project_id", project_id).execute().data
 for message in chat_history:
     if message["role"] == "user":
         st.chat_message("user").write(message["content"])
+    elif message["role"] == "meme":
+        st.image(message["content"])
     else:
         st.chat_message("assistant", avatar="bot_icon.png").write(message["content"])
