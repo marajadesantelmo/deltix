@@ -3,9 +3,15 @@ from openai import OpenAI, AssistantEventHandler
 from typing_extensions import override
 import os
 import re
-import requests  # Add requests for API calls
+import requests
+from supabase import create_client, Client  # Add Supabase client
 
-openrouter_key = os.getenv('OPENROUTER_API_KEY')  # Add OpenRouter API key
+# Initialize Supabase client
+supabase_url = os.getenv('SUPABASE_URL')
+supabase_key = os.getenv('SUPABASE_KEY')
+supabase: Client = create_client(supabase_url, supabase_key)
+
+openrouter_key = os.getenv('OPENROUTER_API_KEY')
 
 class EventHandler(AssistantEventHandler):
     @override    
@@ -70,8 +76,13 @@ st.chat_message("assistant", avatar="bot_icon.png").write(get_help_message())
 
 user_input = st.chat_input("Ingresa tu mensaje...")
 
-def make_api_call(user_input, project):
+def retrieve_documents(query):
+    response = supabase.from_("documents").select("*").ilike("content", f"%{query}%").execute()
+    return response.data
+
+def make_api_call(user_input, project, documents):
     try:
+        context = "\n".join([doc["content"] for doc in documents])
         completion = client.chat.completions.create(
             extra_headers={
                 "HTTP-Referer": "<YOUR_SITE_URL>",  # Optional. Site URL for rankings on openrouter.ai.
@@ -82,7 +93,7 @@ def make_api_call(user_input, project):
             messages=[
                 {
                     "role": "user",
-                    "content": f"[{project}] {user_input}"
+                    "content": f"[{project}] {user_input}\n\nContext:\n{context}"
                 }
             ]
         )
@@ -114,7 +125,8 @@ if user_input:
 
     else:
         try:
-            bot_reply = make_api_call(user_input, projects)
+            documents = retrieve_documents(user_input)
+            bot_reply = make_api_call(user_input, projects, documents)
             st.chat_message("user").write(user_input)
             st.chat_message("assistant", avatar="bot_icon.png").write(bot_reply)
         except Exception as e:
