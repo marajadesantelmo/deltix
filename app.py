@@ -139,7 +139,7 @@ if user_input:
             st.image("windguru.png")
         else:
             st.error("Error: No se encontró el archivo de Windguru.")
-        store_chat_message(project_id, "assistant", "Sí, ahora te mando un meme...")
+        store_chat_message(project_id, "assistant", "Sí, ahora te mando...")
 
     elif "memes" in user_input.lower() or st.session_state.get("wants_more_memes", False):
         if "memes" in user_input.lower():
@@ -153,6 +153,8 @@ if user_input:
             if meme_file:
                 st.image(meme_file)
                 st.chat_message("assistant", avatar="bot_icon.png").write("¿Quieres ver más memes? (Si/No)")
+                store_chat_message(project_id, "assistant", "Acá te mando un meme:")
+                time.sleep(1)
                 store_chat_message(project_id, "assistant", "¿Quieres ver más memes? (Si/No)")
             else:
                 st.error("Error: No se encontraron archivos de memes.")
