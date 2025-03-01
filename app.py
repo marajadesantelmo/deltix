@@ -5,6 +5,7 @@ from typing_extensions import override
 import os
 import re
 import requests
+import time
 
 # Initialize Supabase client
 supabase_url = os.getenv('SUPABASE_URL')
@@ -74,31 +75,37 @@ def retrieve_documents(query):
     response = supabase.from_("documents").select("*").ilike("content", f"%{query}%").execute()
     return response.data
 
-def make_api_call(user_input, project_id, documents):
+def make_api_call(user_input, project_id, documents, retries=3, delay=2):
     try:
         context = "\n".join([doc["content"] for doc in documents])
         previous_messages = supabase.from_("chat_history").select("*").eq("project_id", project_id).execute().data
         previous_messages_content = "\n".join([msg["content"] for msg in previous_messages if msg["role"] == "user"])
         context = f"{previous_messages_content}\n{context}"
-        completion = client.chat.completions.create(
-            extra_headers={
-                "HTTP-Referer": "<YOUR_SITE_URL>",  # Optional. Site URL for rankings on openrouter.ai.
-                "X-Title": "<YOUR_SITE_NAME>",  # Optional. Site title for rankings on openrouter.ai.
-            },
-            extra_body={},
-            model="deepseek/deepseek-chat:free",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "Sos Deltix, el bot del humedal. Eres argentino, simpático, informal y amable. Tu objetivo es ayudar a quienes habitan y visitan el delta inferior del Paraná. Fui diseñado para proporcionar información y servicios útiles a las personas que habitan o visitan la hermosa región del Delta del Tigre, en Buenos Aires. Por ahora mis principales funcionalidades son enviar pronósticos meteorológico y de mareas, horarios de lanchas colectivas y mandar los Memes Islenials más divertidos de la isla :P En el futuro te voy a poder ayudar también cuando estés buscando recomendaciones locales, información sobre actividades en el delta o simplemente quieras mantenerte al tanto de las novedades de la zona."
+        
+        for attempt in range(retries):
+            completion = client.chat.completions.create(
+                extra_headers={
+                    "HTTP-Referer": "<YOUR_SITE_URL>",  # Optional. Site URL for rankings on openrouter.ai.
+                    "X-Title": "<YOUR_SITE_NAME>",  # Optional. Site title for rankings on openrouter.ai.
                 },
-                {
-                    "role": "user",
-                    "content": f"{user_input}\n\nMensajes anteriores:\n{context}"
-                }
-            ]
-        )
-        return completion.choices[0].message.content
+                extra_body={},
+                model="deepseek/deepseek-chat:free",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "Vos sos Deltix, el bot del humedal. Eres argentino, simpático, informal y amable."
+                    },
+                    {
+                        "role": "user",
+                        "content": f"{user_input}\n\nMensajes anteriores:\n{context}"
+                    }
+                ]
+            )
+            response_content = completion.choices[0].message.content
+            if response_content.strip():
+                return response_content
+            time.sleep(delay)
+        raise ValueError("Received empty response from OpenRouter API after multiple attempts")
     except Exception as e:
         raise e
 
