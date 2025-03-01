@@ -6,6 +6,7 @@ import os
 import re
 import requests
 import time
+import random
 
 supabase_url = os.getenv('SUPABASE_URL')
 supabase_key = os.getenv('SUPABASE_KEY')
@@ -104,6 +105,10 @@ def create_project():
     response = supabase.from_("projects").insert({"name": "Nueva conversacion"}).execute()
     return response.data[0]["id"]
 
+def get_random_meme():
+    meme_files = [f"memes/{file}" for file in os.listdir("memes") if file.endswith(".png")]
+    return random.choice(meme_files) if meme_files else None
+
 # Store project_id in session state to persist across conversation
 if "project_id" not in st.session_state:
     st.session_state.project_id = create_project()
@@ -134,15 +139,34 @@ if user_input:
             st.image("windguru.png")
         else:
             st.error("Error: No se encontró el archivo de Windguru.")
-        store_chat_message(project_id, "assistant", "Sí, ahora te mando...")
+        store_chat_message(project_id, "assistant", "Sí, ahora te mando un meme...")
 
-    elif "memes" in user_input.lower():
-        st.chat_message("assistant", avatar="bot_icon.png").write("Aquí tienes algunos memes divertidos...")
-        if os.path.exists("memes/1.png"):
-            st.image("memes/1.png")
+    elif "memes" in user_input.lower() or st.session_state.get("wants_more_memes", False):
+        if "memes" in user_input.lower():
+            st.session_state.wants_more_memes = True
+        if user_input.lower() == "no":
+            st.session_state.wants_more_memes = False
+            st.chat_message("assistant", avatar="bot_icon.png").write("¡Espero que hayas disfrutado los memes!")
+            store_chat_message(project_id, "assistant", "¡Espero que hayas disfrutado los memes!")
+        elif user_input.lower() == "si" or st.session_state.wants_more_memes:
+            meme_file = get_random_meme()
+            if meme_file:
+                st.image(meme_file)
+                st.chat_message("assistant", avatar="bot_icon.png").write("¿Quieres ver más memes? (Si/No)")
+                store_chat_message(project_id, "assistant", "¿Quieres ver más memes? (Si/No)")
+            else:
+                st.error("Error: No se encontraron archivos de memes.")
+                st.session_state.wants_more_memes = False
         else:
-            st.error("Error: No se encontró el archivo de memes.")
-        store_chat_message(project_id, "assistant", "Aquí tienes algunos memes divertidos...")
+            st.session_state.wants_more_memes = False
+            try:
+                documents = retrieve_documents(user_input)
+                bot_reply = make_api_call(user_input, project_id, documents)
+                st.chat_message("user").write(user_input)
+                st.chat_message("assistant", avatar="bot_icon.png").write(bot_reply)
+                store_chat_message(project_id, "assistant", bot_reply)
+            except Exception as e:
+                st.error(f"Error: {e}")
 
     else:
         try:
