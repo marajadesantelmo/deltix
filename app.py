@@ -77,6 +77,9 @@ def retrieve_documents(query):
 def make_api_call(user_input, project, documents):
     try:
         context = "\n".join([doc["content"] for doc in documents])
+        previous_messages = supabase.from_("chat_history").select("*").eq("project_id", project_id).execute().data
+        previous_messages_content = "\n".join([msg["content"] for msg in previous_messages if msg["role"] == "user"])
+        context = f"{previous_messages_content}\n{context}"
         completion = client.chat.completions.create(
             extra_headers={
                 "HTTP-Referer": "<YOUR_SITE_URL>",  # Optional. Site URL for rankings on openrouter.ai.
@@ -87,7 +90,7 @@ def make_api_call(user_input, project, documents):
             messages=[
                 {
                     "role": "user",
-                    "content": f"[{project}] {user_input}\n\nContext:\n{context}"
+                    "content": f"{user_input}\n\nContext:\n{context}"
                 }
             ]
         )
@@ -99,7 +102,7 @@ def store_chat_message(project_id, role, content):
     supabase.from_("chat_history").insert({"project_id": project_id, "role": role, "content": content}).execute()
 
 def create_project():
-    response = supabase.from_("projects").insert({"name": "New Conversation"}).execute()
+    response = supabase.from_("projects").insert({"name": "Nueva conversacion"}).execute()
     return response.data[0]["id"]
 
 project_id = create_project()
