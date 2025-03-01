@@ -105,7 +105,11 @@ def create_project():
     response = supabase.from_("projects").insert({"name": "Nueva conversacion"}).execute()
     return response.data[0]["id"]
 
-project_id = create_project()
+# Store project_id in session state to persist across conversation
+if "project_id" not in st.session_state:
+    st.session_state.project_id = create_project()
+
+project_id = st.session_state.project_id
 
 if user_input:
     store_chat_message(project_id, "user", user_input)
