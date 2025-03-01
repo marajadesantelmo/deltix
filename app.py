@@ -74,7 +74,7 @@ def retrieve_documents(query):
     response = supabase.from_("documents").select("*").ilike("content", f"%{query}%").execute()
     return response.data
 
-def make_api_call(user_input, project, documents):
+def make_api_call(user_input, project_id, documents):
     try:
         context = "\n".join([doc["content"] for doc in documents])
         previous_messages = supabase.from_("chat_history").select("*").eq("project_id", project_id).execute().data
@@ -90,7 +90,7 @@ def make_api_call(user_input, project, documents):
             messages=[
                 {
                     "role": "user",
-                    "content": f"{user_input}\n\nContext:\n{context}"
+                    "content": f"{user_input}\n\nContexto:\n{context}"
                 }
             ]
         )
