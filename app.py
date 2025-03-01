@@ -43,10 +43,9 @@ st.chat_message("assistant", avatar="bot_icon.png").write("Hola! Soy Deltix. En 
 
 user_input = st.chat_input("Ingresa tu mensaje...")
 
-if user_input.str.contains("mareas"): 
+if user_input and "mareas" in user_input.lower():
     st.chat_message("assistant", avatar="bot_icon.png").write("Sí, ahora te mando...")
     st.image("mareas.png")
-
 else:
     try:
         thread = client.beta.threads.create()
