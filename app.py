@@ -30,8 +30,8 @@ def on_tool_call_delta(self, delta, snapshot):
 
 col_title, col_logo = st.columns([5, 1])
 with col_title:
-  st.title("Deltix!")
-  st.write("El bot del humedal")
+  st.title("Deltix")
+  st.write("El bot del humedal...")
 with col_logo:
   st.image('bot_icon.png')
 
@@ -43,7 +43,11 @@ st.chat_message("assistant", avatar="bot_icon.png").write("Hola! Soy Deltix. En 
 
 user_input = st.chat_input("Ingresa tu mensaje...")
 
-if user_input:
+if user_input.str.contains("mareas"): 
+    st.chat_message("assistant", avatar="bot_icon.png").write("Sí, ahora te mando...")
+    st.image("mareas.png")
+
+else:
     try:
         thread = client.beta.threads.create()
         message = client.beta.threads.messages.create(
