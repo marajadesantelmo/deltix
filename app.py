@@ -5,7 +5,6 @@ from typing_extensions import override
 import os
 import re
 import requests
-from supabase import create_client
 
 # Initialize Supabase client
 supabase_url = os.getenv('SUPABASE_URL')
