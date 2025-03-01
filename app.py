@@ -42,10 +42,12 @@ client = OpenAI(
 st.chat_message("assistant", avatar="bot_icon.png").write("Hola! Soy Deltix. En qué te puedo ayudar? 🐱")
 
 def get_help_message():
-    return ("- <b>/mareas </b>   <i> obtener el pronóstico de mareas &#9875</i>\n"
-            "- <b>/windguru </b>   <i> pronóstico meteorológico de windgurú</i>\n"
-            "- <b>/colectivas </b>   <i> horarios de lanchas colectivas &#128337</i>\n"
-            "- <b>/memes </b>   <i> ver los memes más divertidos de la isla &#129315 </i>\n")
+    return (
+        "- **/mareas**: _obtener el pronóstico de mareas &#9875_\n"
+        "- **/windguru**: _pronóstico meteorológico de windgurú_\n"
+        "- **/colectivas**: _horarios de lanchas colectivas &#128337_\n"
+        "- **/memes**: _ver los memes más divertidos de la isla &#129315_\n"
+    )
 
 st.chat_message("assistant", avatar="bot_icon.png").write(get_help_message())
 
