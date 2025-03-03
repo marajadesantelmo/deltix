@@ -127,7 +127,12 @@ def handle_colectivas_input(user_input):
             st.chat_message("assistant", avatar="bot_icon.png").write("Qué recorrido necesitás? Ida a la isla o vuelta a Tigre?")
             st.session_state.colectivas_step = "select_direction"
         else:
+            if st.session_state.get("failed_attempts", 0) >= 1:
+                st.session_state.colectivas_step = None
+                st.session_state.failed_attempts = 0
+                return False  # Indicate to handle with LLM
             st.chat_message("assistant", avatar="bot_icon.png").write("No entendí. Por favor, elegí una empresa de lancha colectiva: Jilguero, Interisleña, LineasDelta")
+            st.session_state.failed_attempts = st.session_state.get("failed_attempts", 0) + 1
             st.session_state.colectivas_step = None
 
     elif st.session_state.colectivas_step == "select_direction":
@@ -178,6 +183,7 @@ def handle_colectivas_input(user_input):
 
     if st.session_state.colectivas_step is None:
         st.session_state.colectivas_step = "select_company"
+    return True  # Indicate handled by this function
 
 # Store project_id in session state to persist across conversation
 if "project_id" not in st.session_state:
@@ -256,7 +262,15 @@ if user_input:
     elif "colectivas" in user_input.lower():
         colectivas()
     elif st.session_state.get("colectivas_step"):
-        handle_colectivas_input(user_input)
+        if not handle_colectivas_input(user_input):
+            try:
+                documents = retrieve_documents(user_input)
+                bot_reply = make_api_call(user_input, project_id, documents)
+                st.chat_message("user").write(user_input)
+                st.chat_message("assistant", avatar="bot_icon.png").write(bot_reply)
+                store_chat_message(project_id, "assistant", bot_reply)
+            except Exception as e:
+                st.error(f"Error: {e}")
     else:
         try:
             documents = retrieve_documents(user_input)
