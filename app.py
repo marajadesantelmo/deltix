@@ -85,7 +85,7 @@ def make_api_call(user_input, project_id, documents, retries=3, delay=2):
                 messages=[
                     {
                         "role": "system",
-                        "content": "Vos sos Deltix, el bot del humedal. Eres argentino, simpático, informal y amable."
+                        "content": "Vos sos Deltix, el bot del humedal. Eres argentino y amable. Ingresando algunas de estas palabras el usuario puede obtener información útil: mareas: obtener el pronóstico de mareas, windguru: pronóstico meteorológico de windgurú, Colectivas: horarios de lanchas colectivas, memes: ver los memes más divertidos de la isla"
                     },
                     {
                         "role": "user",
@@ -128,6 +128,70 @@ if not st.session_state.initial_messages_shown:
     st.session_state.initial_messages_shown = True
 
 user_input = st.chat_input("Ingresa tu mensaje...")
+
+def colectivas():
+    st.chat_message("assistant", avatar="bot_icon.png").write("Elegí la empresa de lancha colectiva:\n- **Jilguero**: va por el Carapachay-Angostura\n- **Interisleña**: Sarmiento, San Antonio y muchos más\n- **LineasDelta**: Caraguatá, Canal Arias, Paraná Miní")
+    st.session_state.colectivas_step = "select_company"
+
+def handle_colectivas_input(user_input):
+    if st.session_state.colectivas_step == "select_company":
+        if "jilguero" in user_input.lower():
+            st.session_state.colectivas_company = "Jilguero"
+            st.chat_message("assistant", avatar="bot_icon.png").write("En qué sentido querés viajar? Ida a la isla o vuelta a Tigre?")
+            st.session_state.colectivas_step = "select_direction"
+        elif "interisleña" in user_input.lower():
+            st.session_state.colectivas_company = "Interisleña"
+            st.chat_message("assistant", avatar="bot_icon.png").write("Querés los horarios de verano o de invierno?")
+            st.session_state.colectivas_step = "select_season"
+        elif "lineasdelta" in user_input.lower():
+            st.session_state.colectivas_company = "LineasDelta"
+            st.chat_message("assistant", avatar="bot_icon.png").write("Qué recorrido necesitás? Ida a la isla o vuelta a Tigre?")
+            st.session_state.colectivas_step = "select_direction"
+        else:
+            st.chat_message("assistant", avatar="bot_icon.png").write("No entendí. Por favor, elegí una empresa de lancha colectiva: Jilguero, Interisleña, LineasDelta")
+
+    elif st.session_state.colectivas_step == "select_direction":
+        if st.session_state.colectivas_company == "Jilguero":
+            if "ida" in user_input.lower():
+                st.image("colectivas/jilguero_ida.png")
+                st.chat_message("assistant", avatar="bot_icon.png").write("Estos son los horarios de ida a la isla de Jilguero.")
+            elif "vuelta" in user_input.lower():
+                st.image("colectivas/jilguero_vuelta.png")
+                st.chat_message("assistant", avatar="bot_icon.png").write("Estos son los horarios de vuelta a Tigre de Jilguero.")
+            else:
+                st.chat_message("assistant", avatar="bot_icon.png").write("No entendí. Por favor, elegí 'Ida a la isla' o 'Vuelta a Tigre'.")
+        elif st.session_state.colectivas_company == "LineasDelta":
+            st.session_state.colectivas_direction = user_input.lower()
+            st.chat_message("assistant", avatar="bot_icon.png").write("En época escolar o no escolar?")
+            st.session_state.colectivas_step = "select_schedule"
+
+    elif st.session_state.colectivas_step == "select_season":
+        if "verano" in user_input.lower():
+            st.image("colectivas/interislena_ida_verano.png")
+            st.chat_message("assistant", avatar="bot_icon.png").write("Estos son los horarios de verano de Interisleña.")
+        elif "invierno" in user_input.lower():
+            st.image("colectivas/interislena_ida_invierno.png")
+            st.chat_message("assistant", avatar="bot_icon.png").write("Estos son los horarios de invierno de Interisleña.")
+        else:
+            st.chat_message("assistant", avatar="bot_icon.png").write("No entendí. Por favor, elegí 'Verano' o 'Invierno'.")
+
+    elif st.session_state.colectivas_step == "select_schedule":
+        if "escolar" in user_input.lower():
+            if "ida" in st.session_state.colectivas_direction:
+                st.image("colectivas/lineas_delta_ida_escolar.png")
+                st.chat_message("assistant", avatar="bot_icon.png").write("Estos son los horarios de ida a la isla en época escolar de LineasDelta.")
+            elif "vuelta" in st.session_state.colectivas_direction:
+                st.image("colectivas/lineas_delta_vuelta_escolar.png")
+                st.chat_message("assistant", avatar="bot_icon.png").write("Estos son los horarios de vuelta a Tigre en época escolar de LineasDelta.")
+        elif "no escolar" in user_input.lower():
+            if "ida" in st.session_state.colectivas_direction:
+                st.image("colectivas/lineas_delta_ida_no_escolar.png")
+                st.chat_message("assistant", avatar="bot_icon.png").write("Estos son los horarios de ida a la isla en época no escolar de LineasDelta.")
+            elif "vuelta" in st.session_state.colectivas_direction:
+                st.image("colectivas/lineas_delta_vuelta_no_escolar.png")
+                st.chat_message("assistant", avatar="bot_icon.png").write("Estos son los horarios de vuelta a Tigre en época no escolar de LineasDelta.")
+        else:
+            st.chat_message("assistant", avatar="bot_icon.png").write("No entendí. Por favor, elegí 'Escolar' o 'No escolar'.")
 
 if user_input:
     store_chat_message(project_id, "user", user_input)
@@ -181,6 +245,11 @@ if user_input:
                 store_chat_message(project_id, "assistant", bot_reply)
             except Exception as e:
                 st.error(f"Error: {e}")
+
+    elif "colectivas" in user_input.lower():
+        colectivas()
+    elif st.session_state.get("colectivas_step"):
+        handle_colectivas_input(user_input)
     else:
         try:
             documents = retrieve_documents(user_input)
