@@ -34,3 +34,25 @@ Soy *Deltix, el bot del humedal!* Mi objetivo es ayudar a quienes habitan y visi
 <img src="https://github.com/marajadesantelmo/deltix/assets/50368116/3a2ce1a0-0fc6-483d-a164-d2f89e92ba65" alt="Otra imagen" width="400">
 </h1>
 
+## Principales Scripts de la App
+
+### `main.py`
+Bot de telegram
+
+### `app.py`
+Aplicación Streamlit
+
+### `scraping.py`
+Este script se encarga de obtener los datos actualizados de mareas y pronósticos meteorológicos. Utiliza Selenium para tomar capturas de pantalla de Windguru y urllib para descargar la imagen de mareas del sitio del INA.
+
+### `auto_push.py`
+Este script verifica si hay cambios en el repositorio local y, de ser así, los sube automáticamente a GitHub. Es útil para mantener el repositorio actualizado con los últimos datos obtenidos por el script de scraping.
+
+### `pull_data.yml`
+Este archivo de configuración de GitHub Actions se encarga de actualizar los archivos `mareas.png` y `windguru.png` en el repositorio público. Se ejecuta cada vez que hay un push a la rama `main`.
+
+## Desarrollo de la WebApp en Streamlit
+
+Actualmente, se está desarrollando una versión del bot como una aplicación web utilizando Streamlit e integrando interacción conun  LLM. Esta versión permitirá a los usuarios interactuar con el bot directamente desde un navegador web, proporcionando una experiencia más accesible y amigable.
+
+
