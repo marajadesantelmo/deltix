@@ -208,7 +208,7 @@ def colectivas():
 
 if user_input:
     store_chat_message(project_id, "user", user_input)
-    if "marea" in user_input.lower():
+    if "marea" in user_input.lower() or "mareas" in user_input.lower():
         st.chat_message("assistant", avatar="bot_icon.png").write("Sí, ahora te mando...")
         if os.path.exists("marea.png"):
             st.image("marea.png")
@@ -224,10 +224,10 @@ if user_input:
             st.error("Error: No se encontró el archivo de Windguru.")
         store_chat_message(project_id, "assistant", "Sí, ahora te mando...")
 
-    elif "memes" in user_input.lower() or st.session_state.get("wants_more_memes", False):
+    elif "memes" in user_input.lower() or "meme" in user_input.lower() or st.session_state.get("wants_more_memes", False):
         st.chat_message("assistant", avatar="bot_icon.png").write("Ya te mando un meme")
         store_chat_message(project_id, "assistant", "Ya te mando un meme")
-        if "memes" in user_input.lower():
+        if "memes" in user_input.lower() or "meme" in user_input.lower():
             st.session_state.wants_more_memes = True
         if user_input.lower() == "no":
             st.session_state.wants_more_memes = False
@@ -250,14 +250,6 @@ if user_input:
                 st.session_state.wants_more_memes = False
         else:
             st.session_state.wants_more_memes = False
-            try:
-                documents = retrieve_documents(user_input)
-                bot_reply = make_api_call(user_input, project_id, documents)
-                st.chat_message("user").write(user_input)
-                st.chat_message("assistant", avatar="bot_icon.png").write(bot_reply)
-                store_chat_message(project_id, "assistant", bot_reply)
-            except Exception as e:
-                st.error(f"Error: {e}")
 
     elif "colectivas" in user_input.lower():
         colectivas()
