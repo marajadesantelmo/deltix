@@ -1,0 +1,17 @@
+name: Pull mareas y windguru updates
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - name: Pull latest updates
+        run: |
+          git pull origin main
