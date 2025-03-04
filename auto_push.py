@@ -31,6 +31,9 @@ def commit_and_push():
         commit_message = f"Update {current_time}"
         subprocess.run(['git', 'commit', '-m', commit_message], cwd=repo_directory)
         
+        # Pull the latest changes from the remote repository
+        subprocess.run(['git', 'pull', '--rebase'], cwd=repo_directory)
+        
         # Push to GitHub
         subprocess.run(['git', 'push'], cwd=repo_directory)
         print("Changes pushed to GitHub")
@@ -44,7 +47,6 @@ def main():
         commit_and_push()
     else:
         print("No changes detected.")
-
 
 if __name__ == "__main__":
     main()
