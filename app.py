@@ -133,9 +133,13 @@ def handle_colectivas_input(user_input):
             if "ida" in user_input.lower():
                 st.image("colectivas/jilguero_ida.png")
                 st.chat_message("assistant", avatar="bot_icon.png").write("Estos son los horarios de ida a la isla de Jilguero.")
+                # Reset colectivas flow after showing schedule
+                st.session_state.colectivas_step = None
             elif "vuelta" in user_input.lower():
                 st.image("colectivas/jilguero_vuelta.png")
                 st.chat_message("assistant", avatar="bot_icon.png").write("Estos son los horarios de vuelta a Tigre de Jilguero.")
+                # Reset colectivas flow after showing schedule
+                st.session_state.colectivas_step = None
             else:
                 st.chat_message("assistant", avatar="bot_icon.png").write("No entendí. Por favor, elegí 'Ida a la isla' o 'Vuelta a Tigre'.")
                 st.session_state.colectivas_step = None
@@ -148,9 +152,13 @@ def handle_colectivas_input(user_input):
         if "verano" in user_input.lower():
             st.image("colectivas/interislena_ida_verano.png")
             st.chat_message("assistant", avatar="bot_icon.png").write("Estos son los horarios de verano de Interisleña.")
+            # Reset colectivas flow after showing schedule
+            st.session_state.colectivas_step = None
         elif "invierno" in user_input.lower():
             st.image("colectivas/interislena_ida_invierno.png")
             st.chat_message("assistant", avatar="bot_icon.png").write("Estos son los horarios de invierno de Interisleña.")
+            # Reset colectivas flow after showing schedule
+            st.session_state.colectivas_step = None
         else:
             st.chat_message("assistant", avatar="bot_icon.png").write("No entendí. Por favor, elegí 'Verano' o 'Invierno'.")
             st.session_state.colectivas_step = None
@@ -160,23 +168,39 @@ def handle_colectivas_input(user_input):
             if "ida" in st.session_state.colectivas_direction:
                 st.image("colectivas/lineas_delta_ida_escolar.png")
                 st.chat_message("assistant", avatar="bot_icon.png").write("Estos son los horarios de ida a la isla en época escolar de LineasDelta.")
+                # Reset colectivas flow after showing schedule
+                st.session_state.colectivas_step = None
             elif "vuelta" in st.session_state.colectivas_direction:
                 st.image("colectivas/lineas_delta_vuelta_escolar.png")
                 st.chat_message("assistant", avatar="bot_icon.png").write("Estos son los horarios de vuelta a Tigre en época escolar de LineasDelta.")
+                # Reset colectivas flow after showing schedule
+                st.session_state.colectivas_step = None
         elif "no escolar" in user_input.lower():
             if "ida" in st.session_state.colectivas_direction:
                 st.image("colectivas/lineas_delta_ida_no_escolar.png")
                 st.chat_message("assistant", avatar="bot_icon.png").write("Estos son los horarios de ida a la isla en época no escolar de LineasDelta.")
+                # Reset colectivas flow after showing schedule
+                st.session_state.colectivas_step = None
             elif "vuelta" in st.session_state.colectivas_direction:
                 st.image("colectivas/lineas_delta_vuelta_no_escolar.png")
                 st.chat_message("assistant", avatar="bot_icon.png").write("Estos son los horarios de vuelta a Tigre en época no escolar de LineasDelta.")
+                # Reset colectivas flow after showing schedule
+                st.session_state.colectivas_step = None
         else:
             st.chat_message("assistant", avatar="bot_icon.png").write("No entendí. Por favor, elegí 'Escolar' o 'No escolar'.")
             st.session_state.colectivas_step = None
 
+    # If not explicitly set to None above, set default step
     if st.session_state.colectivas_step is None:
-        st.session_state.colectivas_step = "select_company"
-    return True  # Indicate handled by this function
+        # Reset any other colectivas-related state variables
+        if "colectivas_company" in st.session_state:
+            del st.session_state.colectivas_company
+        if "colectivas_direction" in st.session_state:
+            del st.session_state.colectivas_direction
+        if "failed_attempts" in st.session_state:
+            del st.session_state.failed_attempts
+            
+    return True if st.session_state.colectivas_step is not None else False  # Return False to handle with LLM if we've exited the flow
 
 # Initialize chat history in session state if it doesn't exist
 if "chat_messages" not in st.session_state:
