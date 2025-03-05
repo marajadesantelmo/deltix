@@ -40,13 +40,6 @@ def on_tool_call_delta(self, delta, snapshot):
         if output.type == "logs":
           print(f"\n{output.logs}", flush=True)
 
-col_title, col_logo = st.columns([5, 1])
-with col_title:
-  st.title("Deltix")
-  st.write("El bot del humedal...")
-with col_logo:
-  st.image('bot_icon.png')
-
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=openrouter_key,
