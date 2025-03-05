@@ -259,8 +259,9 @@ def colectivas():
     st.session_state.colectivas_step = "select_company"
 
 if user_input:
-    # Always add the user message to chat history
+    # Always add the user message to chat history and display immediately
     st.session_state.chat_messages.append({"role": "user", "content": user_input})
+    st.chat_message("user").write(user_input)
     store_chat_message(project_id, "user", user_input)
     
     if "marea" in user_input.lower() or "mareas" in user_input.lower():
@@ -338,24 +339,36 @@ if user_input:
         colectivas()
     elif st.session_state.get("colectivas_step"):
         if not handle_colectivas_input(user_input):
+            # Create a placeholder for the "thinking" message
+            with st.chat_message("assistant", avatar="bot_icon.png"):
+                thinking_placeholder = st.empty()
+                thinking_placeholder.write("deltix pensando...")
+                
+                try:
+                    documents = retrieve_documents(user_input)
+                    bot_reply = make_api_call(user_input, project_id, documents)
+                    # Replace the "thinking" message with the actual response
+                    thinking_placeholder.write(bot_reply)
+                    st.session_state.chat_messages.append({"role": "assistant", "content": bot_reply})
+                    store_chat_message(project_id, "assistant", bot_reply)
+                except Exception as e:
+                    error_msg = f"Error: {e}"
+                    thinking_placeholder.error(error_msg)
+                    st.session_state.chat_messages.append({"role": "assistant", "content": error_msg})
+    else:
+        # Create a placeholder for the "thinking" message
+        with st.chat_message("assistant", avatar="bot_icon.png"):
+            thinking_placeholder = st.empty()
+            thinking_placeholder.write("deltix pensando...")
+            
             try:
                 documents = retrieve_documents(user_input)
                 bot_reply = make_api_call(user_input, project_id, documents)
+                # Replace the "thinking" message with the actual response
+                thinking_placeholder.write(bot_reply)
                 st.session_state.chat_messages.append({"role": "assistant", "content": bot_reply})
-                st.chat_message("assistant", avatar="bot_icon.png").write(bot_reply)
                 store_chat_message(project_id, "assistant", bot_reply)
             except Exception as e:
                 error_msg = f"Error: {e}"
-                st.error(error_msg)
+                thinking_placeholder.error(error_msg)
                 st.session_state.chat_messages.append({"role": "assistant", "content": error_msg})
-    else:
-        try:
-            documents = retrieve_documents(user_input)
-            bot_reply = make_api_call(user_input, project_id, documents)
-            st.session_state.chat_messages.append({"role": "assistant", "content": bot_reply})
-            st.chat_message("assistant", avatar="bot_icon.png").write(bot_reply)
-            store_chat_message(project_id, "assistant", bot_reply)
-        except Exception as e:
-            error_msg = f"Error: {e}"
-            st.error(error_msg)
-            st.session_state.chat_messages.append({"role": "assistant", "content": error_msg})
