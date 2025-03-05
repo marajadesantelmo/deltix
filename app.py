@@ -203,24 +203,6 @@ def handle_colectivas_input(user_input):
             
     return True if st.session_state.colectivas_step is not None else False  # Return False to handle with LLM if we've exited the flow
 
-def animate_thinking(placeholder, stop_event):
-    """
-    Animates the "deltix pensando" message with moving dots.
-    This runs in a separate thread and updates the placeholder text.
-    """
-    animation_patterns = ["deltix pensando", 
-                         "deltix pensando.", 
-                         "deltix pensando..", 
-                         "deltix pensando...",
-                         "deltix pensando..",
-                         "deltix pensando."]
-    i = 0
-    
-    while not stop_event.is_set():
-        placeholder.write(animation_patterns[i])
-        i = (i + 1) % len(animation_patterns)
-        time.sleep(0.4)  # Control animation speed
-
 # Initialize chat history in session state if it doesn't exist
 if "chat_messages" not in st.session_state:
     st.session_state.chat_messages = []
@@ -361,31 +343,16 @@ if user_input:
             # Create a placeholder for the "thinking" message
             with st.chat_message("assistant", avatar="bot_icon.png"):
                 thinking_placeholder = st.empty()
-                thinking_placeholder.write("deltix pensando")
-                
-                # Use a threading Event to control the animation
-                stop_animation = threading.Event()
-                thinking_thread = threading.Thread(
-                    target=animate_thinking, 
-                    args=(thinking_placeholder, stop_animation)
-                )
-                thinking_thread.daemon = True  # Make thread daemon so it exits when main thread exits
-                thinking_thread.start()
+                thinking_placeholder.write("deltix pensando...")
                 
                 try:
                     documents = retrieve_documents(user_input)
                     bot_reply = make_api_call(user_input, project_id, documents)
-                    # Stop the animation
-                    stop_animation.set()
-                    thinking_thread.join(timeout=1)
                     # Replace with actual response
                     thinking_placeholder.write(bot_reply)
                     st.session_state.chat_messages.append({"role": "assistant", "content": bot_reply})
                     store_chat_message(project_id, "assistant", bot_reply)
                 except Exception as e:
-                    # Stop the animation and show error
-                    stop_animation.set()
-                    thinking_thread.join(timeout=1)
                     error_msg = f"Error: {e}"
                     thinking_placeholder.error(error_msg)
                     st.session_state.chat_messages.append({"role": "assistant", "content": error_msg})
@@ -393,31 +360,16 @@ if user_input:
         # Create a placeholder for the "thinking" message
         with st.chat_message("assistant", avatar="bot_icon.png"):
             thinking_placeholder = st.empty()
-            thinking_placeholder.write("deltix pensando")
-            
-            # Use a threading Event to control the animation
-            stop_animation = threading.Event()
-            thinking_thread = threading.Thread(
-                target=animate_thinking, 
-                args=(thinking_placeholder, stop_animation)
-            )
-            thinking_thread.daemon = True  # Make thread daemon so it exits when main thread exits
-            thinking_thread.start()
+            thinking_placeholder.write("deltix pensando...")
             
             try:
                 documents = retrieve_documents(user_input)
                 bot_reply = make_api_call(user_input, project_id, documents)
-                # Stop the animation
-                stop_animation.set()
-                thinking_thread.join(timeout=1)
                 # Replace with actual response
                 thinking_placeholder.write(bot_reply)
                 st.session_state.chat_messages.append({"role": "assistant", "content": bot_reply})
                 store_chat_message(project_id, "assistant", bot_reply)
             except Exception as e:
-                # Stop the animation and show error
-                stop_animation.set()
-                thinking_thread.join(timeout=1)
                 error_msg = f"Error: {e}"
                 thinking_placeholder.error(error_msg)
                 st.session_state.chat_messages.append({"role": "assistant", "content": error_msg})
