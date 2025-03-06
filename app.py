@@ -27,7 +27,7 @@ if not openrouter_key:
 WEATHER_KEYWORDS = ['clima', 'temperatura', 'pronostico', 'tiempo', 'lluvia', 'viento']
 
 # Define almacen-related keywords in Spanish
-ALMACEN_KEYWORDS = ['almacen', 'almacén', 'almacenera']
+ALMACEN_KEYWORDS = ['almacen', 'almacén', 'almacenera', 'almaceneras']
 
 class EventHandler(AssistantEventHandler):
     @override    
