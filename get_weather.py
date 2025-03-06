@@ -93,16 +93,16 @@ def main():
             print(f"  {dt.strftime('%Y-%m-%d %H:%M')}: {temp}°C, {desc}")
         
         # Save combined data for RAG
-        weather_file = os.path.join(os.path.dirname(__file__), "weather_data.json")
+        weather_file = os.path.join(os.path.dirname(__file__), "rag/weather_data.json")
         save_combined_data(weather_data, forecast_data, weather_file)
         print(f"Weather and forecast data saved to {weather_file}")
         
         # Optionally save separate files too
-        current_file = os.path.join(os.path.dirname(__file__), "current_weather.json")
+        current_file = os.path.join(os.path.dirname(__file__), "rag/current_weather.json")
         save_data_for_rag(weather_data, current_file, 'current')
         print(f"Current weather saved to {current_file}")
         
-        forecast_file = os.path.join(os.path.dirname(__file__), "forecast_data.json")
+        forecast_file = os.path.join(os.path.dirname(__file__), "rag/forecast_data.json")
         save_data_for_rag(forecast_data, forecast_file, 'forecast')
         print(f"Forecast data saved to {forecast_file}")
     else:
