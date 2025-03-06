@@ -8,6 +8,9 @@ import requests
 import time
 import random
 import threading
+import json
+from datetime import datetime
+
 
 supabase_url = os.getenv('SUPABASE_URL')
 supabase_key = os.getenv('SUPABASE_KEY')
@@ -19,6 +22,9 @@ supabase = create_client(supabase_url, supabase_key)
 openrouter_key = os.getenv('OPENROUTER_API_KEY')
 if not openrouter_key:
     raise ValueError("OpenRouter API Key must be set in environment variables")
+
+# Define weather-related keywords in Spanish
+WEATHER_KEYWORDS = ['clima', 'temperatura', 'pronostico', 'tiempo', 'lluvia', 'viento']
 
 class EventHandler(AssistantEventHandler):
     @override    
@@ -52,7 +58,67 @@ def get_help_message():
         "- **windguru**: _pronóstico meteorológico de windgurú_\n"
         "- **colectivas**: _horarios de lanchas colectivas_\n"
         "- **memes**: _ver los memes más divertidos de la isla_\n"
+        "- **clima**, **temperatura**, **pronostico**, **tiempo**, **lluvia**, **viento**: _información meteorológica actualizada_\n"
     )
+
+def load_weather_data():
+    """Load the latest weather data from the JSON file"""
+    try:
+        weather_file_path = os.path.join(os.path.dirname(__file__), "rag", "weather_data.json")
+        with open(weather_file_path, 'r') as file:
+            weather_data = json.load(file)
+        return weather_data
+    except Exception as e:
+        print(f"Error loading weather data: {e}")
+        return None
+
+def format_weather_for_context(weather_data):
+    """Format weather data into a readable context in Spanish for the LLM"""
+    if not weather_data:
+        return ""
+    
+    try:
+        # Get current weather information
+        current = weather_data.get('current_weather', {})
+        location = current.get('name', 'Desconocido')
+        country = current.get('sys', {}).get('country', '')
+        temp = current.get('main', {}).get('temp', 'N/A')
+        feels_like = current.get('main', {}).get('feels_like', 'N/A')
+        description = current.get('weather', [{}])[0].get('description', 'N/A')
+        humidity = current.get('main', {}).get('humidity', 'N/A')
+        wind_speed = current.get('wind', {}).get('speed', 'N/A')
+        
+        # Get timestamp
+        timestamp_str = weather_data.get('timestamp', 'Desconocido')
+        
+        # Format forecast information (next 24 hours)
+        forecast_items = weather_data.get('forecast', {}).get('list', [])[:8]  # First 24 hours (8 * 3-hour intervals)
+        forecast_text = ""
+        
+        for item in forecast_items:
+            dt_txt = item.get('dt_txt', '')
+            temp_forecast = item.get('main', {}).get('temp', 'N/A')
+            desc_forecast = item.get('weather', [{}])[0].get('description', 'N/A')
+            forecast_text += f"- {dt_txt}: {temp_forecast}°C, {desc_forecast}\n"
+        
+        # Create the context in Spanish
+        context = f"""
+Información del clima para {location}, {country} (actualizado el {timestamp_str}):
+Condiciones actuales: {temp}°C (sensación térmica de {feels_like}°C), {description}
+Humedad: {humidity}%, Velocidad del viento: {wind_speed} m/s
+
+Pronóstico para las próximas 24 horas:
+{forecast_text}
+"""
+        return context
+    except Exception as e:
+        print(f"Error formatting weather data: {e}")
+        return "La información del clima está disponible pero no se pudo formatear correctamente."
+
+def contains_weather_keywords(user_input):
+    """Check if the user input contains any weather-related keywords"""
+    lower_input = user_input.lower()
+    return any(keyword in lower_input for keyword in WEATHER_KEYWORDS)
 
 def retrieve_documents(query):
     response = supabase.from_("documents").select("*").ilike("content", f"%{query}%").execute()
@@ -65,8 +131,18 @@ def make_api_call(user_input, project_id, documents, retries=3, delay=2):
         if any(keyword in user_input.lower() for keyword in ['seguridad', 'policia', 'emergencia', 'telefono']):
             with open("rag/policia.txt", "r") as file:
                 context.append(file.read())
+        
+        # Add weather data as context if weather-related keywords are detected
+        if contains_weather_keywords(user_input):
+            weather_data = load_weather_data()
+            if weather_data:
+                weather_context = format_weather_for_context(weather_data)
+                context.append(weather_context)
+                
         previous_messages = supabase.from_("chat_history").select("*").eq("project_id", project_id).execute().data
         previous_messages_content = "\n".join([msg["content"] for msg in previous_messages if msg["role"] == "user"])
+        
+        context_text = "\n\n".join(context)
         
         for attempt in range(retries):
             completion = client.chat.completions.create(
@@ -79,11 +155,11 @@ def make_api_call(user_input, project_id, documents, retries=3, delay=2):
                 messages=[
                     {
                         "role": "system",
-                        "content": "Vos sos Deltix, el bot del humedal. Eres argentino y amable. Ingresando algunas de estas palabras el usuario puede obtener información útil: mareas: obtener el pronóstico de mareas, windguru: pronóstico meteorológico de windgurú, Colectivas: horarios de lanchas colectivas, memes: ver los memes más divertidos de la isla"
+                        "content": "Vos sos Deltix, el bot del humedal. Eres argentino y amable. Ingresando algunas de estas palabras el usuario puede obtener información útil: mareas: obtener el pronóstico de mareas, windguru: pronóstico meteorológico de windgurú, Colectivas: horarios de lanchas colectivas, memes: ver los memes más divertidos de la isla, clima/temperatura/pronostico/tiempo/lluvia/viento: información meteorológica actualizada"
                     },
                     {
                         "role": "user",
-                        "content": f"{user_input}\n\nMensajes anteriores:\n{previous_messages_content}\n\nContexto:\n{context}"
+                        "content": f"{user_input}\n\nMensajes anteriores:\n{previous_messages_content}\n\nContexto:\n{context_text}"
                     }
                 ]
             )
@@ -156,7 +232,7 @@ def handle_colectivas_input(user_input):
             # Reset colectivas flow after showing schedule
             st.session_state.colectivas_step = None
         elif "invierno" in user_input.lower():
-            st.image("colectivas/interislena_ida_invierno.png")
+            st.image("colectivas/interisleña_ida_invierno.png")
             st.chat_message("assistant", avatar="bot_icon.png").write("Estos son los horarios de invierno de Interisleña.")
             # Reset colectivas flow after showing schedule
             st.session_state.colectivas_step = None
@@ -356,6 +432,23 @@ if user_input:
                     error_msg = f"Error: {e}"
                     thinking_placeholder.error(error_msg)
                     st.session_state.chat_messages.append({"role": "assistant", "content": error_msg})
+    elif contains_weather_keywords(user_input):
+        # Create a placeholder for the "thinking" message
+        with st.chat_message("assistant", avatar="bot_icon.png"):
+            thinking_placeholder = st.empty()
+            thinking_placeholder.write("deltix pensando...")
+            
+            try:
+                documents = retrieve_documents(user_input)
+                bot_reply = make_api_call(user_input, project_id, documents)
+                # Replace with actual response
+                thinking_placeholder.write(bot_reply)
+                st.session_state.chat_messages.append({"role": "assistant", "content": bot_reply})
+                store_chat_message(project_id, "assistant", bot_reply)
+            except Exception as e:
+                error_msg = f"Error: {e}"
+                thinking_placeholder.error(error_msg)
+                st.session_state.chat_messages.append({"role": "assistant", "content": error_msg})
     else:
         # Create a placeholder for the "thinking" message
         with st.chat_message("assistant", avatar="bot_icon.png"):
