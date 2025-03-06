@@ -26,6 +26,9 @@ if not openrouter_key:
 # Define weather-related keywords in Spanish
 WEATHER_KEYWORDS = ['clima', 'temperatura', 'pronostico', 'tiempo', 'lluvia', 'viento']
 
+# Define almacen-related keywords in Spanish
+ALMACEN_KEYWORDS = ['almacen', 'almacén', 'almacenera']
+
 class EventHandler(AssistantEventHandler):
     @override    
     def on_text_created(self, text) -> None:
@@ -58,7 +61,8 @@ def get_help_message():
         "- **windguru**: _pronóstico meteorológico de windgurú_\n"
         "- **colectivas**: _horarios de lanchas colectivas_\n"
         "- **memes**: _ver los memes más divertidos de la isla_\n"
-        "- **clima**, **temperatura**, **pronostico**, **tiempo**, **lluvia**, **viento**: _información meteorológica actualizada_\n"
+        "- **clima**: _información meteorológica actualizada_\n"
+        "- **almaceneras**: _información sobre lanchas almaceneras de la isla_\n"
     )
 
 def load_weather_data():
@@ -120,6 +124,25 @@ def contains_weather_keywords(user_input):
     lower_input = user_input.lower()
     return any(keyword in lower_input for keyword in WEATHER_KEYWORDS)
 
+def contains_almacen_keywords(user_input):
+    """Check if the user input contains any almacen-related keywords"""
+    lower_input = user_input.lower()
+    return any(keyword in lower_input for keyword in ALMACEN_KEYWORDS)
+
+def load_almacen_data():
+    """Load almacen data from the text file"""
+    try:
+        almacen_file_path = os.path.join(os.getcwd(), "rag", "almaceneras.txt")
+        if os.path.exists(almacen_file_path):
+            with open(almacen_file_path, 'r', encoding='utf-8') as file:
+                return file.read()
+        else:
+            print(f"Almacen data file not found at: {almacen_file_path}")
+            return ""
+    except Exception as e:
+        print(f"Error loading almacen data: {e}")
+        return ""
+
 def make_api_call(user_input, project_id, documents, retries=3, delay=2):
     try:
         #context_supabase = "\n".join([doc["content"] for doc in documents])
@@ -134,6 +157,12 @@ def make_api_call(user_input, project_id, documents, retries=3, delay=2):
             if weather_data:
                 weather_context = format_weather_for_context(weather_data)
                 context.append(weather_context)
+
+        # Add almacen data as context if almacen-related keywords are detected
+        if contains_almacen_keywords(user_input):
+            almacen_context = load_almacen_data()
+            if almacen_context:
+                context.append(f"Información sobre almacenes de la isla:\n{almacen_context}")
                 
         previous_messages = supabase.from_("chat_history").select("*").eq("project_id", project_id).execute().data
         previous_messages_content = "\n".join([msg["content"] for msg in previous_messages if msg["role"] == "user"])
@@ -151,7 +180,7 @@ def make_api_call(user_input, project_id, documents, retries=3, delay=2):
                 messages=[
                     {
                         "role": "system",
-                        "content": "Vos sos Deltix, el bot del humedal. Eres argentino y amable. Ingresando algunas de estas palabras el usuario puede obtener información útil: mareas: obtener el pronóstico de mareas, windguru: pronóstico meteorológico de windgurú, Colectivas: horarios de lanchas colectivas, memes: ver los memes más divertidos de la isla, clima/temperatura/pronostico/tiempo/lluvia/viento: información meteorológica actualizada"
+                        "content": "Vos sos Deltix, el bot del humedal. Eres argentino y amable. Ingresando algunas de estas palabras el usuario puede obtener información útil: mareas: obtener el pronóstico de mareas, windguru: pronóstico meteorológico de windgurú, Colectivas: horarios de lanchas colectivas, memes: ver los memes más divertidos de la isla, clima/pronostico: información meteorológica actualizada, almaceneras: información sobre almacenes de la isla"
                     },
                     {
                         "role": "user",
@@ -452,9 +481,8 @@ if user_input:
             thinking_placeholder.write("deltix pensando...")
             
             try:
-                weather_data = load_weather_data()
-                weather = format_weather_for_context(weather_data)
-                bot_reply = make_api_call(user_input, project_id, weather)
+                documents = []
+                bot_reply = make_api_call(user_input, project_id, documents)
                 # Replace with actual response
                 thinking_placeholder.write(bot_reply)
                 st.session_state.chat_messages.append({"role": "assistant", "content": bot_reply})
