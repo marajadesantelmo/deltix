@@ -61,7 +61,7 @@ logger.setLevel(logging.WARNING)
 
 nest_asyncio.apply()
 
-ANSWER_charlar, ANSWER_meme, ANSWER_colaborar, ANSWER_mensajear, ANSWER_informacion, ANSWER_mareas_suscribir, ANSWER_windguru_suscribir, ANSWER_desuscribir, ANSWER_meme2, ANSWER_charlar_windguru, ANSWER_colectivas, ANSWER_jilguero, ANSWER_interislena, ANSWER_lineasdelta, ANSWER_direction, ANSWER_schedule  = range(16)
+ANSWER_charlar, ANSWER_meme, ANSWER_colaborar, ANSWER_mensajear, ANSWER_informacion, ANSWER_mareas_suscribir, ANSWER_windguru_suscribir, ANSWER_desuscribir, ANSWER_meme2, ANSWER_charlar_windguru, ANSWER_colectivas, ANSWER_jilguero, ANSWER_interislena, ANSWER_lineasdelta, ANSWER_direction, ANSWER_schedule, ANSWER_almacenera_select = range(17)
 
 def generate_main_menu():
     '''
@@ -767,150 +767,200 @@ async def schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         await context.bot.send_photo(chat_id, open(lineas_delta_vuelta_no_escolar_path, "rb"))
     return ConversationHandler.END
 
-# Hardcoded content from almaceneras.txt
-ALMACENERAS_INFO = """Información sobre lanchas almaceneras en la isla
+# Almaceneras data organized as a dictionary
+ALMACENERAS_DATA = {
+    "NILDA ALICIA (Anita)": {
+        "propietario": "Miguel Machado",
+        "recorridos": "MARTES, VIERNES: Río Sarmiento / Río San Antonio\nMIÉRCOLES, SABADO: Río Capitán / Rama Negra / Arroyo Toro hasta Antequera primer tramo",
+        "telefono": "1557490961"
+    },
+    "CACHITO": {
+        "propietario": "Aníbal Isea",
+        "recorridos": "LUNES, MIÉRCOLES, VIERNES y SABADO: Río Carapachay hasta el 500\nDOMINGO: Río Carapachay hasta Angostura",
+        "telefono": "11 6572-1030"
+    },
+    "ELSA MARÍA": {
+        "propietario": "MAYORISTA",
+        "recorridos": "",
+        "telefono": "1565548280"
+    },
+    "SANTA TERESITA (ex Negrita)": {
+        "propietario": "Ángel Ojeda",
+        "recorridos": "MARTES Y SÁBADO: Río Carapachay hasta Río Paraná\nMIÉRCOLES y VIERNES: Arroyo Espera hasta Cruz Colorada",
+        "telefono": "1532661770"
+    },
+    "JUAN Y JUAN": {
+        "propietario": "Tito Hendenreich",
+        "recorridos": "MAYORISTA",
+        "telefono": "15 5095771/15 31905299"
+    },
+    "SANTA TERESITA": {
+        "propietario": "Ricardo Ojeda",
+        "recorridos": "MARTES, JUEVES, SÁBADO Y DOMINGO: Río Luján / Canal Arias hasta el Paraná",
+        "telefono": ""
+    },
+    "ADRIANA": {
+        "propietario": "Leo Rinaldi",
+        "recorridos": "MIÉRCOLES, DOMINGO: Arroyo Abra vieja\nJUEVES, SÁBADO: Toro / Antequera / Arroyo Banco / Arroyo Andresito",
+        "telefono": "1569789983"
+    },
+    "BUENA VIDA": {
+        "propietario": "Cristian Lara",
+        "recorridos": "LUNES: Arroyo Dorado /Arroyo Sábalos /Arroyo Arroyon/ Arroyo Boraso\nVIERNES: Arroyo Tiburón / Canal del Este y Aguajes",
+        "telefono": "1553395931"
+    },
+    "ESPERANZA R": {
+        "propietario": "Oscar Suárez",
+        "recorridos": "MARTES, JUEVES y SÁBADO: Río Carapachay hasta muelle Sienará, retoma Río Luján / Arroyo Caraguatà hasta el 400",
+        "telefono": "1565098174"
+    },
+    "GARDENIA": {
+        "propietario": "Lancha Mayorista",
+        "recorridos": "",
+        "telefono": "1540554422/1531882922"
+    },
+    "GLORIA I": {
+        "propietario": "Jorge Rinaldi",
+        "recorridos": "MIÉRCOLES: Río San Antonio / Canal Honda/Aguaje del Durazno / Canal 2/Punta del Arroyo Caracoles /Bajos del Temor hasta Arroyo Chaná\nJUEVES: Chaná / la otra punta del Arroyo Caracoles / Paraná Mini / Tuyú Paré / Canal 3 / Arroyo Largo\nVIERNES: Arroyo Correntoso / Arroyo La Barca / Arroyo La Barquita/Arroyo Largo",
+        "telefono": "1531298913"
+    },
+    "IGNACIO FRANCO": {
+        "propietario": "Familia Bettiga",
+        "recorridos": "MIÉRCOLES: Río Sarmiento / Río Capitán hasta Club Imos / Arroyo Fredes\nJUEVES: Río Capitán / Arroyo Fredes\nVIERNES: Arroyo Estudiante / Arroyo Felicaria / Río Paraná Mini/Canal Arana\nSÁBADO: Arroyo Fredes / Río Paraná Miní / Tuyú Paré / Chaná / Felicaria abajo hasta Fredes",
+        "telefono": "1562828206"
+    },
+    "MADRESELVA": {
+        "propietario": "Familia Bettiga",
+        "recorridos": "MIÉRCOLES: Tramo de Capitán arriba / Arroyo Estudiante / Arroyo Paicarabí/Felicaria abajo\nJUEVES: Río Sarmiento / arroyo Espera / Cruz Colorada/tramo de Paraná\nVIERNES: Paicarabí/Canal La Serna / Canal 4 / tramo de Paraná Mini",
+        "telefono": "1554709382"
+    },
+    "NELIDA G": {
+        "propietario": "José Olivera",
+        "recorridos": "LUNES: Arroyo Caraguata / Cruz Colorada / Canal Arias\nMIÉRCOLES: Río Luján / Canal Arias / Río Paraná / Cruz Colorada/Arroyo Caraguatá\nVIERNES: Río Luján / Canal Arias / Río Paraná / Cruz Colorada/ Arroyo Caraguatá\nSÁBADO: Río Luján / Canal Arias / Río Paraná / Cruz Colorada/ Arroyo Caraguatá",
+        "telefono": "155644466"
+    },
+    "RAQUEL N": {
+        "propietario": "Roberto Baraldo",
+        "recorridos": "LUNES: Río Sarmiento / Río Capitán / Arroyo La Horca / Paraná hasta Cruz Alta\nMARTES: Río Paraná hasta Carabelas / Canal 5 / Arroyo Las Casillas del Delta\nMIÉRCOLES: Río Paraná hasta Carabelas / Canal 5/ Arroyo Las Casillas\nSÁBADO: Río Sarmiento / Río Capitán / Arroyo La Horca / Paraná hasta Cruz Alta",
+        "telefono": "1544981064"
+    },
+    "STELLA MARIS": {
+        "propietario": "Manuel Compagnucci",
+        "recorridos": "VIERNES: Río Paraná zona Escobar hasta el hospital de Carabelas de ahi vuelve hasta el Paycaraby, Estudiantes, Las Cañas Fredes, Mini y La Serna\nSÁBADOS: Puerto de Escobar / Río Paraná / Canal de La Serna / tramo de Arroyo Paycarabí volviendo por Canal 4 / Rio Paraná Mini hasta Arroyo Chana / Bajos del Temor/ Arroyo Felicaria abajo / Arroyo Felicaria hasta la Escuela",
+        "telefono": "1562771474"
+    }
+}
 
--NILDA ALICIA (Anita) de Miguel Machado
-MARTES, VIERNES: Río Sarmiento / Río San Antonio
-MIÉRCOLES, SABADO: Río Capitán / Rama Negra / Arroyo Toro hasta Antequera primer tramo
-1557490961
-
--CACHITO de Aníbal Isea
-LUNES, MIÉRCOLES, VIERNES y SABADO: Río Carapachay hasta el 500
-DOMINGO: Río Carapachay hasta Angostura
-11 6572-1030
-
--ELSA MARÍA
-MAYORISTA
-1565548280
-
--SANTA TERESITA (ex Negrita) de Ángel Ojeda
-MARTES Y SÁBADO: Río Carapachay hasta Río Paraná
-MIÉRCOLES y VIERNES: Arroyo Espera hasta Cruz Colorada
-1532661770
-
--JUAN Y JUAN de Tito Hendenreich
-MAYORISTA
-15 5095771/15 31905299
-
--SANTA TERESITA de Ricardo Ojeda
-MARTES, JUEVES, SÁBADO Y DOMINGO
-Río Luján / Canal Arias hasta el Paraná
-
--ADRIANA de Leo Rinaldi
-MIÉRCOLES, DOMINGO: Arroyo Abra vieja
-JUEVES, SÁBADO: Toro / Antequera / Arroyo Banco / Arroyo Andresito
-1569789983
-
--BUENA VIDA de Cristian Lara
-LUNES: Arroyo Dorado /Arroyo Sábalos /Arroyo Arroyon/ Arroyo Boraso
-VIERNES
-Arroyo Tiburón / Canal del Este y Aguajes
-1553395931
-
--ESPERANZA R de Oscar Suárez
-MARTES, JUEVES y SÁBADO
-Río Carapachay hasta muelle Sienará, retoma Río Luján / Arroyo Caraguatà hasta el 400
-1565098174
-
--GARDENIA Lancha Mayorista
-1540554422/1531882922
-
--GLORIA I de Jorge Rinaldi
-MIÉRCOLES: Río San Antonio / Canal Honda/Aguaje del Durazno / Canal 2/Punta del Arroyo Caracoles /Bajos del Temor hasta Arroyo Chaná
-JUEVES: Chaná / la otra punta del Arroyo Caracoles / Paraná Mini / Tuyú Paré / Canal 3 / Arroyo Largo
-VIERNES: Arroyo Correntoso / Arroyo La Barca / Arroyo La Barquita/Arroyo Largo
-1531298913
-
--IGNACIO FRANCO de Familia Bettiga
-MIÉRCOLES: Río Sarmiento / Río Capitán hasta Club Imos / Arroyo Fredes
-JUEVES: Río Capitán / Arroyo Fredes
-VIERNES: Arroyo Estudiante / Arroyo Felicaria / Río Paraná Mini/Canal Arana
-SÁBADO: Arroyo Fredes / Río Paraná Miní / Tuyú Paré / Chaná / Felicaria abajo hasta Fredes
-1562828206
-
--MADRESELVA de Familia Bettiga
-MIÉRCOLES: Tramo de Capitán arriba / Arroyo Estudiante / Arroyo Paicarabí/Felicaria abajo
-JUEVES: Río Sarmiento / arroyo Espera / Cruz Colorada/tramo de Paraná
-VIERNES: Paicarabí/Canal La Serna / Canal 4 / tramo de Paraná Mini
-1554709382
-
--NELIDA G de José Olivera
-LUNES: Arroyo Caraguata / Cruz Colorada / Canal Arias
-MIÉRCOLES: Río Luján / Canal Arias / Río Paraná / Cruz Colorada/Arroyo Caraguatá
-VIERNES: Río Luján / Canal Arias / Río Paraná / Cruz Colorada/ Arroyo Caraguatá
-SÁBADO: Río Luján / Canal Arias / Río Paraná / Cruz Colorada/ Arroyo Caraguatá
-155644466
-
--RAQUEL N de Roberto Baraldo
-LUNES: Río Sarmiento / Río Capitán / Arroyo La Horca / Paraná hasta Cruz Alta
-MARTES: Río Paraná hasta Carabelas / Canal 5 / Arroyo Las Casillas del Delta
-MIÉRCOLES: Río Paraná hasta Carabelas / Canal 5/ Arroyo Las Casillas
-SÁBADO: Río Sarmiento / Río Capitán / Arroyo La Horca / Paraná hasta Cruz Alta
-1544981064
-
--STELLA MARIS de Manuel Compagnucci
-VIERNES: Río Paraná zona Escobar hasta el hospital de Carabelas de ahi vuelve hasta el Paycaraby, Estudiantes, Las Cañas Fredes, Mini y La Serna
-SÁBADOS: Puerto de Escobar / Río Paraná / Canal de La Serna / tramo de Arroyo Paycarabí volviendo por Canal 4 / Rio Paraná Mini hasta Arroyo Chana / Bajos del Temor/ Arroyo Felicaria abajo / Arroyo Felicaria hasta la Escuela
-1562771474"""
-
-async def almaceneras(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def almaceneras(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     '''
-    Envía la información de las lanchas almaceneras cuando el usuario usa /almaceneras
+    Muestra la lista de lanchas almaceneras disponibles para que el usuario elija
     '''
     user = update.effective_user
     chat_id = update.effective_chat.id
     
     try:
-        # Usar la variable hardcoded en lugar de leer del archivo
-        almaceneras_info = ALMACENERAS_INFO
-        
-        # Dividir el texto en secciones para enviar mensajes más pequeños
-        # Telegram tiene un límite de caracteres por mensaje
-        lines = almaceneras_info.split('\n')
-        current_message = ""
-        
-        # Enviar un mensaje inicial
+        # Crear un mensaje con la lista de almaceneras disponibles
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text="Acá te comparto la información sobre las lanchas almaceneras que recorren la isla:",
+            text="📋 Acá te muestro las lanchas almaceneras disponibles. ¿Sobre cuál querés información?",
             parse_mode='HTML')
         
-        # Procesar y enviar el contenido en partes
-        for line in lines:
-            # Si la línea comienza con un guión o está vacía, es un nuevo almacenero
-            if line.startswith('-') or line.strip() == '':
-                if current_message:
-                    await context.bot.send_message(
-                        chat_id=update.effective_chat.id,
-                        text=current_message,
-                        parse_mode='HTML')
-                    current_message = ""
-                    # Pequeña pausa para evitar límites de API
-                    time.sleep(0.1)
-            
-            # Agregar la línea actual al mensaje
-            current_message += line + "\n"
+        # Crear teclado con opciones de almaceneras
+        # Agrupar en filas de 2 para mejor visualización
+        almaceneras_list = list(ALMACENERAS_DATA.keys())
+        keyboard = []
+        for i in range(0, len(almaceneras_list), 2):
+            row = almaceneras_list[i:i+2]
+            keyboard.append(row)
         
-        # Enviar el último mensaje si quedó algo
-        if current_message:
-            await context.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text=current_message,
-                parse_mode='HTML')
+        # Agregar un botón "Ver todas" al final
+        keyboard.append(["Ver todas"])
         
-        # Mensaje de cierre
+        reply_markup = ReplyKeyboardMarkup(
+            keyboard,
+            one_time_keyboard=True,
+            input_field_placeholder="Selecciona una almacenera"
+        )
+        
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text="Los horarios y recorridos de las almaceneras pueden variar, te recomiendo llamar para confirmar.",
-            parse_mode='HTML')
+            text="Seleccioná una lancha almacenera para ver sus detalles:",
+            reply_markup=reply_markup)
+        
+        return ANSWER_almacenera_select
         
     except Exception as e:
-        logger.warning(f"Error al enviar información de almaceneras: {e}")
+        logger.warning(f"Error al mostrar lista de almaceneras: {e}")
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
             text="Lo siento, tuve un problema al obtener la información de las almaceneras. Por favor, intentá más tarde.",
             parse_mode='HTML')
+        return ConversationHandler.END
+
+async def almacenera_selected(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    '''
+    Maneja la selección de una almacenera específica y muestra su información
+    '''
+    selected = update.message.text
+    chat_id = update.effective_chat.id
+    
+    try:
+        if selected == "Ver todas":
+            # Si el usuario quiere ver todas las almaceneras
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="Acá te muestro la información de todas las lanchas almaceneras:")
+            
+            for nombre, info in ALMACENERAS_DATA.items():
+                message = f"<b>{nombre}</b> de {info['propietario']}\n"
+                if info['recorridos']:
+                    message += f"{info['recorridos']}\n"
+                if info['telefono']:
+                    message += f"📞 {info['telefono']}"
+                
+                await context.bot.send_message(
+                    chat_id=update.effective_chat.id,
+                    text=message,
+                    parse_mode='HTML')
+                time.sleep(0.3)  # Pequeña pausa entre mensajes
+        
+        elif selected in ALMACENERAS_DATA:
+            # Si el usuario seleccionó una almacenera específica
+            info = ALMACENERAS_DATA[selected]
+            
+            message = f"<b>{selected}</b> de {info['propietario']}\n"
+            if info['recorridos']:
+                message += f"\n{info['recorridos']}\n"
+            if info['telefono']:
+                message += f"\n📞 Teléfono: {info['telefono']}"
+            
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text=message,
+                parse_mode='HTML')
+        
+        else:
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="No encontré información sobre esa almacenera. Por favor, elegí una de la lista.")
+            return ANSWER_almacenera_select
+        
+        # Mensaje final con recomendación
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="Los horarios y recorridos de las almaceneras pueden variar, te recomiendo llamar para confirmar.",
+            reply_markup=main_menu_keyboard)
+        
+        return ConversationHandler.END
+        
+    except Exception as e:
+        logger.warning(f"Error al mostrar información de almacenera: {e}")
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="Lo siento, tuve un problema al mostrar la información. Por favor, intentá más tarde.",
+            parse_mode='HTML',
+            reply_markup=main_menu_keyboard)
+        return ConversationHandler.END
 
 if __name__ == '__main__':
     application = ApplicationBuilder().token(telegram_token).build()
@@ -991,6 +1041,7 @@ if __name__ == '__main__':
             ANSWER_interislena: [MessageHandler(filters.TEXT, answer_interislena)],
             ANSWER_direction: [MessageHandler(filters.TEXT, direction)],
             ANSWER_schedule: [MessageHandler(filters.TEXT, schedule)],
+            ANSWER_almacenera_select: [MessageHandler(filters.TEXT, almacenera_selected)],
         },
         fallbacks=handlers,
     )
