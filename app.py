@@ -64,7 +64,7 @@ def get_help_message():
 def load_weather_data():
     """Load the latest weather data from the JSON file"""
     try:
-        weather_file_path = os.path.join(os.path.dirname(__file__), "rag", "weather_data.json")
+        weather_file_path = "rag/weather_data.json"
         with open(weather_file_path, 'r') as file:
             weather_data = json.load(file)
         return weather_data
@@ -119,10 +119,6 @@ def contains_weather_keywords(user_input):
     """Check if the user input contains any weather-related keywords"""
     lower_input = user_input.lower()
     return any(keyword in lower_input for keyword in WEATHER_KEYWORDS)
-
-def retrieve_documents(query):
-    response = supabase.from_("documents").select("*").ilike("content", f"%{query}%").execute()
-    return response.data
 
 def make_api_call(user_input, project_id, documents, retries=3, delay=2):
     try:
@@ -422,7 +418,7 @@ if user_input:
                 thinking_placeholder.write("deltix pensando...")
                 
                 try:
-                    documents = retrieve_documents(user_input)
+                    documents = []
                     bot_reply = make_api_call(user_input, project_id, documents)
                     # Replace with actual response
                     thinking_placeholder.write(bot_reply)
@@ -439,7 +435,7 @@ if user_input:
             thinking_placeholder.write("deltix pensando...")
             
             try:
-                documents = retrieve_documents(user_input)
+                documents = []
                 bot_reply = make_api_call(user_input, project_id, documents)
                 # Replace with actual response
                 thinking_placeholder.write(bot_reply)
@@ -456,8 +452,9 @@ if user_input:
             thinking_placeholder.write("deltix pensando...")
             
             try:
-                documents = retrieve_documents(user_input)
-                bot_reply = make_api_call(user_input, project_id, documents)
+                weather_data = load_weather_data()
+                weather = format_weather_for_context(weather_data)
+                bot_reply = make_api_call(user_input, project_id, weather)
                 # Replace with actual response
                 thinking_placeholder.write(bot_reply)
                 st.session_state.chat_messages.append({"role": "assistant", "content": bot_reply})
