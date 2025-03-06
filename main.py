@@ -35,6 +35,7 @@ lineas_delta_ida_escolar_path = base_path + 'colectivas/lineas_delta_ida_escolar
 lineas_delta_vuelta_no_escolar_path = base_path + 'colectivas/lineas_delta_vuelta_no_escolar.png'
 lineas_delta_vuelta_escolar_path = base_path + 'colectivas/lineas_delta_vuelta_escolar.png'
 carpinchix_trabajando_path = base_path + 'carpinchix_trabajando.png'
+almaceneras_path = base_path + 'rag/almaceneras.txt'
 
 user_experience = pd.read_csv(user_experience_path)
 
@@ -72,6 +73,7 @@ def generate_main_menu():
     return ("- <b>/mareas </b>   <i> obtener el pronóstico de mareas &#9875</i>\n"
             "- <b>/windguru </b>   <i> pronóstico meteorológico de windgurú</i>\n"
             "- <b>/colectivas </b>   <i> horarios de lanchas colectivas &#128337</i>\n"
+            "- <b>/almaceneras </b>   <i> información de las lanchas almaceneras &#128676</i>\n"
             "- <b>/memes </b>   <i> ver los memes más divertidos de la isla &#129315 </i>\n"
             # "- <b>/voy_y_vuelvo </b>   <i> compartir viajes desde y hacia a la isla</i>\n"
             # "- <b>/notiDeltix </b>   <i> suscribirte al envío de info de interés sobre la isla</i>\n"
@@ -82,7 +84,7 @@ def generate_main_menu():
             "- <b>/mensajear </b>   <i> mandarle un mensajito al equipo Deltix</i>\n")
 
 main_menu_keyboard = ReplyKeyboardMarkup([["/windguru", "/mareas", "/memes"],
-                                          ["/colectivas", "/colaborar", "/mensajear"],
+                                          ["/colectivas", "/almaceneras", "/colaborar"],
                                           ["/charlar", "/informacion", "/desuscribirme"]])
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
@@ -765,6 +767,67 @@ async def schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         await context.bot.send_photo(chat_id, open(lineas_delta_vuelta_no_escolar_path, "rb"))
     return ConversationHandler.END
 
+async def almaceneras(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    '''
+    Envía la información de las lanchas almaceneras cuando el usuario usa /almaceneras
+    '''
+    user = update.effective_user
+    chat_id = update.effective_chat.id
+    update_user_experience(user.id, 'almaceneras')
+    logger.warning(f"{user.id} - {user.first_name} pidió información de almaceneras en chat {chat_id}")
+    
+    try:
+        # Leer el archivo almaceneras.txt
+        with open(almaceneras_path, 'r', encoding='utf-8') as file:
+            almaceneras_info = file.read()
+        
+        # Dividir el texto en secciones para enviar mensajes más pequeños
+        # Telegram tiene un límite de caracteres por mensaje
+        lines = almaceneras_info.split('\n')
+        current_message = ""
+        
+        # Enviar un mensaje inicial
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="Acá te comparto la información sobre las lanchas almaceneras que recorren la isla:",
+            parse_mode='HTML')
+        
+        # Procesar y enviar el contenido en partes
+        for line in lines:
+            # Si la línea comienza con un guión o está vacía, es un nuevo almacenero
+            if line.startswith('-') or line.strip() == '':
+                if current_message:
+                    await context.bot.send_message(
+                        chat_id=update.effective_chat.id,
+                        text=current_message,
+                        parse_mode='HTML')
+                    current_message = ""
+                    # Pequeña pausa para evitar límites de API
+                    time.sleep(0.1)
+            
+            # Agregar la línea actual al mensaje
+            current_message += line + "\n"
+        
+        # Enviar el último mensaje si quedó algo
+        if current_message:
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text=current_message,
+                parse_mode='HTML')
+        
+        # Mensaje de cierre
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="Los horarios y recorridos de las almaceneras pueden variar, te recomiendo llamar para confirmar.",
+            parse_mode='HTML')
+        
+    except Exception as e:
+        logger.warning(f"Error al enviar información de almaceneras: {e}")
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="Lo siento, tuve un problema al obtener la información de las almaceneras. Por favor, intentá más tarde.",
+            parse_mode='HTML')
+
 if __name__ == '__main__':
     application = ApplicationBuilder().token(telegram_token).build()
     start_handler = CommandHandler('start', start)
@@ -782,6 +845,7 @@ if __name__ == '__main__':
     CommandHandler('mensajear', mensaje_trigger),
     CommandHandler('menu', menu),
     CommandHandler('colectivas', colectivas),
+    CommandHandler('almaceneras', almaceneras),
     CommandHandler('Interislena', Interislena),
     CommandHandler('Jilguero', Jilguero),
     CommandHandler('LineasDelta', LineasDelta),
@@ -801,6 +865,7 @@ if __name__ == '__main__':
     MessageHandler(filters.Regex(r'^(Interislena|interislena|INTERISLENA)$'), Interislena),
     MessageHandler(filters.Regex(r'^(Jilguero|jilguero|JILGUERO)$'), Jilguero),
     MessageHandler(filters.Regex(r'^(LineasDelta|lineasdelta|LINEASDELTA)$'), LineasDelta),
+    MessageHandler(filters.Regex(r'^(Almaceneras|almaceneras|ALMACENERAS)$'), almaceneras),
 
     #Handlers si contiene palabra en minuscula
     MessageHandler(filters.Regex(r'(?i)(.*\bcharlar\b.*)'), charlar),
@@ -818,6 +883,10 @@ if __name__ == '__main__':
     MessageHandler(filters.Regex(r'(?i)(.*\bJilguero\b.*)'), Jilguero),
     MessageHandler(filters.Regex(r'(?i)(.*\bInterislena\b.*)'), Interislena),
     MessageHandler(filters.Regex(r'(?i)(.*\bLineasDelta\b.*)'), LineasDelta),
+    MessageHandler(filters.Regex(r'(?i)(.*\balmaceneras\b.*)'), almaceneras),
+    MessageHandler(filters.Regex(r'(?i)(.*\balmacenera\b.*)'), almaceneras),
+    MessageHandler(filters.Regex(r'(?i)(.*\balmacén\b.*)'), almaceneras),
+    MessageHandler(filters.Regex(r'(?i)(.*\balmacen\b.*)'), almaceneras),
     #Handlers otros
     MessageHandler(filters.TEXT, start2)]
 
