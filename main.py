@@ -860,8 +860,6 @@ async def almaceneras(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     '''
     user = update.effective_user
     chat_id = update.effective_chat.id
-    update_user_experience(user.id, 'almaceneras')
-    logger.warning(f"{user.id} - {user.first_name} pidió información de almaceneras en chat {chat_id}")
     
     try:
         # Usar la variable hardcoded en lugar de leer del archivo
