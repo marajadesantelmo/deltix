@@ -29,6 +29,11 @@ WEATHER_KEYWORDS = ['clima', 'temperatura', 'pronostico', 'tiempo', 'lluvia', 'v
 # Define almacen-related keywords in Spanish
 ALMACEN_KEYWORDS = ['almacen', 'almacén', 'almacenera', 'almaceneras']
 
+# Define transportation company keywords
+JILGUERO_KEYWORDS = ['jilguero', 'carapachay', 'angostura']
+INTERISLENA_KEYWORDS = ['interisleña', 'interislena', 'sarmiento', 'san antonio']
+LINEASDELTA_KEYWORDS = ['lineasdelta', 'caraguatá', 'caraguata', 'canal arias', 'paraná miní', 'parana mini']
+
 class EventHandler(AssistantEventHandler):
     @override    
     def on_text_created(self, text) -> None:
@@ -129,6 +134,21 @@ def contains_almacen_keywords(user_input):
     lower_input = user_input.lower()
     return any(keyword in lower_input for keyword in ALMACEN_KEYWORDS)
 
+def contains_jilguero_keywords(user_input):
+    """Check if the user input contains any Jilguero-related keywords"""
+    lower_input = user_input.lower()
+    return any(keyword in lower_input for keyword in JILGUERO_KEYWORDS)
+
+def contains_interislena_keywords(user_input):
+    """Check if the user input contains any Interisleña-related keywords"""
+    lower_input = user_input.lower()
+    return any(keyword in lower_input for keyword in INTERISLENA_KEYWORDS)
+
+def contains_lineasdelta_keywords(user_input):
+    """Check if the user input contains any LineasDelta-related keywords"""
+    lower_input = user_input.lower()
+    return any(keyword in lower_input for keyword in LINEASDELTA_KEYWORDS)
+
 def load_almacen_data():
     """Load almacen data from the text file"""
     try:
@@ -141,6 +161,20 @@ def load_almacen_data():
             return ""
     except Exception as e:
         print(f"Error loading almacen data: {e}")
+        return ""
+
+def load_transportation_data(company_name):
+    """Load transportation company data from the text file"""
+    try:
+        file_path = os.path.join(os.getcwd(), "rag", f"{company_name}.txt")
+        if os.path.exists(file_path):
+            with open(file_path, 'r', encoding='utf-8') as file:
+                return file.read()
+        else:
+            print(f"Transportation data file not found at: {file_path}")
+            return ""
+    except Exception as e:
+        print(f"Error loading transportation data: {e}")
         return ""
 
 def make_api_call(user_input, project_id, documents, retries=3, delay=2):
@@ -163,6 +197,22 @@ def make_api_call(user_input, project_id, documents, retries=3, delay=2):
             almacen_context = load_almacen_data()
             if almacen_context:
                 context.append(f"Información sobre almacenes de la isla:\n{almacen_context}")
+                
+        # Add transportation company data as context if related keywords are detected
+        if contains_jilguero_keywords(user_input):
+            jilguero_context = load_transportation_data("jilguero")
+            if jilguero_context:
+                context.append(f"Información sobre la lancha colectiva Jilguero:\n{jilguero_context}")
+                
+        if contains_interislena_keywords(user_input):
+            interislena_context = load_transportation_data("interislena")
+            if interislena_context:
+                context.append(f"Información sobre la lancha colectiva Interisleña:\n{interislena_context}")
+                
+        if contains_lineasdelta_keywords(user_input):
+            lineasdelta_context = load_transportation_data("lineasdelta")
+            if lineasdelta_context:
+                context.append(f"Información sobre la lancha colectiva LineasDelta:\n{lineasdelta_context}")
                 
         previous_messages = supabase.from_("chat_history").select("*").eq("project_id", project_id).execute().data
         previous_messages_content = "\n".join([msg["content"] for msg in previous_messages if msg["role"] == "user"])
