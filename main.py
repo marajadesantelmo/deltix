@@ -767,84 +767,84 @@ async def schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         await context.bot.send_photo(chat_id, open(lineas_delta_vuelta_no_escolar_path, "rb"))
     return ConversationHandler.END
 
-# Almaceneras data organized as a dictionary
+# Almaceneras data organized as a dictionary with title case keys
 ALMACENERAS_DATA = {
-    "NILDA ALICIA (Anita)": {
+    "Nilda Alicia (Anita)": {
         "propietario": "Miguel Machado",
         "recorridos": "MARTES, VIERNES: Río Sarmiento / Río San Antonio\nMIÉRCOLES, SABADO: Río Capitán / Rama Negra / Arroyo Toro hasta Antequera primer tramo",
         "telefono": "1557490961"
     },
-    "CACHITO": {
+    "Cachito": {
         "propietario": "Aníbal Isea",
         "recorridos": "LUNES, MIÉRCOLES, VIERNES y SABADO: Río Carapachay hasta el 500\nDOMINGO: Río Carapachay hasta Angostura",
         "telefono": "11 6572-1030"
     },
-    "ELSA MARÍA": {
+    "Elsa María": {
         "propietario": "MAYORISTA",
         "recorridos": "",
         "telefono": "1565548280"
     },
-    "SANTA TERESITA (ex Negrita)": {
+    "Santa Teresita (ex Negrita)": {
         "propietario": "Ángel Ojeda",
         "recorridos": "MARTES Y SÁBADO: Río Carapachay hasta Río Paraná\nMIÉRCOLES y VIERNES: Arroyo Espera hasta Cruz Colorada",
         "telefono": "1532661770"
     },
-    "JUAN Y JUAN": {
+    "Juan Y Juan": {
         "propietario": "Tito Hendenreich",
         "recorridos": "MAYORISTA",
         "telefono": "15 5095771/15 31905299"
     },
-    "SANTA TERESITA": {
+    "Santa Teresita": {
         "propietario": "Ricardo Ojeda",
         "recorridos": "MARTES, JUEVES, SÁBADO Y DOMINGO: Río Luján / Canal Arias hasta el Paraná",
         "telefono": ""
     },
-    "ADRIANA": {
+    "Adriana": {
         "propietario": "Leo Rinaldi",
         "recorridos": "MIÉRCOLES, DOMINGO: Arroyo Abra vieja\nJUEVES, SÁBADO: Toro / Antequera / Arroyo Banco / Arroyo Andresito",
         "telefono": "1569789983"
     },
-    "BUENA VIDA": {
+    "Buena Vida": {
         "propietario": "Cristian Lara",
         "recorridos": "LUNES: Arroyo Dorado /Arroyo Sábalos /Arroyo Arroyon/ Arroyo Boraso\nVIERNES: Arroyo Tiburón / Canal del Este y Aguajes",
         "telefono": "1553395931"
     },
-    "ESPERANZA R": {
+    "Esperanza R": {
         "propietario": "Oscar Suárez",
         "recorridos": "MARTES, JUEVES y SÁBADO: Río Carapachay hasta muelle Sienará, retoma Río Luján / Arroyo Caraguatà hasta el 400",
         "telefono": "1565098174"
     },
-    "GARDENIA": {
+    "Gardenia": {
         "propietario": "Lancha Mayorista",
         "recorridos": "",
         "telefono": "1540554422/1531882922"
     },
-    "GLORIA I": {
+    "Gloria I": {
         "propietario": "Jorge Rinaldi",
         "recorridos": "MIÉRCOLES: Río San Antonio / Canal Honda/Aguaje del Durazno / Canal 2/Punta del Arroyo Caracoles /Bajos del Temor hasta Arroyo Chaná\nJUEVES: Chaná / la otra punta del Arroyo Caracoles / Paraná Mini / Tuyú Paré / Canal 3 / Arroyo Largo\nVIERNES: Arroyo Correntoso / Arroyo La Barca / Arroyo La Barquita/Arroyo Largo",
         "telefono": "1531298913"
     },
-    "IGNACIO FRANCO": {
+    "Ignacio Franco": {
         "propietario": "Familia Bettiga",
         "recorridos": "MIÉRCOLES: Río Sarmiento / Río Capitán hasta Club Imos / Arroyo Fredes\nJUEVES: Río Capitán / Arroyo Fredes\nVIERNES: Arroyo Estudiante / Arroyo Felicaria / Río Paraná Mini/Canal Arana\nSÁBADO: Arroyo Fredes / Río Paraná Miní / Tuyú Paré / Chaná / Felicaria abajo hasta Fredes",
         "telefono": "1562828206"
     },
-    "MADRESELVA": {
+    "Madreselva": {
         "propietario": "Familia Bettiga",
         "recorridos": "MIÉRCOLES: Tramo de Capitán arriba / Arroyo Estudiante / Arroyo Paicarabí/Felicaria abajo\nJUEVES: Río Sarmiento / arroyo Espera / Cruz Colorada/tramo de Paraná\nVIERNES: Paicarabí/Canal La Serna / Canal 4 / tramo de Paraná Mini",
         "telefono": "1554709382"
     },
-    "NELIDA G": {
+    "Nelida G": {
         "propietario": "José Olivera",
         "recorridos": "LUNES: Arroyo Caraguata / Cruz Colorada / Canal Arias\nMIÉRCOLES: Río Luján / Canal Arias / Río Paraná / Cruz Colorada/Arroyo Caraguatá\nVIERNES: Río Luján / Canal Arias / Río Paraná / Cruz Colorada/ Arroyo Caraguatá\nSÁBADO: Río Luján / Canal Arias / Río Paraná / Cruz Colorada/ Arroyo Caraguatá",
         "telefono": "155644466"
     },
-    "RAQUEL N": {
+    "Raquel N": {
         "propietario": "Roberto Baraldo",
         "recorridos": "LUNES: Río Sarmiento / Río Capitán / Arroyo La Horca / Paraná hasta Cruz Alta\nMARTES: Río Paraná hasta Carabelas / Canal 5 / Arroyo Las Casillas del Delta\nMIÉRCOLES: Río Paraná hasta Carabelas / Canal 5/ Arroyo Las Casillas\nSÁBADO: Río Sarmiento / Río Capitán / Arroyo La Horca / Paraná hasta Cruz Alta",
         "telefono": "1544981064"
     },
-    "STELLA MARIS": {
+    "Stella Maris": {
         "propietario": "Manuel Compagnucci",
         "recorridos": "VIERNES: Río Paraná zona Escobar hasta el hospital de Carabelas de ahi vuelve hasta el Paycaraby, Estudiantes, Las Cañas Fredes, Mini y La Serna\nSÁBADOS: Puerto de Escobar / Río Paraná / Canal de La Serna / tramo de Arroyo Paycarabí volviendo por Canal 4 / Rio Paraná Mini hasta Arroyo Chana / Bajos del Temor/ Arroyo Felicaria abajo / Arroyo Felicaria hasta la Escuela",
         "telefono": "1562771474"
@@ -924,26 +924,31 @@ async def almacenera_selected(update: Update, context: ContextTypes.DEFAULT_TYPE
                     parse_mode='HTML')
                 time.sleep(0.3)  # Pequeña pausa entre mensajes
         
-        elif selected in ALMACENERAS_DATA:
-            # Si el usuario seleccionó una almacenera específica
-            info = ALMACENERAS_DATA[selected]
-            
-            message = f"<b>{selected}</b> de {info['propietario']}\n"
-            if info['recorridos']:
-                message += f"\n{info['recorridos']}\n"
-            if info['telefono']:
-                message += f"\n📞 Teléfono: {info['telefono']}"
-            
-            await context.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text=message,
-                parse_mode='HTML')
-        
         else:
-            await context.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text="No encontré información sobre esa almacenera. Por favor, elegí una de la lista.")
-            return ANSWER_almacenera_select
+            # Buscar la almacenera con coincidencia case-insensitive
+            found = False
+            for nombre in ALMACENERAS_DATA.keys():
+                if nombre.lower() == selected.lower():
+                    info = ALMACENERAS_DATA[nombre]
+                    
+                    message = f"<b>{nombre}</b> de {info['propietario']}\n"
+                    if info['recorridos']:
+                        message += f"\n{info['recorridos']}\n"
+                    if info['telefono']:
+                        message += f"\n📞 Teléfono: {info['telefono']}"
+                    
+                    await context.bot.send_message(
+                        chat_id=update.effective_chat.id,
+                        text=message,
+                        parse_mode='HTML')
+                    found = True
+                    break
+            
+            if not found:
+                await context.bot.send_message(
+                    chat_id=update.effective_chat.id,
+                    text="No encontré información sobre esa almacenera. Por favor, elegí una de la lista.")
+                return ANSWER_almacenera_select
         
         # Mensaje final con recomendación
         await context.bot.send_message(
