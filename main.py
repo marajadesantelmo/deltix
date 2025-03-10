@@ -748,23 +748,29 @@ async def direction(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 async def schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     chat_id = update.effective_chat.id
     user_choice = update.message.text.lower()
-    if "escolar" in user_choice:
+    
+    if "escolar" in user_choice and "no" not in user_choice:
         context.user_data['epoca'] = 'escolar'
     elif "no escolar" in user_choice:
         context.user_data['epoca'] = 'no escolar'
     else:
         await update.message.reply_text("Por favor, elegí 'Escolar' o 'No escolar'.")
         return ANSWER_schedule
+    
     await update.message.reply_text(f"Estos son los horarios de {context.user_data['direction']} en época {context.user_data['epoca']}.")
+    
     # Send the appropriate image based on the user choices
-    if context.user_data['epoca'] == 'escolar' and context.user_data['direction'] == 'ida a la isla':
-        await context.bot.send_photo(chat_id, open(lineas_delta_ida_escolar_path, "rb"))
-    elif context.user_data['epoca'] == 'no escolar' and context.user_data['direction'] == 'ida a la isla':
-        await context.bot.send_photo(chat_id, open(lineas_delta_ida_no_escolar_path, "rb"))
-    elif context.user_data['epoca'] == 'escolar' and context.user_data['direction'] == 'vuelta a tigre':
-        await context.bot.send_photo(chat_id, open(lineas_delta_vuelta_escolar_path, "rb"))
-    elif context.user_data['epoca'] == 'no escolar' and context.user_data['direction'] == 'vuelta a tigre':
-        await context.bot.send_photo(chat_id, open(lineas_delta_vuelta_no_escolar_path, "rb"))
+    if context.user_data['direction'] == 'ida a la isla':
+        if context.user_data['epoca'] == 'escolar':
+            await context.bot.send_photo(chat_id, open(lineas_delta_ida_escolar_path, "rb"))
+        else:  # 'no escolar'
+            await context.bot.send_photo(chat_id, open(lineas_delta_ida_no_escolar_path, "rb"))
+    else:  # 'vuelta a tigre'
+        if context.user_data['epoca'] == 'escolar':
+            await context.bot.send_photo(chat_id, open(lineas_delta_vuelta_escolar_path, "rb"))
+        else:  # 'no escolar'
+            await context.bot.send_photo(chat_id, open(lineas_delta_vuelta_no_escolar_path, "rb"))
+            
     return ConversationHandler.END
 
 # Almaceneras data organized as a dictionary with title case keys
@@ -953,7 +959,7 @@ async def almacenera_selected(update: Update, context: ContextTypes.DEFAULT_TYPE
         # Mensaje final con recomendación
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text="Los horarios y recorridos de las almaceneras pueden variar, te recomiendo llamar para confirmar.",
+            text="Los horarios y recorridos de las almaceneras pueden variar, te recomiendo escribir o llamar para confirmar.",
             reply_markup=main_menu_keyboard)
         
         return ConversationHandler.END
