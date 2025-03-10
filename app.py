@@ -31,8 +31,8 @@ ALMACEN_KEYWORDS = ['almacen', 'almacén', 'almacenera', 'almaceneras']
 
 # Define transportation company keywords
 JILGUERO_KEYWORDS = ['jilguero', 'carapachay', 'angostura']
-INTERISLENA_KEYWORDS = ['interisleña', 'interislena', 'sarmiento', 'san antonio']
-LINEASDELTA_KEYWORDS = ['lineasdelta', 'caraguatá', 'caraguata', 'canal arias', 'paraná miní', 'parana mini']
+INTERISLENA_KEYWORDS = ['interisleña', 'interislena', 'sarmiento', 'san antonio', 'capitan', 'capitán']
+LINEASDELTA_KEYWORDS = ['lineasdelta', 'caraguatá', 'caraguata', 'canal arias', 'paraná miní', 'parana mini', 'lineas delta']
 
 class EventHandler(AssistantEventHandler):
     @override    
