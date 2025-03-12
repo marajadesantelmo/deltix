@@ -24,7 +24,9 @@ if not openrouter_key:
     raise ValueError("OpenRouter API Key must be set in environment variables")
 
 # Define weather-related keywords in Spanish
-WEATHER_KEYWORDS = ['clima', 'temperatura', 'pronostico', 'tiempo', 'lluvia', 'viento']
+WEATHER_KEYWORDS = ['clima', 'temperatura', 'pronostico', 'tiempo', 'lluvia', 'viento', 
+                    'llover', 'soleado', 'ventoso', 'humedad', 'tormenta', 'nublado', 
+                    'calor', 'frio']
 
 # Define almacen-related keywords in Spanish
 ALMACEN_KEYWORDS = ['almacen', 'almacén', 'almacenera', 'almaceneras']
