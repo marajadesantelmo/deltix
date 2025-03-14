@@ -36,6 +36,7 @@ lineas_delta_vuelta_no_escolar_path = base_path + 'colectivas/lineas_delta_vuelt
 lineas_delta_vuelta_escolar_path = base_path + 'colectivas/lineas_delta_vuelta_escolar.png'
 carpinchix_trabajando_path = base_path + 'carpinchix_trabajando.png'
 almaceneras_path = base_path + 'rag/almaceneras.txt'
+mareas_hidrografia_path = base_path + 'table_data.txt'
 
 user_experience = pd.read_csv(user_experience_path)
 
@@ -70,7 +71,8 @@ def generate_main_menu():
     Las lineas comentadas del menu son proyectos e ideas de funcionalidades
     para agregar a Deltix
     '''
-    return ("- <b>/mareas </b>   <i> obtener el pronóstico de mareas &#9875</i>\n"
+    return ("- <b>/mareas </b>   <i> pronóstico de mareas INA &#9875</i>\n"
+            "- <b>/hidrografia </b>   <i> pronóstico de mareas hidrografia</i>\n"
             "- <b>/windguru </b>   <i> pronóstico meteorológico de windgurú</i>\n"
             "- <b>/colectivas </b>   <i> horarios de lanchas colectivas &#128337</i>\n"
             "- <b>/almaceneras </b>   <i> información de las lanchas almaceneras &#128676</i>\n"
@@ -973,6 +975,54 @@ async def almacenera_selected(update: Update, context: ContextTypes.DEFAULT_TYPE
             reply_markup=main_menu_keyboard)
         return ConversationHandler.END
 
+async def hidrografia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    '''
+    Envia el pronóstico de mareas de hidrografia naval cuando el usuario elige /hidrografia
+    '''
+    user = update.effective_user
+    chat_id = update.effective_chat.id
+    update_user_experience(user.id, 'mareas')  # Using the same category as mareas for tracking
+    logger.warning(f"{user.id} - {user.first_name} pidió informe de mareas de hidrografía en chat {chat_id}")
+    
+    try:
+        # Read data from table_data.txt
+        with open(mareas_hidrografia_path, 'r') as file:
+            lines = file.readlines()
+        
+        if not lines:
+            await update.message.reply_text("Lo siento, no tengo datos de mareas de hidrografía en este momento.")
+            return ConversationHandler.END
+            
+        # Format the data to be more readable
+        formatted_message = "<b>📊 PRONÓSTICO DE MAREAS - HIDROGRAFÍA NAVAL</b>\n\n"
+        
+        current_port = None
+        for line in lines:
+            data = line.strip().split('\t')
+            if len(data) >= 5:  # Ensure there's enough data
+                if data[0]:  # This is a port name
+                    current_port = data[0]
+                    formatted_message += f"<b>🚢 {current_port}</b>\n"
+                
+                if len(data) >= 5:  # Confirm we have all data columns
+                    tide_type = data[1]  # PLEAMAR or BAJAMAR
+                    time = data[2]
+                    height = data[3]
+                    date = data[4]
+                    
+                    # Add emoji based on tide type
+                    emoji = "🌊" if tide_type == "PLEAMAR" else "⬇️"
+                    
+                    formatted_message += f"{emoji} <b>{tide_type}</b>: {time} hs - {height} m ({date})\n"
+            
+        await update.message.reply_text(formatted_message, parse_mode='HTML')
+        
+    except Exception as e:
+        logger.warning(f"Error al procesar datos de hidrografía: {e}")
+        await update.message.reply_text("Lo siento, ocurrió un error al procesar los datos de mareas.")
+    
+    return ConversationHandler.END
+
 if __name__ == '__main__':
     application = ApplicationBuilder().token(telegram_token).build()
     start_handler = CommandHandler('start', start)
@@ -994,6 +1044,7 @@ if __name__ == '__main__':
     CommandHandler('Interislena', Interislena),
     CommandHandler('Jilguero', Jilguero),
     CommandHandler('LineasDelta', LineasDelta),
+    CommandHandler('hidrografia', hidrografia),
 
     #Handlers matcheo de palabra exacta
     MessageHandler(filters.Regex(r'^(Charlar|charlar|CHARLAR)$'), charlar),
@@ -1011,6 +1062,7 @@ if __name__ == '__main__':
     MessageHandler(filters.Regex(r'^(Jilguero|jilguero|JILGUERO)$'), Jilguero),
     MessageHandler(filters.Regex(r'^(LineasDelta|lineasdelta|LINEASDELTA)$'), LineasDelta),
     MessageHandler(filters.Regex(r'^(Almaceneras|almaceneras|ALMACENERAS)$'), almaceneras),
+    MessageHandler(filters.Regex(r'^(Hidrografia|hidrografia|HIDROGRAFIA)$'), hidrografia),
 
     #Handlers si contiene palabra en minuscula
     MessageHandler(filters.Regex(r'(?i)(.*\bcharlar\b.*)'), charlar),
@@ -1032,6 +1084,7 @@ if __name__ == '__main__':
     MessageHandler(filters.Regex(r'(?i)(.*\balmacenera\b.*)'), almaceneras),
     MessageHandler(filters.Regex(r'(?i)(.*\balmacén\b.*)'), almaceneras),
     MessageHandler(filters.Regex(r'(?i)(.*\balmacen\b.*)'), almaceneras),
+    MessageHandler(filters.Regex(r'(?i)(.*\bhidrografia\b.*)'), hidrografia),
     #Handlers otros
     MessageHandler(filters.TEXT, start2)]
 

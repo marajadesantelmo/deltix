@@ -44,5 +44,4 @@ table_text = '\n'.join(['\t'.join(row) for row in table_data])
 with open('/home/facundol/deltix/table_data.txt', 'w') as file:
     file.write(table_text)
 
-
 driver.quit()
