@@ -14,24 +14,18 @@ from datetime import datetime
 
 supabase_url = os.getenv('SUPABASE_URL')
 supabase_key = os.getenv('SUPABASE_KEY')
+openrouter_key = os.getenv('OPENROUTER_API_KEY')
+
 if not supabase_url or not supabase_key:
     raise ValueError("Supabase URL and Key must be set in environment variables")
 
-supabase = create_client(supabase_url, supabase_key)
-
-openrouter_key = os.getenv('OPENROUTER_API_KEY')
 if not openrouter_key:
     raise ValueError("OpenRouter API Key must be set in environment variables")
 
-# Define weather-related keywords in Spanish
-WEATHER_KEYWORDS = ['clima', 'temperatura', 'pronostico', 'tiempo', 'lluvia', 'viento', 
-                    'llover', 'soleado', 'ventoso', 'humedad', 'tormenta', 'nublado', 
-                    'calor', 'frio']
+supabase = create_client(supabase_url, supabase_key)
 
-# Define almacen-related keywords in Spanish
+WEATHER_KEYWORDS = ['clima', 'temperatura', 'pronostico', 'tiempo', 'lluvia', 'viento', 'llover', 'soleado', 'ventoso', 'humedad', 'tormenta', 'nublado', 'calor', 'frio']
 ALMACEN_KEYWORDS = ['almacen', 'almacén', 'almacenera', 'almaceneras']
-
-# Define transportation company keywords
 JILGUERO_KEYWORDS = ['jilguero', 'carapachay', 'angostura']
 INTERISLENA_KEYWORDS = ['interisleña', 'interislena', 'sarmiento', 'san antonio', 'capitan', 'capitán']
 LINEASDELTA_KEYWORDS = ['lineasdelta', 'caraguatá', 'caraguata', 'canal arias', 'paraná miní', 'parana mini', 'lineas delta']
@@ -62,7 +56,7 @@ client = OpenAI(
     api_key=openrouter_key,
 )
 
-def get_help_message():
+def get_menu_message():
     return ("Ingresando algunas de estas palabras podes obtener información útil:\n"
         "- **mareas**: _obtener el pronóstico de mareas_\n"
         "- **windguru**: _pronóstico meteorológico de windgurú_\n"
@@ -380,7 +374,7 @@ if "initial_messages_shown" not in st.session_state:
 
 if not st.session_state.initial_messages_shown:
     welcome_msg = "Hola! Soy Deltix. En qué te puedo ayudar? 🐱"
-    help_msg = get_help_message()
+    help_msg = get_menu_message()
     
     # Add to session state chat messages
     st.session_state.chat_messages.append({"role": "assistant", "content": welcome_msg})
