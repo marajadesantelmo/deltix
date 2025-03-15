@@ -72,7 +72,7 @@ def generate_main_menu():
     para agregar a Deltix
     '''
     return ("- <b>/mareas </b>   <i> pronóstico de mareas INA &#9875</i>\n"
-            "- <b>/hidrografia </b>   <i> pronóstico de mareas hidrografia</i>\n"
+            "- <b>/hidrografia </b>   <i> mareas hidrografia</i>\n"
             "- <b>/windguru </b>   <i> pronóstico meteorológico de windgurú</i>\n"
             "- <b>/colectivas </b>   <i> horarios de lanchas colectivas &#128337</i>\n"
             "- <b>/almaceneras </b>   <i> información de las lanchas almaceneras &#128676</i>\n"
