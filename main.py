@@ -21,6 +21,7 @@ else:
 user_experience_path = base_path + 'user_experience.csv'
 subscribers_mareas_path = base_path + 'subscribers_mareas.csv'
 subscribers_windguru_path = base_path + 'subscribers_windguru.csv'
+subscribers_hidrografia_path = base_path + 'subscribers_hidrografia.csv'  # New path for hidrografia subscribers
 marea_image_path = base_path + 'marea.png'
 windguru_image_path = base_path + 'windguru.png'
 memes_path = base_path + 'memes/'
@@ -62,7 +63,7 @@ logger.setLevel(logging.WARNING)
 
 nest_asyncio.apply()
 
-ANSWER_charlar, ANSWER_meme, ANSWER_colaborar, ANSWER_mensajear, ANSWER_informacion, ANSWER_mareas_suscribir, ANSWER_windguru_suscribir, ANSWER_desuscribir, ANSWER_meme2, ANSWER_charlar_windguru, ANSWER_colectivas, ANSWER_jilguero, ANSWER_interislena, ANSWER_lineasdelta, ANSWER_direction, ANSWER_schedule, ANSWER_almacenera_select = range(17)
+ANSWER_charlar, ANSWER_meme, ANSWER_colaborar, ANSWER_mensajear, ANSWER_informacion, ANSWER_mareas_suscribir, ANSWER_windguru_suscribir, ANSWER_desuscribir, ANSWER_meme2, ANSWER_charlar_windguru, ANSWER_colectivas, ANSWER_jilguero, ANSWER_interislena, ANSWER_lineasdelta, ANSWER_direction, ANSWER_schedule, ANSWER_almacenera_select, ANSWER_hidrografia_suscribir = range(18)
 
 def generate_main_menu():
     '''
@@ -461,8 +462,8 @@ async def desuscribirme(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     update_user_experience(user.id, 'desuscribirme')
     logger.warning(f"{user.id} - {user.first_name} quiere desuscribirse en chat {chat_id}")
 
-    reply_markup = ReplyKeyboardMarkup([["Mareas", "Windguru"]], one_time_keyboard=True, input_field_placeholder="A cuál envío quieres desuscribirte?")
-    await update.message.reply_text("A cuál envío quieres desuscribirte: Mareas o Windguru?", reply_markup=reply_markup)
+    reply_markup = ReplyKeyboardMarkup([["Mareas", "Windguru", "Hidrografía"]], one_time_keyboard=True, input_field_placeholder="¿A cuál envío quieres desuscribirte?")
+    await update.message.reply_text("¿A cuál envío quieres desuscribirte: Mareas, Windguru o Hidrografía?", reply_markup=reply_markup)
 
     return ANSWER_desuscribir
 
@@ -475,9 +476,9 @@ async def answer_desuscribir(update: Update, context: ContextTypes.DEFAULT_TYPE)
         if user_id in subscribers_mareas['User ID'].values:
             subscribers_mareas = subscribers_mareas[~subscribers_mareas['User ID'].eq(user_id)]
             subscribers_mareas.to_csv(subscribers_mareas_path, index=False)
-            await update.message.reply_text("Te has desuscrito con éxito del pronóstico de mareas. Si deseas desuscribirte de Windguru o realizar otra acción, decime nomas")
+            await update.message.reply_text("Te has desuscrito con éxito del pronóstico de mareas. Si deseas desuscribirte de otro servicio o realizar otra acción, decime nomas")
         else:
-            await update.message.reply_text("No estabas suscrito previamente al pronóstico de mareas. Si deseas desuscribirte de Windguru o realizar otra acción, decime nomas")
+            await update.message.reply_text("No estabas suscrito previamente al pronóstico de mareas. Si deseas desuscribirte de otro servicio o realizar otra acción, decime nomas")
     elif user_response == "windguru":
         subscribers_windguru = pd.read_csv(subscribers_windguru_path)
         user_id = update.message.from_user.id
@@ -485,11 +486,21 @@ async def answer_desuscribir(update: Update, context: ContextTypes.DEFAULT_TYPE)
         if user_id in subscribers_windguru['User ID'].values:
             subscribers_windguru = subscribers_windguru[~subscribers_windguru['User ID'].eq(user_id)]
             subscribers_windguru.to_csv(subscribers_windguru_path, index=False)
-            await update.message.reply_text("Te has desuscrito con éxito del pronóstico de Windguru. Si deseas desuscribirte de Mareas o realizar otra acción, decime nomas")
+            await update.message.reply_text("Te has desuscrito con éxito del pronóstico de Windguru. Si deseas desuscribirte de otro servicio o realizar otra acción, decime nomas")
         else:
-            await update.message.reply_text("No estabas suscrito previamente al pronóstico de Windguru. Si deseas desuscribirte de Mareas o realizar otra acción, decime nomas")
+            await update.message.reply_text("No estabas suscrito previamente al pronóstico de Windguru. Si deseas desuscribirte de otro servicio o realizar otra acción, decime nomas")
+    elif user_response == "hidrografía" or user_response == "hidrografia":
+        subscribers_hidrografia = pd.read_csv(subscribers_hidrografia_path)
+        user_id = update.message.from_user.id
+
+        if user_id in subscribers_hidrografia['User ID'].values:
+            subscribers_hidrografia = subscribers_hidrografia[~subscribers_hidrografia['User ID'].eq(user_id)]
+            subscribers_hidrografia.to_csv(subscribers_hidrografia_path, index=False)
+            await update.message.reply_text("Te has desuscrito con éxito del pronóstico de Hidrografía Naval. Si deseas desuscribirte de otro servicio o realizar otra acción, decime nomas")
+        else:
+            await update.message.reply_text("No estabas suscrito previamente al pronóstico de Hidrografía Naval. Si deseas desuscribirte de otro servicio o realizar otra acción, decime nomas")
     else:
-        await update.message.reply_text("No comprendí tu elección. Por favor, selecciona 'Mareas' o 'Windguru' para desuscribirte.")
+        await update.message.reply_text("No comprendí tu elección. Por favor, selecciona 'Mareas', 'Windguru' o 'Hidrografía' para desuscribirte.")
         return ANSWER_desuscribir
 
     return ConversationHandler.END
@@ -979,9 +990,10 @@ async def hidrografia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     '''
     Envia el pronóstico de mareas de hidrografia naval cuando el usuario elige /hidrografia
     '''
+    global user_experience
     user = update.effective_user
     chat_id = update.effective_chat.id
-    update_user_experience(user.id, 'mareas')  # Using the same category as mareas for tracking
+    update_user_experience(user.id, 'hidrografia')  # Track hidrografia interactions separately
     logger.warning(f"{user.id} - {user.first_name} pidió informe de mareas de hidrografía en chat {chat_id}")
     
     try:
@@ -994,7 +1006,7 @@ async def hidrografia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
             return ConversationHandler.END
         
         # Format the data to be more readable
-        formatted_message = "<b>Prnósticos de Mareas - Hidrografía Naval</b>\n\n"
+        formatted_message = "<b>📊 PRONÓSTICO DE MAREAS - HIDROGRAFÍA NAVAL</b>\n\n"
         
         # First line contains the port name
         if len(lines) > 0:
@@ -1019,11 +1031,58 @@ async def hidrografia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         
         await update.message.reply_text(formatted_message, parse_mode='HTML')
         
+        # Check if subscription should be offered
+        if user.id in user_experience['User ID'][user_experience['suscr_hidrografia_ofrecida'].isna()].values:
+            await update.message.reply_text("¿Querés suscribirte para recibir el pronóstico de mareas de Hidrografía Naval todos los días?",
+                reply_markup=ReplyKeyboardMarkup(
+                    [["Si", "No"]], one_time_keyboard=True, input_field_placeholder="Si o No?"
+                ),
+            )
+            user_experience.loc[user_experience['User ID'] == user.id, 'suscr_hidrografia_ofrecida'] = datetime.now().strftime('%d-%m-%Y %H:%M')
+            user_experience.to_csv(user_experience_path, index=False)
+            return ANSWER_hidrografia_suscribir
+        
     except Exception as e:
         logger.warning(f"Error al procesar datos de hidrografía: {e}")
         await update.message.reply_text("Lo siento, ocurrió un error al procesar los datos de mareas.")
     
     return ConversationHandler.END
+
+async def hidrografia_suscribir(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    '''
+    Función para obtener respuesta si/no de suscripción a hidrografia y realizar
+    la suscripción
+    '''
+    user_response = update.message.text.lower()
+    if user_response == 'si':
+        subscribers_hidrografia = pd.read_csv(subscribers_hidrografia_path)
+        chat_id = update.effective_chat.id
+        user = update.effective_user
+        logger.warning(f"{user.id} - {user.first_name} se inscribió a hidrografía en chat {chat_id}")
+        
+        # Chequeo si ya está suscrito
+        user_id = update.message.from_user.id
+        if user_id in subscribers_hidrografia['User ID'].values:
+            await update.message.reply_text("Me parece que ya estabas suscriptx vos! Igual te voy a estar enviando los pronósticos de Hidrografía Naval todos los días")
+        # Si no está suscrito lo subo a la lista
+        else:
+            user_info = {"User ID": [update.message.from_user.id],
+                        "Username": [update.message.from_user.username],
+                        "First Name": [update.message.from_user.first_name],
+                        "Last Name": [update.message.from_user.last_name],}
+            user_df = pd.DataFrame(user_info)
+            subscribers_hidrografia = pd.concat([subscribers_hidrografia, user_df], ignore_index=True)
+            subscribers_hidrografia.to_csv(subscribers_hidrografia_path, index=False)
+            await update.message.reply_text("¡Gracias por suscribirte! Voy a intentar mandarte el pronóstico de mareas de Hidrografía Naval una vez al día.")
+        return ConversationHandler.END
+    if user_response == 'no':
+        await update.message.reply_text("Bueno dale! avisame si necesitás algo más")
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=generate_main_menu(),
+            parse_mode='HTML',
+            reply_markup=main_menu_keyboard)
+        return ConversationHandler.END
 
 if __name__ == '__main__':
     application = ApplicationBuilder().token(telegram_token).build()
@@ -1100,8 +1159,9 @@ if __name__ == '__main__':
             ANSWER_colaborar: [MessageHandler(filters.Regex(r'^(Mensajear|mensajear|MENSAJEAR|Aportar|aportar|APORTAR)$'), answer_colaborar)],
             ANSWER_mareas_suscribir: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), mareas_suscribir)],
             ANSWER_windguru_suscribir: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), windguru_suscribir)],
+            ANSWER_hidrografia_suscribir: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), hidrografia_suscribir)],
             ANSWER_mensajear: [MessageHandler(filters.TEXT, mensajear)],
-            ANSWER_desuscribir: [MessageHandler(filters.Regex(r'^(Mareas|MAREAS|mareas|Windguru|WINDGURU|windguru)$'), answer_desuscribir)],
+            ANSWER_desuscribir: [MessageHandler(filters.Regex(r'^(Mareas|MAREAS|mareas|Windguru|WINDGURU|windguru|Hidrografía|HIDROGRAFÍA|hidrografia|Hidrografia)$'), answer_desuscribir)],
             ANSWER_charlar_windguru: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), charlar_windguru)],
             ANSWER_jilguero: [MessageHandler(filters.TEXT, answer_jilguero)],
             ANSWER_interislena: [MessageHandler(filters.TEXT, answer_interislena)],
