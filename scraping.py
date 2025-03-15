@@ -49,13 +49,13 @@ for row in raw_table_data:
     # Skip empty rows
     if not row:
         continue
-    
+
     # If the first cell has a value, it's a port name
     if row[0]:
         current_port = row[0]
         # Check if this is San Fernando port
         is_san_fernando = "SAN FERNANDO" in current_port.upper()
-    
+
     # Only add rows that have at least 4 elements (tide type, time, height, date)
     # and belong to San Fernando port
     if len(row) >= 4 and is_san_fernando:
