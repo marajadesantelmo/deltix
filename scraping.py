@@ -42,6 +42,8 @@ print("Raw table data:", raw_table_data)
 # Process the table data to associate each row with its port
 processed_data = []
 current_port = None
+san_fernando_data = []
+is_san_fernando = False
 
 for row in raw_table_data:
     # Skip empty rows
@@ -51,24 +53,33 @@ for row in raw_table_data:
     # If the first cell has a value, it's a port name
     if row[0]:
         current_port = row[0]
+        # Check if this is San Fernando port
+        is_san_fernando = "SAN FERNANDO" in current_port.upper()
     
     # Only add rows that have at least 4 elements (tide type, time, height, date)
-    if len(row) >= 4:
+    # and belong to San Fernando port
+    if len(row) >= 4 and is_san_fernando:
         processed_row = [current_port if current_port else ""] + row[1:]
         processed_data.append(processed_row)
+        san_fernando_data.append(row[1:])  # Store without port name
 
-print("Processed data:", processed_data)
+print("Processed data for San Fernando:", processed_data)
 
 # Convert to text with proper formatting
 table_text = ""
-for row in processed_data:
-    if len(row) >= 5:  # Complete row with port, tide type, time, height, date
-        port = row[0]
-        tide_type = row[1]
-        time = row[2]
-        height = row[3]
-        date = row[4]
-        table_text += f"{port}\t{tide_type}\t{time}\t{height}\t{date}\n"
+if processed_data:
+    # Add the port name as a header
+    table_text += f"{processed_data[0][0]}\n"
+    # Add column headers
+    table_text += "Tipo\tHora\tAltura\tFecha\n"
+    # Add the data rows
+    for row in san_fernando_data:
+        if len(row) >= 4:  # Complete row with tide type, time, height, date
+            tide_type = row[0]
+            time = row[1]
+            height = row[2]
+            date = row[3]
+            table_text += f"{tide_type}\t{time}\t{height}\t{date}\n"
 
 with open('/home/facundol/deltix/table_data.txt', 'w') as file:
     file.write(table_text)
