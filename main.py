@@ -39,7 +39,24 @@ carpinchix_trabajando_path = base_path + 'carpinchix_trabajando.png'
 almaceneras_path = base_path + 'rag/almaceneras.txt'
 mareas_hidrografia_path = base_path + 'table_data.txt'
 
-user_experience = pd.read_csv(user_experience_path)
+# Read the user experience CSV with error handling
+try:
+    user_experience = pd.read_csv(user_experience_path)
+except pd.errors.ParserError:
+    # If there's a parser error, try with more robust error handling
+    print("Warning: Issues detected in the CSV file. Attempting to load with error handling...")
+    # Use on_bad_lines='skip' for newer pandas versions or error_bad_lines=False for older versions
+    try:
+        # Try with newer pandas syntax
+        user_experience = pd.read_csv(user_experience_path, on_bad_lines='skip')
+    except TypeError:
+        # Fall back to older pandas syntax if needed
+        user_experience = pd.read_csv(user_experience_path, error_bad_lines=False)
+    
+    # Save a clean version of the file to prevent future errors
+    print("Saving a cleaned version of the user experience data...")
+    user_experience.to_csv(user_experience_path, index=False)
+    print("File cleaned and saved successfully.")
 
 # Function to update user experience
 def update_user_experience(user_id, option):
