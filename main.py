@@ -656,15 +656,33 @@ async def colectivas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user = update.effective_user
     update_user_experience(user.id, 'colectivas')
     await update.message.reply_text("""Elegí la empresa de lancha colectiva:\n
-            - <b>/Jilguero </b>   <i> va por el Carapachay-Angostura</i>
-            - <b>/Interislena </b>   <i> Sarmiento, San Antonio y muchos más</i>
-            - <b>/LineasDelta </b>   <i> Caraguatá, Canal Arias, Paraná Miní</i>""",
+            - <b>Jilguero</b>   <i> va por el Carapachay-Angostura</i>
+            - <b>Interisleña</b>   <i> Sarmiento, San Antonio y muchos más</i>
+            - <b>Lineas Delta</b>   <i> Caraguatá, Canal Arias, Paraná Miní</i>""",
                                         parse_mode='HTML',
                                         reply_markup=ReplyKeyboardMarkup(
-            [["/Jilguero", "/Interisleña", "/LineasDelta"]],
+            [["Jilguero", "Interisleña", "Lineas Delta"]],
             one_time_keyboard=True,
             input_field_placeholder="Empresa de lanchas"))
+    
+    # Return to ANSWER_colectivas state to handle the selection
+    return ANSWER_colectivas
 
+async def answer_colectivas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    '''
+    Maneja la selección de la empresa de lancha colectiva
+    '''
+    user_response = update.message.text.lower()
+    
+    if "jilguero" in user_response:
+        return await Jilguero(update, context)
+    elif "interisleña" in user_response or "interislena" in user_response:
+        return await Interislena(update, context)
+    elif "lineas delta" in user_response or "lineasdelta" in user_response:
+        return await LineasDelta(update, context)
+    else:
+        await update.message.reply_text("No reconozco esa empresa de lanchas. Por favor, selecciona una de las opciones disponibles.")
+        return await colectivas(update, context)
 
 async def Interislena(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await update.message.reply_text("Para Interisleña, por ahora solo tengo los horarios de Ida hacia la isla. Querés los horarios de verano o de inverno?",
@@ -1026,30 +1044,30 @@ async def hidrografia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         formatted_message = "<b>📊 PRONÓSTICO DE MAREAS - HIDROGRAFÍA NAVAL</b>\n\n"
         
         # First line contains the port name
-        if len(lines) > 0:
+                    formatted_message += f"{emoji} <b>{tide_type}</b>: {time} hs - {height} m ({date})\n"
             port_name = lines[0].strip()
             formatted_message += f"<b>🚢 {port_name}</b>\n\n"
         
-        # Second line contains the headers, skip it
-        # Start from third line for actual data
-        if len(lines) > 2:
-            for line in lines[2:]:
-                data = line.strip().split('\t')
-                if len(data) >= 4:  # Ensure there's enough data
-                    tide_type = data[0]  # PLEAMAR or BAJAMAR
-                    time = data[1]      # Hora
-                    height = data[2]    # Altura
-                    date = data[3]      # Fecha
-                    
-                    # Add emoji based on tide type
-                    emoji = "🌊" if tide_type == "PLEAMAR" else "⬇️"
-                    
-                    formatted_message += f"{emoji} <b>{tide_type}</b>: {time} hs - {height} m ({date})\n"
-        
-        await update.message.reply_text(formatted_message, parse_mode='HTML')
-        
-        # Check if subscription should be offered
+        # Check if subscription should be offeredit
         if user.id in user_experience['User ID'][user_experience['suscr_hidrografia_ofrecida'].isna()].values:
+            await update.message.reply_text("¿Querés suscribirte para recibir el pronóstico de mareas de Hidrografía Naval todos los días?",
+                reply_markup=ReplyKeyboardMarkup(
+                    [["Si", "No"]], one_time_keyboard=True, input_field_placeholder="Si o No?"
+                ), len(data) >= 4:  # Ensure there's enough data
+            )       tide_type = data[0]  # PLEAMAR or BAJAMAR
+            user_experience.loc[user_experience['User ID'] == user.id, 'suscr_hidrografia_ofrecida'] = datetime.now().strftime('%d-%m-%Y %H:%M')
+            user_experience.to_csv(user_experience_path, index=False)
+            return ANSWER_hidrografia_suscribir
+                    
+    except Exception as e:emoji based on tide type
+        logger.warning(f"Error al procesar datos de hidrografía: {e}")
+        await update.message.reply_text("Lo siento, ocurrió un error al procesar los datos de mareas.")
+                    formatted_message += f"{emoji} <b>{tide_type}</b>: {time} hs - {height} m ({date})\n"
+    return ConversationHandler.END
+        await update.message.reply_text(formatted_message, parse_mode='HTML')
+async def hidrografia_suscribir(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    ''' # Check if subscription should be offered
+    Función para obtener respuesta si/no de suscripción a hidrografia y realizarfia_ofrecida'].isna()].values:
             await update.message.reply_text("¿Querés suscribirte para recibir el pronóstico de mareas de Hidrografía Naval todos los días?",
                 reply_markup=ReplyKeyboardMarkup(
                     [["Si", "No"]], one_time_keyboard=True, input_field_placeholder="Si o No?"
@@ -1066,28 +1084,28 @@ async def hidrografia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     return ConversationHandler.END
 
 async def hidrografia_suscribir(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    '''
-    Función para obtener respuesta si/no de suscripción a hidrografia y realizar
-    la suscripción
-    '''
-    user_response = update.message.text.lower()
-    if user_response == 'si':
-        subscribers_hidrografia = pd.read_csv(subscribers_hidrografia_path)
-        chat_id = update.effective_chat.id
-        user = update.effective_user
-        logger.warning(f"{user.id} - {user.first_name} se inscribió a hidrografía en chat {chat_id}")
-        
-        # Chequeo si ya está suscrito
-        user_id = update.message.from_user.id
-        if user_id in subscribers_hidrografia['User ID'].values:
-            await update.message.reply_text("Me parece que ya estabas suscriptx vos! Igual te voy a estar enviando los pronósticos de Hidrografía Naval todos los días")
-        # Si no está suscrito lo subo a la lista
-        else:
-            user_info = {"User ID": [update.message.from_user.id],
                         "Username": [update.message.from_user.username],
-                        "First Name": [update.message.from_user.first_name],
+    Función para obtener respuesta si/no de suscripción a hidrografia y realizar
                         "Last Name": [update.message.from_user.last_name],}
             user_df = pd.DataFrame(user_info)
+            subscribers_hidrografia = pd.concat([subscribers_hidrografia, user_df], ignore_index=True)
+            subscribers_hidrografia.to_csv(subscribers_hidrografia_path, index=False)
+            await update.message.reply_text("¡Gracias por suscribirte! Voy a intentar mandarte el pronóstico de mareas de Hidrografía Naval una vez al día.")
+        return ConversationHandler.ENDt.id
+    if user_response == 'no':ve_user
+        await update.message.reply_text("Bueno dale! avisame si necesitás algo más") chat {chat_id}")
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=generate_main_menu(),user.id
+            parse_mode='HTML',ers_hidrografia['User ID'].values:
+            reply_markup=main_menu_keyboard)"Me parece que ya estabas suscriptx vos! Igual te voy a estar enviando los pronósticos de Hidrografía Naval todos los días")
+        return ConversationHandler.ENDa la lista
+        else:
+            user_info = {"User ID": [update.message.from_user.id],
+    application = ApplicationBuilder().token(telegram_token).build()me],
+                        "First Name": [update.message.from_user.first_name],
+                        "Last Name": [update.message.from_user.last_name],}
+                #Sirven como entry_points de la conversacion o como fallbacks
             subscribers_hidrografia = pd.concat([subscribers_hidrografia, user_df], ignore_index=True)
             subscribers_hidrografia.to_csv(subscribers_hidrografia_path, index=False)
             await update.message.reply_text("¡Gracias por suscribirte! Voy a intentar mandarte el pronóstico de mareas de Hidrografía Naval una vez al día.")
@@ -1109,24 +1127,6 @@ if __name__ == '__main__':
     #Handlers de comandos
     CommandHandler("cancel", cancel),
     CommandHandler('charlar', charlar),
-    CommandHandler('mareas', mareas),
-    CommandHandler('windguru', windguru),
-    CommandHandler('desuscribirme', desuscribirme),
-    CommandHandler('memes', memes),
-    CommandHandler('colaborar', colaborar),
-    CommandHandler('informacion', informacion),
-    CommandHandler('mensajear', mensaje_trigger),
-    CommandHandler('menu', menu),
-    CommandHandler('colectivas', colectivas),
-    CommandHandler('almaceneras', almaceneras),
-    CommandHandler('Interislena', Interislena),
-    CommandHandler('Jilguero', Jilguero),
-    CommandHandler('LineasDelta', LineasDelta),
-    CommandHandler('hidrografia', hidrografia),
-
-    #Handlers matcheo de palabra exacta
-    MessageHandler(filters.Regex(r'^(Charlar|charlar|CHARLAR)$'), charlar),
-    MessageHandler(filters.Regex(r'^(Mareas|mareas|MAREAS)$'), mareas),
     MessageHandler(filters.Regex(r'^(Windguru|windguru|WINDGURU)$'), windguru),
     MessageHandler(filters.Regex(r'^(Desuscribirme|desuscribirme|DESUSCRIBIRME)$'), desuscribirme),
     MessageHandler(filters.Regex(r'^(Memes|memes|MEMES|Meme|meme|MEME)$'), memes),
@@ -1143,32 +1143,32 @@ if __name__ == '__main__':
     MessageHandler(filters.Regex(r'^(Hidrografia|hidrografia|HIDROGRAFIA)$'), hidrografia),
 
     #Handlers si contiene palabra en minuscula
-    MessageHandler(filters.Regex(r'(?i)(.*\bcharlar\b.*)'), charlar),
-    MessageHandler(filters.Regex(r'(?i)(.*\bmareas\b.*)'), mareas),
-    MessageHandler(filters.Regex(r'(?i)(.*\bwindguru\b.*)'), windguru),
-    MessageHandler(filters.Regex(r'(?i)(.*\bdesuscribirme\b.*)'), desuscribirme),
-    MessageHandler(filters.Regex(r'(?i)(.*\bmemes\b.*)'), memes),
-    MessageHandler(filters.Regex(r'(?i)(.*\bmeme\b.*)'), memes),
-    MessageHandler(filters.Regex(r'(?i)(.*\bcolaborar\b.*)'), colaborar),
-    MessageHandler(filters.Regex(r'(?i)(.*\binformacion\b.*)'), informacion),
+    MessageHandler(filters.Regex(r'(?i)(.*\bcharlar\b.*)'), charlar),rlar),
+    MessageHandler(filters.Regex(r'(?i)(.*\bmareas\b.*)'), mareas),as),
+    MessageHandler(filters.Regex(r'(?i)(.*\bwindguru\b.*)'), windguru),ndguru),
+    MessageHandler(filters.Regex(r'(?i)(.*\bdesuscribirme\b.*)'), desuscribirme),), desuscribirme),
+    MessageHandler(filters.Regex(r'(?i)(.*\bmemes\b.*)'), memes),MEME)$'), memes),
+    MessageHandler(filters.Regex(r'(?i)(.*\bmeme\b.*)'), memes),AR)$'), colaborar),
+    MessageHandler(filters.Regex(r'(?i)(.*\bcolaborar\b.*)'), colaborar),$'), informacion),
+    MessageHandler(filters.Regex(r'(?i)(.*\binformacion\b.*)'), informacion),je_trigger),
     MessageHandler(filters.Regex(r'(?i)(.*\bmensajear\b.*)'), mensaje_trigger),
-    MessageHandler(filters.Regex(r'(?i)(.*\bhola\b.*)'), start),
+    MessageHandler(filters.Regex(r'(?i)(.*\bhola\b.*)'), start),TIVAS|horarios)$'), colectivas),
     MessageHandler(filters.Regex(r'(?i)(.*\bcolectivas\b.*)'), colectivas),
-    MessageHandler(filters.Regex(r'(?i)(.*\bgracias\b.*)'), de_nada),
-    MessageHandler(filters.Regex(r'(?i)(.*\bJilguero\b.*)'), Jilguero),
-    MessageHandler(filters.Regex(r'(?i)(.*\bInterislena\b.*)'), Interislena),
-    MessageHandler(filters.Regex(r'(?i)(.*\bLineasDelta\b.*)'), LineasDelta),
-    MessageHandler(filters.Regex(r'(?i)(.*\balmaceneras\b.*)'), almaceneras),
+    MessageHandler(filters.Regex(r'(?i)(.*\bgracias\b.*)'), de_nada),ENA)$'), Interislena),
+    MessageHandler(filters.Regex(r'(?i)(.*\bJilguero\b.*)'), Jilguero),lguero),
+    MessageHandler(filters.Regex(r'(?i)(.*\bInterislena\b.*)'), Interislena), LineasDelta),
+    MessageHandler(filters.Regex(r'(?i)(.*\bLineasDelta\b.*)'), LineasDelta), almaceneras),
+    MessageHandler(filters.Regex(r'(?i)(.*\balmaceneras\b.*)'), almaceneras), hidrografia),
     MessageHandler(filters.Regex(r'(?i)(.*\balmacenera\b.*)'), almaceneras),
     MessageHandler(filters.Regex(r'(?i)(.*\balmacén\b.*)'), almaceneras),
     MessageHandler(filters.Regex(r'(?i)(.*\balmacen\b.*)'), almaceneras),
     MessageHandler(filters.Regex(r'(?i)(.*\bhidrografia\b.*)'), hidrografia),
-    #Handlers otros
-    MessageHandler(filters.TEXT, start2)]
-
-    conv_handler = ConversationHandler(
-        entry_points=handlers,
-        states={
+    #Handlers otrosfilters.Regex(r'(?i)(.*\bwindguru\b.*)'), windguru),
+    MessageHandler(filters.TEXT, start2)]*\bdesuscribirme\b.*)'), desuscribirme),
+    MessageHandler(filters.Regex(r'(?i)(.*\bmemes\b.*)'), memes),
+    conv_handler = ConversationHandler((.*\bmeme\b.*)'), memes),
+        entry_points=handlers,ex(r'(?i)(.*\bcolaborar\b.*)'), colaborar),
+        states={er(filters.Regex(r'(?i)(.*\binformacion\b.*)'), informacion),
             ANSWER_charlar: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), answer_charlar)],
             ANSWER_meme: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), answer_meme)],
             ANSWER_meme2: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), answer_meme2)],
@@ -1177,7 +1177,7 @@ if __name__ == '__main__':
             ANSWER_mareas_suscribir: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), mareas_suscribir)],
             ANSWER_windguru_suscribir: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), windguru_suscribir)],
             ANSWER_hidrografia_suscribir: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), hidrografia_suscribir)],
-            ANSWER_mensajear: [MessageHandler(filters.TEXT, mensajear)],
+            ANSWER_mensajear: [MessageHandler(filters.TEXT, mensajear)],as),
             ANSWER_desuscribir: [MessageHandler(filters.Regex(r'^(Mareas|MAREAS|mareas|Windguru|WINDGURU|windguru|Hidrografía|HIDROGRAFÍA|hidrografia|Hidrografia)$'), answer_desuscribir)],
             ANSWER_charlar_windguru: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), charlar_windguru)],
             ANSWER_jilguero: [MessageHandler(filters.TEXT, answer_jilguero)],
@@ -1185,12 +1185,33 @@ if __name__ == '__main__':
             ANSWER_direction: [MessageHandler(filters.TEXT, direction)],
             ANSWER_schedule: [MessageHandler(filters.TEXT, schedule)],
             ANSWER_almacenera_select: [MessageHandler(filters.TEXT, almacenera_selected)],
+            ANSWER_colectivas: [MessageHandler(filters.TEXT, answer_colectivas)],try_points=handlers,
         },
-        fallbacks=handlers,
-    )
+        fallbacks=handlers,       ANSWER_charlar: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), answer_charlar)],
+    )            ANSWER_meme: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), answer_meme)],
+filters.Regex(r'^(Si|si|SI|No|no|NO)$'), answer_meme2)],
+    application.add_handler(start_handler)            ANSWER_informacion: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), answer_informacion)],
+dler(filters.Regex(r'^(Mensajear|mensajear|MENSAJEAR|Aportar|aportar|APORTAR)$'), answer_colaborar)],
+    application.add_handler(conv_handler)            ANSWER_mareas_suscribir: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), mareas_suscribir)],
+uscribir: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), windguru_suscribir)],
+    application.run_polling()            ANSWER_hidrografia_suscribir: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), hidrografia_suscribir)],
 
-    application.add_handler(start_handler)
 
-    application.add_handler(conv_handler)
 
-    application.run_polling()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    application.run_polling()    application.add_handler(conv_handler)    application.add_handler(start_handler)    )        fallbacks=handlers,        },            ANSWER_colectivas: [MessageHandler(filters.TEXT, answer_colectivas)],            ANSWER_almacenera_select: [MessageHandler(filters.TEXT, almacenera_selected)],            ANSWER_schedule: [MessageHandler(filters.TEXT, schedule)],            ANSWER_direction: [MessageHandler(filters.TEXT, direction)],            ANSWER_interislena: [MessageHandler(filters.TEXT, answer_interislena)],            ANSWER_jilguero: [MessageHandler(filters.TEXT, answer_jilguero)],            ANSWER_charlar_windguru: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), charlar_windguru)],            ANSWER_desuscribir: [MessageHandler(filters.Regex(r'^(Mareas|MAREAS|mareas|Windguru|WINDGURU|windguru|Hidrografía|HIDROGRAFÍA|hidrografia|Hidrografia)$'), answer_desuscribir)],            ANSWER_mensajear: [MessageHandler(filters.TEXT, mensajear)],
