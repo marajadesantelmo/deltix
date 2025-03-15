@@ -992,29 +992,31 @@ async def hidrografia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         if not lines:
             await update.message.reply_text("Lo siento, no tengo datos de mareas de hidrografía en este momento.")
             return ConversationHandler.END
-            
-        # Format the data to be more readable
-        formatted_message = "<b>📊 PRONÓSTICO DE MAREAS - HIDROGRAFÍA NAVAL</b>\n\n"
         
-        current_port = None
-        for line in lines:
-            data = line.strip().split('\t')
-            if len(data) >= 5:  # Ensure there's enough data
-                if data[0]:  # This is a port name
-                    current_port = data[0]
-                    formatted_message += f"<b>🚢 {current_port}</b>\n"
-                
-                if len(data) >= 5:  # Confirm we have all data columns
-                    tide_type = data[1]  # PLEAMAR or BAJAMAR
-                    time = data[2]
-                    height = data[3]
-                    date = data[4]
+        # Format the data to be more readable
+        formatted_message = "<b>Prnósticos de Mareas - Hidrografía Naval</b>\n\n"
+        
+        # First line contains the port name
+        if len(lines) > 0:
+            port_name = lines[0].strip()
+            formatted_message += f"<b>🚢 {port_name}</b>\n\n"
+        
+        # Second line contains the headers, skip it
+        # Start from third line for actual data
+        if len(lines) > 2:
+            for line in lines[2:]:
+                data = line.strip().split('\t')
+                if len(data) >= 4:  # Ensure there's enough data
+                    tide_type = data[0]  # PLEAMAR or BAJAMAR
+                    time = data[1]      # Hora
+                    height = data[2]    # Altura
+                    date = data[3]      # Fecha
                     
                     # Add emoji based on tide type
                     emoji = "🌊" if tide_type == "PLEAMAR" else "⬇️"
                     
                     formatted_message += f"{emoji} <b>{tide_type}</b>: {time} hs - {height} m ({date})\n"
-            
+        
         await update.message.reply_text(formatted_message, parse_mode='HTML')
         
     except Exception as e:
