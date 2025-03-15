@@ -14,6 +14,9 @@ subscribers_mareas = pd.read_csv("/home/facundol/deltix/subscribers_mareas.csv")
 subscribers_windguru = pd.read_csv("/home/facundol/deltix/subscribers_windguru.csv")
 #subscribers_windguru = pd.read_csv("subscribers_windguru2.csv")
 
+subscribers_hidrografia = pd.read_csv("/home/facundol/deltix/subscribers_hidrografia.csv")
+#subscribers_hidrografia = pd.read_csv("subscribers_hidrografia.csv")
+
 envio_diarios_log = pd.read_csv('/home/facundol/deltix/envio_diario_log.csv')
 
 async def send_image_to_subscribers():
@@ -44,6 +47,7 @@ async def send_image_to_subscribers():
         log_entry = {'Timestamp': datetime.datetime.now(),
                      'User ID': user_id,
                      'user_name': user_name}
+        log_entries.append(log_entry)
 
     #Envios a suscriptos para windguru
     try:
@@ -68,7 +72,33 @@ async def send_image_to_subscribers():
         log_entry = {'Timestamp': datetime.datetime.now(),
                      'User ID': user_id,
                      'user_name': user_name}
+        log_entries.append(log_entry)
 
+    #Envios a suscriptos para hidrografia
+    try:
+        for user_id in subscribers_hidrografia['User ID']:
+            print(f'enviando hidrografia a {user_id}')
+            user_name = subscribers_hidrografia.loc[subscribers_hidrografia['User ID'] == user_id, 'First Name'].values[0]
+            with open("/home/facundol/deltix/tabla_data.txt", "r") as file:
+                content = file.read()
+            await asyncio.wait_for(bot.send_message(user_id, content), timeout=12000)
+            log_entry = {'Timestamp': datetime.datetime.now(),
+                         'User ID': user_id,
+                         'user_name': user_name}
+            log_entries.append(log_entry)
+    except asyncio.TimeoutError:
+        user_name = "Operation timed out"
+        print("Operation timed out")
+        log_entry = {'Timestamp': datetime.datetime.now(),
+                     'User ID': user_id,
+                     'user_name': user_name}
+        log_entries.append(log_entry)
+    except Exception as e:
+        user_name = f"{str(e)}"
+        print(f"Error sending text to user {user_id}: {str(e)}")
+        log_entry = {'Timestamp': datetime.datetime.now(),
+                     'User ID': user_id,
+                     'user_name': user_name}
         log_entries.append(log_entry)
 
     envio_diarios_log = pd.concat([envio_diarios_log, pd.DataFrame(log_entries)], ignore_index=True)
