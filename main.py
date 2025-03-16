@@ -21,7 +21,7 @@ else:
 user_experience_path = base_path + 'user_experience.csv'
 subscribers_mareas_path = base_path + 'subscribers_mareas.csv'
 subscribers_windguru_path = base_path + 'subscribers_windguru.csv'
-subscribers_hidrografia_path = base_path + 'subscribers_hidrografia.csv'  # New path for hidrografia subscribers
+subscribers_hidrografia_path = base_path + 'subscribers_hidrografia.csv' 
 marea_image_path = base_path + 'marea.png'
 windguru_image_path = base_path + 'windguru.png'
 memes_path = base_path + 'memes/'
@@ -1149,51 +1149,70 @@ async def hidrografia_suscribir(update: Update, context: ContextTypes.DEFAULT_TY
 if __name__ == '__main__':
     application = ApplicationBuilder().token(telegram_token).build()
     start_handler = CommandHandler('start', start)
-    handlers = [#Estos handlers son los que llevan la conversacion de funcion a funcion
-                #Sirven como entry_points de la conversacion o como fallbacks
-    #Handlers de comandos
-    CommandHandler("cancel", cancel),
-    CommandHandler('charlar', charlar),
-    MessageHandler(filters.Regex(r'^(Windguru|windguru|WINDGURU)$'), windguru),
-    MessageHandler(filters.Regex(r'^(Desuscribirme|desuscribirme|DESUSCRIBIRME)$'), desuscribirme),
-    MessageHandler(filters.Regex(r'^(Memes|memes|MEMES|Meme|meme|MEME)$'), memes),
-    MessageHandler(filters.Regex(r'^(Colaborar|colaborar|COLABORAR)$'), colaborar),
-    MessageHandler(filters.Regex(r'^(Informacion|informacion|INFORMACION)$'), informacion),
-    MessageHandler(filters.Regex(r'^(Mensajear|mensajear|MENSAJEAR)$'), mensaje_trigger),
-    MessageHandler(filters.Regex(r'^(Hola|hola|HOLA)$'), start),
-    MessageHandler(filters.Regex(r'^(Colectivas|colectivas|COLECTIVAS|horarios)$'), colectivas),
-    MessageHandler(filters.Regex(r'^(Gracias|gracias|GRACIAS)$'), de_nada),
-    MessageHandler(filters.Regex(r'^(Interislena|interislena|INTERISLENA)$'), Interislena),
-    MessageHandler(filters.Regex(r'^(Jilguero|jilguero|JILGUERO)$'), Jilguero),
-    MessageHandler(filters.Regex(r'^(LineasDelta|lineasdelta|LINEASDELTA)$'), LineasDelta),
-    MessageHandler(filters.Regex(r'^(Almaceneras|almaceneras|ALMACENERAS)$'), almaceneras),
-    MessageHandler(filters.Regex(r'^(Hidrografia|hidrografia|HIDROGRAFIA)$'), hidrografia),
-    MessageHandler(filters.Regex(r'^(Suscribirme|suscribirme|SUSCRIBIRME)$'), suscribirme),
-    CommandHandler('colectivas', colectivas),  # Ensure this is properly registered
-    CommandHandler('suscribirme', suscribirme), 
-    #Handlers si contiene palabra en minuscula
-    MessageHandler(filters.Regex(r'(?i)(.*\bcharlar\b.*)'), charlar),
-    MessageHandler(filters.Regex(r'(?i)(.*\bmareas\b.*)'), mareas),
-    MessageHandler(filters.Regex(r'(?i)(.*\bwindguru\b.*)'), windguru),
-    MessageHandler(filters.Regex(r'(?i)(.*\bdesuscribirme\b.*)'), desuscribirme),
-    MessageHandler(filters.Regex(r'(?i)(.*\bmemes\b.*)'), memes),
-    MessageHandler(filters.Regex(r'(?i)(.*\bmeme\b.*)'), memes),
-    MessageHandler(filters.Regex(r'(?i)(.*\bcolaborar\b.*)'), colaborar),
-    MessageHandler(filters.Regex(r'(?i)(.*\binformacion\b.*)'), informacion),
-    MessageHandler(filters.Regex(r'(?i)(.*\bmensajear\b.*)'), mensaje_trigger),
-    MessageHandler(filters.Regex(r'(?i)(.*\bhola\b.*)'), start),
-    MessageHandler(filters.Regex(r'(?i)(.*\bcolectivas\b.*)'), colectivas),
-    MessageHandler(filters.Regex(r'(?i)(.*\bgracias\b.*)'), de_nada),
-    MessageHandler(filters.Regex(r'(?i)(.*\bJilguero\b.*)'), Jilguero),
-    MessageHandler(filters.Regex(r'(?i)(.*\bInterislena\b.*)'), Interislena),
-    MessageHandler(filters.Regex(r'(?i)(.*\bLineasDelta\b.*)'), LineasDelta),
-    MessageHandler(filters.Regex(r'(?i)(.*\balmaceneras\b.*)'), almaceneras),
-    MessageHandler(filters.Regex(r'(?i)(.*\balmacenera\b.*)'), almaceneras),
-    MessageHandler(filters.Regex(r'(?i)(.*\balmacén\b.*)'), almaceneras),
-    MessageHandler(filters.Regex(r'(?i)(.*\balmacen\b.*)'), almaceneras),
-    MessageHandler(filters.Regex(r'(?i)(.*\bhidrografia\b.*)'), hidrografia),
-    #Handlers otros
-    MessageHandler(filters.TEXT, start2)]
+    
+    # Define command handlers first to ensure they take priority
+    command_handlers = [
+        CommandHandler("start", start),
+        CommandHandler("menu", menu),
+        CommandHandler("cancel", cancel),
+        CommandHandler('charlar', charlar),
+        CommandHandler('mareas', mareas),
+        CommandHandler('windguru', windguru),
+        CommandHandler('memes', memes),
+        CommandHandler('colaborar', colaborar),
+        CommandHandler('informacion', informacion),
+        CommandHandler('mensajear', mensaje_trigger),
+        CommandHandler('colectivas', colectivas),
+        CommandHandler('almaceneras', almaceneras),
+        CommandHandler('hidrografia', hidrografia),
+        CommandHandler('suscribirme', suscribirme),
+        CommandHandler('desuscribirme', desuscribirme),
+    ]
+    
+    # Other handlers for message text
+    message_handlers = [
+        MessageHandler(filters.Regex(r'^(Windguru|windguru|WINDGURU)$'), windguru),
+        MessageHandler(filters.Regex(r'^(Desuscribirme|desuscribirme|DESUSCRIBIRME)$'), desuscribirme),
+        MessageHandler(filters.Regex(r'^(Memes|memes|MEMES|Meme|meme|MEME)$'), memes),
+        MessageHandler(filters.Regex(r'^(Colaborar|colaborar|COLABORAR)$'), colaborar),
+        MessageHandler(filters.Regex(r'^(Informacion|informacion|INFORMACION)$'), informacion),
+        MessageHandler(filters.Regex(r'^(Mensajear|mensajear|MENSAJEAR)$'), mensaje_trigger),
+        MessageHandler(filters.Regex(r'^(Hola|hola|HOLA)$'), start),
+        MessageHandler(filters.Regex(r'^(Colectivas|colectivas|COLECTIVAS|horarios)$'), colectivas),
+        MessageHandler(filters.Regex(r'^(Gracias|gracias|GRACIAS)$'), de_nada),
+        MessageHandler(filters.Regex(r'^(Interislena|interislena|INTERISLENA)$'), Interislena),
+        MessageHandler(filters.Regex(r'^(Jilguero|jilguero|JILGUERO)$'), Jilguero),
+        MessageHandler(filters.Regex(r'^(LineasDelta|lineasdelta|LINEASDELTA)$'), LineasDelta),
+        MessageHandler(filters.Regex(r'^(Almaceneras|almaceneras|ALMACENERAS)$'), almaceneras),
+        MessageHandler(filters.Regex(r'^(Hidrografia|hidrografia|HIDROGRAFIA)$'), hidrografia),
+        MessageHandler(filters.Regex(r'^(Suscribirme|suscribirme|SUSCRIBIRME)$'), suscribirme),
+        
+        # Handlers for words contained in messages
+        MessageHandler(filters.Regex(r'(?i)(.*\bcharlar\b.*)'), charlar),
+        MessageHandler(filters.Regex(r'(?i)(.*\bmareas\b.*)'), mareas),
+        MessageHandler(filters.Regex(r'(?i)(.*\bwindguru\b.*)'), windguru),
+        MessageHandler(filters.Regex(r'(?i)(.*\bdesuscribirme\b.*)'), desuscribirme),
+        MessageHandler(filters.Regex(r'(?i)(.*\bmemes\b.*)'), memes),
+        MessageHandler(filters.Regex(r'(?i)(.*\bmeme\b.*)'), memes),
+        MessageHandler(filters.Regex(r'(?i)(.*\bcolaborar\b.*)'), colaborar),
+        MessageHandler(filters.Regex(r'(?i)(.*\binformacion\b.*)'), informacion),
+        MessageHandler(filters.Regex(r'(?i)(.*\bmensajear\b.*)'), mensaje_trigger),
+        MessageHandler(filters.Regex(r'(?i)(.*\bhola\b.*)'), start),
+        MessageHandler(filters.Regex(r'(?i)(.*\bcolectivas\b.*)'), colectivas),
+        MessageHandler(filters.Regex(r'(?i)(.*\bgracias\b.*)'), de_nada),
+        MessageHandler(filters.Regex(r'(?i)(.*\bJilguero\b.*)'), Jilguero),
+        MessageHandler(filters.Regex(r'(?i)(.*\bInterislena\b.*)'), Interislena),
+        MessageHandler(filters.Regex(r'(?i)(.*\bLineasDelta\b.*)'), LineasDelta),
+        MessageHandler(filters.Regex(r'(?i)(.*\balmaceneras\b.*)'), almaceneras),
+        MessageHandler(filters.Regex(r'(?i)(.*\balmacenera\b.*)'), almaceneras),
+        MessageHandler(filters.Regex(r'(?i)(.*\balmacén\b.*)'), almaceneras),
+        MessageHandler(filters.Regex(r'(?i)(.*\balmacen\b.*)'), almaceneras),
+        MessageHandler(filters.Regex(r'(?i)(.*\bhidrografia\b.*)'), hidrografia),
+        MessageHandler(filters.TEXT, start2)
+    ]
+    
+    # Combine all handlers, with command handlers first to ensure they take priority
+    handlers = command_handlers + message_handlers
 
     conv_handler = ConversationHandler(
         entry_points=handlers,
@@ -1220,6 +1239,5 @@ if __name__ == '__main__':
         fallbacks=handlers,
     )
 
-    application.add_handler(start_handler)
     application.add_handler(conv_handler)
     application.run_polling()
