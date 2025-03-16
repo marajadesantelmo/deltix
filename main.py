@@ -1170,7 +1170,7 @@ if __name__ == '__main__':
     MessageHandler(filters.Regex(r'^(Hidrografia|hidrografia|HIDROGRAFIA)$'), hidrografia),
     MessageHandler(filters.Regex(r'^(Suscribirme|suscribirme|SUSCRIBIRME)$'), suscribirme),
     CommandHandler('colectivas', colectivas),  # Ensure this is properly registered
-
+    CommandHandler('suscribirme', suscribirme), 
     #Handlers si contiene palabra en minuscula
     MessageHandler(filters.Regex(r'(?i)(.*\bcharlar\b.*)'), charlar),
     MessageHandler(filters.Regex(r'(?i)(.*\bmareas\b.*)'), mareas),
