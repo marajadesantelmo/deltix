@@ -424,7 +424,7 @@ async def memes(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         '''
         user = update.effective_user
         chat_id=update.effective_chat.id
-        update_user_experience(user.id, 'memes')
+        #update_user_experience(user.id, 'memes')
         logger.warning(f"{user.id} - {user.first_name} pidió memes en chat {chat_id}")
         await context.bot.send_message(chat_id, "...me encantan los memes islenials &#128514 Te mando uno.",
                                         parse_mode='HTML')
