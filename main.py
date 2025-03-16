@@ -653,17 +653,17 @@ async def colectivas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     '''
     Seleccion de empresas de colectiva para pedir horario
     '''
-    user = update.effective_user
-    update_user_experience(user.id, 'colectivas')
+    #user = update.effective_user
+    #update_user_experience(user.id, 'colectivas')
     await update.message.reply_text("""Elegí la empresa de lancha colectiva:\n
             - <b>Jilguero</b>   <i> va por el Carapachay-Angostura</i>
             - <b>Interisleña</b>   <i> Sarmiento, San Antonio y muchos más</i>
             - <b>Lineas Delta</b>   <i> Caraguatá, Canal Arias, Paraná Miní</i>""",
-                                        parse_mode='HTML',
-                                        reply_markup=ReplyKeyboardMarkup(
-            [["Jilguero", "Interisleña", "Lineas Delta"]],
-            one_time_keyboard=True,
-            input_field_placeholder="Empresa de lanchas"))
+                                    parse_mode='HTML',
+                                    reply_markup=ReplyKeyboardMarkup(
+                                        [["Jilguero", "Interisleña", "Lineas Delta"]],
+                                        one_time_keyboard=True,
+                                        input_field_placeholder="Empresa de lanchas"))
     
     # Return to ANSWER_colectivas state to handle the selection
     return ANSWER_colectivas
@@ -1140,6 +1140,7 @@ if __name__ == '__main__':
     MessageHandler(filters.Regex(r'^(LineasDelta|lineasdelta|LINEASDELTA)$'), LineasDelta),
     MessageHandler(filters.Regex(r'^(Almaceneras|almaceneras|ALMACENERAS)$'), almaceneras),
     MessageHandler(filters.Regex(r'^(Hidrografia|hidrografia|HIDROGRAFIA)$'), hidrografia),
+    CommandHandler('colectivas', colectivas),  # Ensure this is properly registered
 
     #Handlers si contiene palabra en minuscula
     MessageHandler(filters.Regex(r'(?i)(.*\bcharlar\b.*)'), charlar),
