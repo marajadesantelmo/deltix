@@ -3,10 +3,11 @@ from telegram import Bot
 import asyncio
 import nest_asyncio
 import datetime
+from tokens import telegram_token
 
 nest_asyncio.apply()
 
-bot = Bot(token='5712079875:AAHhIWwnHN5ws0DEUggA8-STWKmM-ZJ5hQE')
+bot = Bot(token=telegram_token)
 
 subscribers_mareas = pd.read_csv("/home/facundol/deltix/subscribers_mareas.csv")
 #subscribers_mareas = pd.read_csv("subscribers_mareas2.csv")
@@ -79,7 +80,7 @@ async def send_image_to_subscribers():
         for user_id in subscribers_hidrografia['User ID']:
             print(f'enviando hidrografia a {user_id}')
             user_name = subscribers_hidrografia.loc[subscribers_hidrografia['User ID'] == user_id, 'First Name'].values[0]
-            with open("/home/facundol/deltix/tabla_data.txt", "r") as file:
+            with open("/home/facundol/deltix/table_data.txt", "r") as file:
                 content = file.read()
             await asyncio.wait_for(bot.send_message(user_id, content), timeout=12000)
             log_entry = {'Timestamp': datetime.datetime.now(),
