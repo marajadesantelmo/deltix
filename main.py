@@ -80,7 +80,7 @@ logger.setLevel(logging.WARNING)
 
 nest_asyncio.apply()
 
-ANSWER_charlar, ANSWER_meme, ANSWER_colaborar, ANSWER_mensajear, ANSWER_informacion, ANSWER_mareas_suscribir, ANSWER_windguru_suscribir, ANSWER_desuscribir, ANSWER_meme2, ANSWER_charlar_windguru, ANSWER_colectivas, ANSWER_jilguero, ANSWER_interislena, ANSWER_lineasdelta, ANSWER_direction, ANSWER_schedule, ANSWER_almacenera_select, ANSWER_hidrografia_suscribir = range(18)
+ANSWER_charlar, ANSWER_meme, ANSWER_colaborar, ANSWER_mensajear, ANSWER_informacion, ANSWER_mareas_suscribir, ANSWER_windguru_suscribir, ANSWER_desuscribir, ANSWER_meme2, ANSWER_charlar_windguru, ANSWER_colectivas, ANSWER_jilguero, ANSWER_interislena, ANSWER_lineasdelta, ANSWER_direction, ANSWER_schedule, ANSWER_almacenera_select, ANSWER_hidrografia_suscribir, ANSWER_suscribirme = range(19)
 
 def generate_main_menu():
     '''
@@ -91,10 +91,11 @@ def generate_main_menu():
     '''
     return ("- <b>/mareas </b>   <i> pronóstico de mareas INA &#9875</i>\n"
             "- <b>/hidrografia </b>   <i> mareas hidrografia</i>\n"
-            "- <b>/windguru </b>   <i> pronóstico meteorológico de windgurú</i>\n"
-            "- <b>/colectivas </b>   <i> horarios de lanchas colectivas &#128337</i>\n"
-            "- <b>/almaceneras </b>   <i> información de las lanchas almaceneras &#128676</i>\n"
-            "- <b>/memes </b>   <i> ver los memes más divertidos de la isla &#129315 </i>\n"
+            "- <b>/windguru </b>   <i> pronóstico del clima de windgurú</i>\n"
+            "- <b>/colectivas </b>   <i> horarios lanchas colectivas &#128337</i>\n"
+            "- <b>/almaceneras </b>   <i> lanchas almaceneras &#128676</i>\n"
+            "- <b>/memes </b>   <i> los memes más divertidos de la isla &#129315 </i>\n"
+            "- <b>/suscribirme </b>   <i> suscribirte a mis envíos &#x1F989</i>\n"
             # "- <b>/voy_y_vuelvo </b>   <i> compartir viajes desde y hacia a la isla</i>\n"
             # "- <b>/notiDeltix </b>   <i> suscribirte al envío de info de interés sobre la isla</i>\n"
             "- <b>/charlar</b>   <i> charlar conmigo y suscribirte a mis envíos </i>\n"
@@ -103,9 +104,9 @@ def generate_main_menu():
             "- <b>/desuscribirme </b>   <i> darte de baja de mis envíos &#x1F989</i>\n"
             "- <b>/mensajear </b>   <i> mandarle un mensajito al equipo Deltix</i>\n")
 
-main_menu_keyboard = ReplyKeyboardMarkup([["/windguru", "/mareas", "/memes"],
-                                          ["/colectivas", "/almaceneras", "/colaborar"],
-                                          ["/charlar", "/informacion", "/desuscribirme"]])
+main_menu_keyboard = ReplyKeyboardMarkup([["/windguru", "/mareas", "/hidrografia"],
+                                          ["/colectivas", "/almaceneras", "/memes"],
+                                          ["/mensajear", "/suscribirme", "/desuscribirme"]])
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
     '''
@@ -821,6 +822,33 @@ async def schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             
     return ConversationHandler.END
 
+
+async def suscribirme(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    '''
+    Permite al usuario elegir a qué suscribirse: mareas, hidrografia o windguru
+    '''
+    await update.message.reply_text(
+        "¿A qué te gustaría suscribirte?",
+        reply_markup=ReplyKeyboardMarkup(
+            [["Mareas", "Hidrografia", "Windguru"]],
+            one_time_keyboard=True,
+            input_field_placeholder="Selecciona una opción"
+        )
+    )
+    return ANSWER_suscribirme
+
+async def answer_suscribirme(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    user_response = update.message.text.lower()
+    if user_response == "mareas":
+        return await mareas_suscribir(update, context)
+    elif user_response == "hidrografia":
+        return await hidrografia_suscribir(update, context)
+    elif user_response == "windguru":
+        return await windguru_suscribir(update, context)
+    else:
+        await update.message.reply_text("No comprendí tu elección. Por favor, selecciona 'Mareas', 'Hidrografia' o 'Windguru'.")
+        return ANSWER_suscribirme
+
 # Almaceneras data organized as a dictionary with title case keys
 ALMACENERAS_DATA = {
     "Nilda Alicia (Anita)": {
@@ -1028,7 +1056,7 @@ async def hidrografia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     global user_experience
     user = update.effective_user
     chat_id = update.effective_chat.id
-    update_user_experience(user.id, 'hidrografia')  # Track hidrografia interactions separately
+    update_user_experience(user.id, 'hidrografia') 
     logger.warning(f"{user.id} - {user.first_name} pidió informe de mareas de hidrografía en chat {chat_id}")
     
     try:
@@ -1140,6 +1168,7 @@ if __name__ == '__main__':
     MessageHandler(filters.Regex(r'^(LineasDelta|lineasdelta|LINEASDELTA)$'), LineasDelta),
     MessageHandler(filters.Regex(r'^(Almaceneras|almaceneras|ALMACENERAS)$'), almaceneras),
     MessageHandler(filters.Regex(r'^(Hidrografia|hidrografia|HIDROGRAFIA)$'), hidrografia),
+    MessageHandler(filters.Regex(r'^(Suscribirme|suscribirme|SUSCRIBIRME)$'), suscribirme),
     CommandHandler('colectivas', colectivas),  # Ensure this is properly registered
 
     #Handlers si contiene palabra en minuscula
@@ -1186,6 +1215,7 @@ if __name__ == '__main__':
             ANSWER_schedule: [MessageHandler(filters.TEXT, schedule)],
             ANSWER_almacenera_select: [MessageHandler(filters.TEXT, almacenera_selected)],
             ANSWER_colectivas: [MessageHandler(filters.TEXT, answer_colectivas)],
+            ANSWER_suscribirme: [MessageHandler(filters.Regex(r'^(Mareas|mareas|Hidrografia|hidrografia|Windguru|windguru)$'), answer_suscribirme)],
         },
         fallbacks=handlers,
     )
