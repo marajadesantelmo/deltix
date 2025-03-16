@@ -80,9 +80,31 @@ async def send_image_to_subscribers():
         for user_id in subscribers_hidrografia['User ID']:
             print(f'enviando hidrografia a {user_id}')
             user_name = subscribers_hidrografia.loc[subscribers_hidrografia['User ID'] == user_id, 'First Name'].values[0]
+            
+            # Read and format data from table_data.txt
             with open("/home/facundol/deltix/table_data.txt", "r") as file:
-                content = file.read()
-            await asyncio.wait_for(bot.send_message(user_id, content), timeout=12000)
+                lines = file.readlines()
+            
+            if not lines:
+                content = "Lo siento, no tengo datos de mareas de hidrografía en este momento."
+            else:
+                formatted_message = "<b>📊 PRONÓSTICO DE MAREAS - HIDROGRAFÍA NAVAL</b>\n\n"
+                if len(lines) > 0:
+                    port_name = lines[0].strip()
+                    formatted_message += f"<b>🚢 {port_name}</b>\n\n"
+                if len(lines) > 2:
+                    for line in lines[2:]:
+                        data = line.strip().split('\t')
+                        if len(data) >= 4:
+                            tide_type = data[0]
+                            time = data[1]
+                            height = data[2]
+                            date = data[3]
+                            emoji = "🌊" if tide_type == "PLEAMAR" else "⬇️"
+                            formatted_message += f"{emoji} <b>{tide_type}</b>: {time} hs - {height} m ({date})\n"
+                content = formatted_message
+            
+            await asyncio.wait_for(bot.send_message(user_id, content, parse_mode='HTML'), timeout=12000)
             log_entry = {'Timestamp': datetime.datetime.now(),
                          'User ID': user_id,
                          'user_name': user_name}
