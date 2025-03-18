@@ -303,7 +303,7 @@ def handle_colectivas_input(user_input):
             # Reset colectivas flow after showing schedule
             st.session_state.colectivas_step = None
         elif "invierno" in user_input.lower():
-            st.image("colectivas/interisleña_ida_invierno.png")
+            st.image("colectivas/interislena_ida_invierno.png")
             st.chat_message("assistant", avatar="bot_icon.png").write("Estos son los horarios de invierno de Interisleña.")
             # Reset colectivas flow after showing schedule
             st.session_state.colectivas_step = None
@@ -482,6 +482,20 @@ if user_input:
                 st.session_state.wants_more_memes = False
         else:
             st.session_state.wants_more_memes = False
+
+    elif "hidrografia" in user_input.lower():
+        msg = "Aca va el pronostico de mareas de hidrografía naval..."
+        st.session_state.chat_messages.append({"role": "assistant", "content": msg})
+        st.chat_message("assistant", avatar="bot_icon.png").write(msg)
+        store_chat_message(project_id, "assistant", msg)
+        
+        if os.path.exists("hidrografia.png"):
+            st.image("hidrografia.png")
+            st.session_state.chat_messages.append({"role": "image", "content": "hidrografia.png"})
+        else:
+            error_msg = "Error: No se encontró el archivo de hidrografía."
+            st.error(error_msg)
+            st.session_state.chat_messages.append({"role": "assistant", "content": error_msg})
 
     elif "colectivas" in user_input.lower():
         colectivas()
