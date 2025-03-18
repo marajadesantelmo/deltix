@@ -358,6 +358,78 @@ async def windguru(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         else:
             return ConversationHandler.END
 
+async def hidrografia_suscribir_directo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    '''
+    Suscripcion directa
+    '''
+    subscribers_hidrografia = pd.read_csv(subscribers_hidrografia_path)
+    chat_id = update.effective_chat.id
+    user = update.effective_user
+    logger.warning(f"{user.id} - {user.first_name} se inscribió a hidrografia en chat {chat_id}")
+    #Chequeo si ya está suscrito
+    user_id = update.message.from_user.id
+    if user_id in subscribers_hidrografia['User ID'].values:
+        await update.message.reply_text("Me parece que ya estabas suscriptx vos! Igual te voy a estar enviando los pronósticos de Hidrografía Naval todos los días")
+    #Si no está suscrito lo subo a la lista
+    else:
+        user_info = {"User ID": [update.message.from_user.id],
+                    "Username": [update.message.from_user.username],
+                    "First Name": [update.message.from_user.first_name],
+                    "Last Name": [update.message.from_user.last_name],}
+        user_df = pd.DataFrame(user_info)
+        subscribers_hidrografia = pd.concat([subscribers_hidrografia, user_df], ignore_index=True)
+        subscribers_hidrografia.to_csv(subscribers_hidrografia_path, index=False)
+        await update.message.reply_text("¡Gracias por suscribirte! Voy a intentar mandarte el pronóstico de mareas de Hidrografía Naval una vez al día.")
+    return ConversationHandler.END
+
+async def mareas_suscribir_directo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    '''
+    Funcion para obtener respuesta si/no de suscripcion a mareas y realizar
+    la suscripción
+    '''
+    subscribers_mareas = pd.read_csv(subscribers_mareas_path)
+    chat_id = update.effective_chat.id
+    user = update.effective_user
+    logger.warning(f"{user.id} - {user.first_name} se inscribió a mareas en chat {chat_id}")
+    #Chequeo si ya está suscrito
+    user_id = update.message.from_user.id
+    if user_id in subscribers_mareas['User ID'].values:
+        await update.message.reply_text("Me parece que ya estabas suscriptx vos! Igual te voy a estar enviando los reportes todos los días")
+    #Si no está suscrito lo subo a la lista
+    else:
+        user_info = {"User ID": [update.message.from_user.id],
+                    "Username": [update.message.from_user.username],
+                    "First Name": [update.message.from_user.first_name],
+                    "Last Name": [update.message.from_user.last_name],}
+        user_df = pd.DataFrame(user_info)
+        subscribers_mareas = subscribers_mareas.append(user_df, ignore_index=True)
+        subscribers_mareas.to_csv(subscribers_mareas_path, index=False)
+        await update.message.reply_text("¡Gracias por suscribirte! Voy a intentar mandarte el pronóstico de mareas una vez al día. A veces fallo porque dependende de que me ande la internet isleña")
+    return ConversationHandler.END
+
+
+async def windguru_suscribir_directo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    subscribers_windguru = pd.read_csv(subscribers_windguru_path)
+    chat_id = update.effective_chat.id
+    user = update.effective_user
+    logger.warning(f"{user.id} - {user.first_name} se inscribió a windguru en chat {chat_id}")
+
+    # Check if the user is already subscribed
+    user_id = update.message.from_user.id
+    if user_id in subscribers_windguru['User ID'].values:
+        await update.message.reply_text("Ya estás suscrito a los pronósticos de Windguru. ¡Te los seguiré enviando todos los días!")
+    else:
+        user_info = {"User ID": [update.message.from_user.id],
+                    "Username": [update.message.from_user.username],
+                    "First Name": [update.message.from_user.first_name],
+                    "Last Name": [update.message.from_user.last_name],}
+        user_df = pd.DataFrame(user_info)
+        subscribers_windguru = subscribers_windguru.append(user_df, ignore_index=True)
+        subscribers_windguru.to_csv('/home/facundol/deltix/subscribers_windguru.csv', index=False)
+        await update.message.reply_text("¡Gracias por suscribirte! Te enviaré el pronóstico de Windguru una vez al día.")
+    return ConversationHandler.END
+
+
 async def mareas_suscribir(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     '''
     Funcion para obtener respuesta si/no de suscripcion a mareas y realizar
@@ -840,11 +912,11 @@ async def suscribirme(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
 async def answer_suscribirme(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user_response = update.message.text.lower()
     if user_response == "mareas":
-        return await mareas_suscribir(update, context)
+        return await mareas_suscribir2(update, context)
     elif user_response == "hidrografia":
-        return await hidrografia_suscribir(update, context)
+        return await hidrografia_suscribir_directo(update, context)
     elif user_response == "windguru":
-        return await windguru_suscribir(update, context)
+        return await windguru_suscribir2(update, context)
     else:
         await update.message.reply_text("No comprendí tu elección. Por favor, selecciona 'Mareas', 'Hidrografia' o 'Windguru'.")
         return ANSWER_suscribirme
@@ -1145,6 +1217,8 @@ async def hidrografia_suscribir(update: Update, context: ContextTypes.DEFAULT_TY
             parse_mode='HTML',
             reply_markup=main_menu_keyboard)
         return ConversationHandler.END
+
+
 
 if __name__ == '__main__':
     application = ApplicationBuilder().token(telegram_token).build()
