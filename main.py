@@ -912,11 +912,11 @@ async def suscribirme(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
 async def answer_suscribirme(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user_response = update.message.text.lower()
     if user_response == "mareas":
-        return await mareas_suscribir2(update, context)
+        return await mareas_suscribir_directo(update, context)
     elif user_response == "hidrografia":
         return await hidrografia_suscribir_directo(update, context)
     elif user_response == "windguru":
-        return await windguru_suscribir2(update, context)
+        return await windguru_suscribir_directo(update, context)
     else:
         await update.message.reply_text("No comprendí tu elección. Por favor, selecciona 'Mareas', 'Hidrografia' o 'Windguru'.")
         return ANSWER_suscribirme
