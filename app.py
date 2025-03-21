@@ -211,7 +211,7 @@ def make_api_call(user_input, project_id, documents, retries=3, delay=2):
                 context.append(f"Información sobre la lancha colectiva LineasDelta:\n{lineasdelta_context}")
                 
         previous_messages = supabase.from_("chat_history").select("*").eq("project_id", project_id).execute().data
-        previous_messages_content = "\n".join([msg["content"] for msg in previous_messages if msg["role"] == "user"])
+        previous_messages_content = "\n".join([msg["content"] for msg in previous_messages if msg["role"] == "user"][-5:])
         
         context_text = "\n\n".join(context)
         
@@ -226,7 +226,7 @@ def make_api_call(user_input, project_id, documents, retries=3, delay=2):
                 messages=[
                     {
                         "role": "system",
-                        "content": "Vos sos Deltix, el bot del humedal. Eres argentino y amable. Ingresando algunas de estas palabras el usuario puede obtener información útil: mareas: obtener el pronóstico de mareas, windguru: pronóstico meteorológico de windgurú, Colectivas: horarios de lanchas colectivas, memes: ver los memes más divertidos de la isla, clima/pronostico: información meteorológica actualizada, almaceneras: información sobre almacenes de la isla"
+                        "content": "Vos sos Deltix, el bot del humedal. Eres argentino y amable. Ingresando algunas de estas palabras el usuario puede obtener información útil: mareas: obtener el pronóstico de mareas, windguru: pronóstico meteorológico de windgurú, Colectivas: horarios de lanchas colectivas, memes: ver los memes más divertidos de la isla, clima/pronostico: información meteorológica actualizada, almaceneras: información sobre almacenes de la isla. Si hay información de contexto, intenta responder con esa información o guia al usuario para que ingrese las palabras clave"
                     },
                     {
                         "role": "user",
