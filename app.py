@@ -175,7 +175,6 @@ def load_transportation_data(company_name):
 
 def make_api_call(user_input, project_id, documents, retries=3, delay=2):
     try:
-        #context_supabase = "\n".join([doc["content"] for doc in documents])
         context = []
         if any(keyword in user_input.lower() for keyword in ['seguridad', 'policia', 'emergencia', 'telefono']):
             with open("rag/policia.txt", "r") as file:
@@ -216,29 +215,46 @@ def make_api_call(user_input, project_id, documents, retries=3, delay=2):
         context_text = "\n\n".join(context)
         
         for attempt in range(retries):
-            completion = client.chat.completions.create(
-                extra_headers={
-                    "HTTP-Referer": "<YOUR_SITE_URL>",  # Optional. Site URL for rankings on openrouter.ai.
-                    "X-Title": "<YOUR_SITE_NAME>",  # Optional. Site title for rankings on openrouter.ai.
-                },
-                extra_body={},
-                model="deepseek/deepseek-chat:free",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "Vos sos Deltix, el bot del humedal. Eres argentino y amable. Ingresando algunas de estas palabras el usuario puede obtener información útil: mareas: obtener el pronóstico de mareas, windguru: pronóstico meteorológico de windgurú, Colectivas: horarios de lanchas colectivas, memes: ver los memes más divertidos de la isla, clima/pronostico: información meteorológica actualizada, almaceneras: información sobre almacenes de la isla. Si hay información de contexto, intenta responder con esa información o guia al usuario para que ingrese las palabras clave"
+            try:
+                response_stream = client.chat.completions.create(
+                    extra_headers={
+                        "HTTP-Referer": "<YOUR_SITE_URL>",  # Optional. Site URL for rankings on openrouter.ai.
+                        "X-Title": "<YOUR_SITE_NAME>",  # Optional. Site title for rankings on openrouter.ai.
                     },
-                    {
-                        "role": "user",
-                        "content": f"{user_input}\n\nMensajes anteriores:\n{previous_messages_content}\n\nContexto:\n{context_text}"
-                    }
-                ]
-            )
-            response_content = completion.choices[0].message.content
-            if response_content.strip():
-                return response_content
-            time.sleep(delay)
-        raise ValueError("Received empty response from OpenRouter API after multiple attempts")
+                    extra_body={},
+                    model="deepseek/deepseek-chat:free",
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": "Vos sos Deltix, el bot del humedal. Eres argentino y amable. Ingresando algunas de estas palabras el usuario puede obtener información útil: mareas: obtener el pronóstico de mareas, windguru: pronóstico meteorológico de windgurú, Colectivas: horarios de lanchas colectivas, memes: ver los memes más divertidos de la isla, clima/pronostico: información meteorológica actualizada, almaceneras: información sobre almacenes de la isla. Si hay información de contexto, intenta responder con esa información o guia al usuario para que ingrese las palabras clave"
+                        },
+                        {
+                            "role": "user",
+                            "content": f"{user_input}\n\nMensajes anteriores:\n{previous_messages_content}\n\nContexto:\n{context_text}"
+                        }
+                    ],
+                    stream=True  # Enable streaming
+                )
+                
+                full_response = ""
+                for chunk in response_stream:
+                    if chunk.choices and chunk.choices[0].delta and chunk.choices[0].delta.content:
+                        content = chunk.choices[0].delta.content
+                        full_response += content
+                        yield full_response  # Yield incremental content
+                
+                if not full_response.strip():
+                    if attempt == retries - 1:
+                        raise ValueError("Received empty response from OpenRouter API after multiple attempts")
+                    time.sleep(delay)
+                else:
+                    # Store the final response
+                    return full_response
+            except Exception as e:
+                if attempt == retries - 1:
+                    raise e
+                time.sleep(delay)
+                
     except Exception as e:
         raise e
 
@@ -501,53 +517,74 @@ if user_input:
         colectivas()
     elif st.session_state.get("colectivas_step"):
         if not handle_colectivas_input(user_input):
-            # Create a placeholder for the "thinking" message
+            # Create a placeholder for the streaming response
             with st.chat_message("assistant", avatar="bot_icon.png"):
-                thinking_placeholder = st.empty()
-                thinking_placeholder.write("deltix pensando...")
+                message_placeholder = st.empty()
                 
                 try:
                     documents = []
-                    bot_reply = make_api_call(user_input, project_id, documents)
-                    # Replace with actual response
-                    thinking_placeholder.write(bot_reply)
-                    st.session_state.chat_messages.append({"role": "assistant", "content": bot_reply})
-                    store_chat_message(project_id, "assistant", bot_reply)
+                    full_response = ""
+                    
+                    # Stream the response
+                    for streamed_response in make_api_call(user_input, project_id, documents):
+                        message_placeholder.markdown(streamed_response + "▌")
+                        full_response = streamed_response
+                    
+                    # Display the final response without the cursor
+                    message_placeholder.markdown(full_response)
+                    
+                    # Add to chat history and store in database
+                    st.session_state.chat_messages.append({"role": "assistant", "content": full_response})
+                    store_chat_message(project_id, "assistant", full_response)
                 except Exception as e:
                     error_msg = f"Error: {e}"
-                    thinking_placeholder.error(error_msg)
+                    message_placeholder.error(error_msg)
                     st.session_state.chat_messages.append({"role": "assistant", "content": error_msg})
     elif contains_weather_keywords(user_input):
-        # Create a placeholder for the "thinking" message
+        # Create a placeholder for streaming response
         with st.chat_message("assistant", avatar="bot_icon.png"):
-            thinking_placeholder = st.empty()
-            thinking_placeholder.write("deltix pensando...")
+            message_placeholder = st.empty()
             
             try:
                 documents = []
-                bot_reply = make_api_call(user_input, project_id, documents)
-                # Replace with actual response
-                thinking_placeholder.write(bot_reply)
-                st.session_state.chat_messages.append({"role": "assistant", "content": bot_reply})
-                store_chat_message(project_id, "assistant", bot_reply)
+                full_response = ""
+                
+                # Stream the response
+                for streamed_response in make_api_call(user_input, project_id, documents):
+                    message_placeholder.markdown(streamed_response + "▌")
+                    full_response = streamed_response
+                
+                # Display the final response without the cursor
+                message_placeholder.markdown(full_response)
+                
+                # Add to chat history and store in database
+                st.session_state.chat_messages.append({"role": "assistant", "content": full_response})
+                store_chat_message(project_id, "assistant", full_response)
             except Exception as e:
                 error_msg = f"Error: {e}"
-                thinking_placeholder.error(error_msg)
+                message_placeholder.error(error_msg)
                 st.session_state.chat_messages.append({"role": "assistant", "content": error_msg})
     else:
-        # Create a placeholder for the "thinking" message
+        # Create a placeholder for streaming response
         with st.chat_message("assistant", avatar="bot_icon.png"):
-            thinking_placeholder = st.empty()
-            thinking_placeholder.write("deltix pensando...")
+            message_placeholder = st.empty()
             
             try:
                 documents = []
-                bot_reply = make_api_call(user_input, project_id, documents)
-                # Replace with actual response
-                thinking_placeholder.write(bot_reply)
-                st.session_state.chat_messages.append({"role": "assistant", "content": bot_reply})
-                store_chat_message(project_id, "assistant", bot_reply)
+                full_response = ""
+                
+                # Stream the response
+                for streamed_response in make_api_call(user_input, project_id, documents):
+                    message_placeholder.markdown(streamed_response + "▌")
+                    full_response = streamed_response
+                
+                # Display the final response without the cursor
+                message_placeholder.markdown(full_response)
+                
+                # Add to chat history and store in database
+                st.session_state.chat_messages.append({"role": "assistant", "content": full_response})
+                store_chat_message(project_id, "assistant", full_response)
             except Exception as e:
                 error_msg = f"Error: {e}"
-                thinking_placeholder.error(error_msg)
+                message_placeholder.error(error_msg)
                 st.session_state.chat_messages.append({"role": "assistant", "content": error_msg})
