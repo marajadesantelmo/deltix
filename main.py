@@ -234,7 +234,7 @@ async def amanita(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
             "<i>Paseos por el Delta del Paraná</i>\n"
             "<i>Con Guía Bilingüe (opcional)</i>\n"
             "<i>Servicio puerta a puerta (opcional)</i>\n\n"
-            "Instagram: https://www.instagram.com/amanitaturismodelta\n"
+            "Instagram: instagram.com/amanitaturismodelta\n"
             "Contacto: 1169959272"
         ),
         parse_mode='HTML')
@@ -277,7 +277,7 @@ async def labusqueda(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
             "<i>Espacio para encuentros y ceremonias</i>\n"
             "<i>Hostal en el Delta</i>\n"
             "<i>Conexión con la naturaleza</i>\n\n"
-            "Instagram: https://www.instagram.com/labusqueda_cabanadelta\n"
+            "Instagram: instagram.com/labusqueda_cabanadelta\n"
             "Contacto: 1150459556"
         ),
         parse_mode='HTML')
