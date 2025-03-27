@@ -38,6 +38,9 @@ lineas_delta_vuelta_escolar_path = base_path + 'colectivas/lineas_delta_vuelta_e
 carpinchix_trabajando_path = base_path + 'carpinchix_trabajando.png'
 almaceneras_path = base_path + 'rag/almaceneras.txt'
 mareas_hidrografia_path = base_path + 'table_data.txt'
+amanita_path = base_path + 'actividades_productos/amanita.png'
+alfareria_path = base_path + 'actividades_productos/alfareria.png'
+labusqueda_path = base_path + 'actividades_productos/labusqueda.png'    
 
 # Read the user experience CSV with error handling
 try:
@@ -102,7 +105,13 @@ def generate_main_menu():
             "- <b>/informacion </b>   <i> saber más sobre Deltix &#128057</i>\n"
             "- <b>/colaborar </b>   <i> hacer sugerencias o aportar</i>\n"
             "- <b>/desuscribirme </b>   <i> darte de baja de mis envíos &#x1F989</i>\n"
-            "- <b>/mensajear </b>   <i> mandarle un mensajito al equipo Deltix</i>\n")
+            "- <b>/mensajear </b>   <i> mandarle un mensajito al equipo Deltix</i>"
+            "\n"
+            "\n"
+            "<b>Actividades y emprendimientos isleños</b>\n"
+            "- <b>/amanita </b>   <i> paseos en canoa isleña por Amanita</i>\n"
+            "- <b>/alfareria</b>   <i> encuentros con el barro por Kutral alfarería</i>\n"
+            "- <b>/labusqueda</b>   <i> espacio para encuentros, ceremonias y hostal</i>\n")
 
 main_menu_keyboard = ReplyKeyboardMarkup([["/windguru", "/mareas", "/hidrografia"],
                                           ["/colectivas", "/almaceneras", "/memes"],
@@ -208,12 +217,31 @@ async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
         parse_mode='HTML',
         reply_markup=main_menu_keyboard)
 
+async def amanita(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
+    '''
+    Respuesta cuando el usuario pide el menu de amanita
+    '''
+    chat_id = update.effective_chat.id
+    user = update.effective_user
+    logger.warning(f"{user.id} - {user.first_name} usó comando amanita en chat {chat_id}")
+    await context.bot.send_photo(chat_id, open(amanita_path, "rb"))
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=(
+            "<b>🛶 Experiencias en Canoa Isleña</b>\n"
+            "🌅 <i>Paseos por el Delta del Paraná</i>\n"
+            "🌈 <i>Con Guía Bilingüe (opcional)</i>\n"
+            "🚙 <i>Servicio puerta a puerta (opcional)</i>"
+            "https://www.instagram.com/amanitaturismodelta\n"
+        ),
+        parse_mode='HTML')
+    return ConversationHandler.END
 
 async def charlar(update: Update, context: ContextTypes.DEFAULT_TYPE):
     '''
     1era respuesta para el comando /charlar
     La idea de esta respuesta es que el bot vaya llevando al usuario por todas
-    sus funcionalidad (falta mejorarlo)
+    sus funcionalidades (falta mejorarlo)
     '''
     chat_id = update.effective_chat.id
     user = update.effective_user
@@ -1241,6 +1269,7 @@ if __name__ == '__main__':
         CommandHandler('hidrografia', hidrografia),
         CommandHandler('suscribirme', suscribirme),
         CommandHandler('desuscribirme', desuscribirme),
+        CommandHandler('amanita', amanita),
     ]
     
     # Other handlers for message text
@@ -1260,6 +1289,7 @@ if __name__ == '__main__':
         MessageHandler(filters.Regex(r'^(Almaceneras|almaceneras|ALMACENERAS)$'), almaceneras),
         MessageHandler(filters.Regex(r'^(Hidrografia|hidrografia|HIDROGRAFIA)$'), hidrografia),
         MessageHandler(filters.Regex(r'^(Suscribirme|suscribirme|SUSCRIBIRME)$'), suscribirme),
+        MessageHandler(filters.Regex(r'^(Amanita|amanita|AMANITA)$'), amanita),
         
         # Handlers for words contained in messages
         MessageHandler(filters.Regex(r'(?i)(.*\bcharlar\b.*)'), charlar),
@@ -1283,6 +1313,7 @@ if __name__ == '__main__':
         MessageHandler(filters.Regex(r'(?i)(.*\balmacén\b.*)'), almaceneras),
         MessageHandler(filters.Regex(r'(?i)(.*\balmacen\b.*)'), almaceneras),
         MessageHandler(filters.Regex(r'(?i)(.*\bhidrografia\b.*)'), hidrografia),
+        MessageHandler(filters.Regex(r'(?i)(.*\bamanita\b.*)'), amanita),
         MessageHandler(filters.TEXT, start2)
     ]
     
