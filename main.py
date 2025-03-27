@@ -109,6 +109,7 @@ def generate_main_menu():
             "\n"
             "\n"
             "<b>Actividades y emprendimientos isleños</b>\n"
+            "\n"
             "- <b>/amanita </b>   <i> paseos en canoa isleña por Amanita</i>\n"
             "- <b>/alfareria</b>   <i> encuentros con el barro por Kutral alfarería</i>\n"
             "- <b>/labusqueda</b>   <i> espacio para encuentros, ceremonias y hostal</i>\n")
@@ -222,16 +223,14 @@ async def amanita(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
     Respuesta cuando el usuario pide el menu de amanita
     '''
     chat_id = update.effective_chat.id
-    user = update.effective_user
-    logger.warning(f"{user.id} - {user.first_name} usó comando amanita en chat {chat_id}")
     await context.bot.send_photo(chat_id, open(amanita_path, "rb"))
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=(
-            "<b>🛶 Experiencias en Canoa Isleña</b>\n"
-            "🌅 <i>Paseos por el Delta del Paraná</i>\n"
-            "🌈 <i>Con Guía Bilingüe (opcional)</i>\n"
-            "🚙 <i>Servicio puerta a puerta (opcional)</i>"
+            "<b>Experiencias en Canoa Isleña</b>\n"
+            " <i>Paseos por el Delta del Paraná</i>\n"
+            " <i>Con Guía Bilingüe (opcional)</i>\n"
+            " <i>Servicio puerta a puerta (opcional)</i>"
             "https://www.instagram.com/amanitaturismodelta\n"
         ),
         parse_mode='HTML')
