@@ -220,18 +220,66 @@ async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
 
 async def amanita(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
     '''
-    Respuesta cuando el usuario pide el menu de amanita
+    Respuesta cuando el usuario pide información de Amanita
     '''
     chat_id = update.effective_chat.id
+    user = update.effective_user
+    logger.warning(f"{user.id} - {user.first_name} solicitó información sobre Amanita en chat {chat_id}")
+    
     await context.bot.send_photo(chat_id, open(amanita_path, "rb"))
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=(
-            "<b>Experiencias en Canoa Isleña</b>\n"
-            " <i>Paseos por el Delta del Paraná</i>\n"
-            " <i>Con Guía Bilingüe (opcional)</i>\n"
-            " <i>Servicio puerta a puerta (opcional)</i>"
-            "https://www.instagram.com/amanitaturismodelta\n"
+            "<b>Experiencias en Canoa Isleña</b>\n\n"
+            "<i>Paseos por el Delta del Paraná</i>\n"
+            "<i>Con Guía Bilingüe (opcional)</i>\n"
+            "<i>Servicio puerta a puerta (opcional)</i>\n\n"
+            "Instagram: https://www.instagram.com/amanitaturismodelta\n"
+            "Contacto: [Número de teléfono y/o email aquí]"
+        ),
+        parse_mode='HTML')
+    return ConversationHandler.END
+
+async def alfareria(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
+    '''
+    Respuesta cuando el usuario pide información de Kutral alfarería
+    '''
+    chat_id = update.effective_chat.id
+    user = update.effective_user
+    logger.warning(f"{user.id} - {user.first_name} solicitó información sobre Kutral alfarería en chat {chat_id}")
+    
+    await context.bot.send_photo(chat_id, open(alfareria_path, "rb"))
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=(
+            "<b>Kutral Alfarería</b>\n\n"
+            "<i>Encuentros con el barro</i>\n"
+            "<i>Talleres de alfarería</i>\n"
+            "<i>Experimentación y creación con arcilla</i>\n\n"
+            "Instagram: [Instagram aquí]\n"
+            "Contacto: [Número de teléfono y/o email aquí]"
+        ),
+        parse_mode='HTML')
+    return ConversationHandler.END
+
+async def labusqueda(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
+    '''
+    Respuesta cuando el usuario pide información de La Búsqueda
+    '''
+    chat_id = update.effective_chat.id
+    user = update.effective_user
+    logger.warning(f"{user.id} - {user.first_name} solicitó información sobre La Búsqueda en chat {chat_id}")
+    
+    await context.bot.send_photo(chat_id, open(labusqueda_path, "rb"))
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=(
+            "<b>La Búsqueda</b>\n\n"
+            "<i>Espacio para encuentros y ceremonias</i>\n"
+            "<i>Hostal en el Delta</i>\n"
+            "<i>Conexión con la naturaleza</i>\n\n"
+            "Instagram: [Instagram aquí]\n"
+            "Contacto: [Número de teléfono y/o email aquí]"
         ),
         parse_mode='HTML')
     return ConversationHandler.END
@@ -1269,6 +1317,8 @@ if __name__ == '__main__':
         CommandHandler('suscribirme', suscribirme),
         CommandHandler('desuscribirme', desuscribirme),
         CommandHandler('amanita', amanita),
+        CommandHandler('alfareria', alfareria),
+        CommandHandler('labusqueda', labusqueda),
     ]
     
     # Other handlers for message text
@@ -1289,6 +1339,8 @@ if __name__ == '__main__':
         MessageHandler(filters.Regex(r'^(Hidrografia|hidrografia|HIDROGRAFIA)$'), hidrografia),
         MessageHandler(filters.Regex(r'^(Suscribirme|suscribirme|SUSCRIBIRME)$'), suscribirme),
         MessageHandler(filters.Regex(r'^(Amanita|amanita|AMANITA)$'), amanita),
+        MessageHandler(filters.Regex(r'^(Alfareria|alfareria|ALFARERIA)$'), alfareria),
+        MessageHandler(filters.Regex(r'^(Labusqueda|labusqueda|LABUSQUEDA)$'), labusqueda),
         
         # Handlers for words contained in messages
         MessageHandler(filters.Regex(r'(?i)(.*\bcharlar\b.*)'), charlar),
@@ -1313,6 +1365,8 @@ if __name__ == '__main__':
         MessageHandler(filters.Regex(r'(?i)(.*\balmacen\b.*)'), almaceneras),
         MessageHandler(filters.Regex(r'(?i)(.*\bhidrografia\b.*)'), hidrografia),
         MessageHandler(filters.Regex(r'(?i)(.*\bamanita\b.*)'), amanita),
+        MessageHandler(filters.Regex(r'(?i)(.*\balfareria\b.*)'), alfareria),
+        MessageHandler(filters.Regex(r'(?i)(.*\blabusqueda\b.*)'), labusqueda),
         MessageHandler(filters.TEXT, start2)
     ]
     
