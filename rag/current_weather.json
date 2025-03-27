@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-03-21 07:01:59",
+  "timestamp": "2025-03-27 07:02:30",
   "type": "current",
   "data": {
     "coord": {
@@ -8,39 +8,39 @@
     },
     "weather": [
       {
-        "id": 804,
+        "id": 802,
         "main": "Clouds",
-        "description": "overcast clouds",
-        "icon": "04n"
+        "description": "scattered clouds",
+        "icon": "03n"
       }
     ],
     "base": "stations",
     "main": {
-      "temp": 21.68,
-      "feels_like": 21.31,
-      "temp_min": 21.68,
-      "temp_max": 21.68,
-      "pressure": 1015,
-      "humidity": 54,
-      "sea_level": 1015,
-      "grnd_level": 1013
+      "temp": 20.98,
+      "feels_like": 20.83,
+      "temp_min": 20.98,
+      "temp_max": 20.98,
+      "pressure": 1012,
+      "humidity": 65,
+      "sea_level": 1012,
+      "grnd_level": 1010
     },
     "visibility": 10000,
     "wind": {
-      "speed": 1.84,
-      "deg": 5,
-      "gust": 3.53
+      "speed": 2.04,
+      "deg": 35,
+      "gust": 3.93
     },
     "clouds": {
-      "all": 100
+      "all": 46
     },
-    "dt": 1742540519,
+    "dt": 1743058950,
     "sys": {
       "type": 2,
       "id": 2002912,
       "country": "AR",
-      "sunrise": 1742551103,
-      "sunset": 1742594664
+      "sunrise": 1743069778,
+      "sunset": 1743112563
     },
     "timezone": -10800,
     "id": 3427761,
