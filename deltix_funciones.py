@@ -7,6 +7,7 @@ from telegram.ext import ContextTypes, ConversationHandler
 import os
 import smtplib 
 from email.message import EmailMessage
+from tokens import gmail_token
 
 # Defino paths segun donde se ejecute el bot
 if os.path.exists('/home/facundol/deltix/'):
