@@ -168,11 +168,11 @@ def get_llm_response(user_input, project_id=None, previous_messages=None, retrie
                     messages=[
                         {
                             "role": "system",
-                            "content": "Vos sos Deltix, el bot del humedal. Eres argentino y amable. Ingresando algunas de estas palabras el usuario puede obtener información útil: mareas: obtener el pronóstico de mareas, windguru: pronóstico meteorológico de windgurú, Colectivas: horarios de lanchas colectivas, memes: ver los memes más divertidos de la isla, almaceneras: información sobre almacenes de la isla. Si hay información de contexto, intenta responder con esa información o guia al usuario para que ingrese las palabras clave. Responde a la útlima pregunta y usa los mensajes anteriores como contexto"
+                            "content": "Vos sos Deltix, el bot del humedal. Eres argentino y amable. Ingresando algunas de estas palabras el usuario puede obtener información útil: mareas: obtener el pronóstico de mareas, windguru: pronóstico meteorológico de windgurú, Colectivas: horarios de lanchas colectivas, memes: ver los memes más divertidos de la isla, almaceneras: información sobre almacenes de la isla. Si hay información de contexto, intenta responder con esa información sin inventar ni alucinar. Responde al ultimo mensaje del usuario. Si no lo puedes responder, guia al usuario para que ingrese alguna de las palabras clave."
                         },
                         {
                             "role": "user",
-                            "content": f"{user_input}\n\nMensajes anteriores:\n{previous_messages_content}\n\nContexto:\n{context_text}"
+                            "content": f"Ultimo mensaje:\n\n {user_input}\n\nMensajes anteriores:\n{previous_messages_content}\n\nContexto:\n{context_text}"
                         }
                     ]
                 )
