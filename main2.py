@@ -2,7 +2,7 @@ from telegram.ext import ApplicationBuilder,  CommandHandler, ConversationHandle
 import pandas as pd
 import nest_asyncio
 import os
-from tokens import telegram_token_dev
+from tokens import telegram_token
 from deltix_funciones import *
 from llm_connector import get_llm_response, create_project
 
@@ -59,7 +59,7 @@ async def llm_fallback(update, context):
 nest_asyncio.apply()
 
 if __name__ == '__main__':
-    application = ApplicationBuilder().token(telegram_token_dev).build()
+    application = ApplicationBuilder().token(telegram_token).build()
     start_handler = CommandHandler('start', start)
     
     # Define command handlers first to ensure they take priority
