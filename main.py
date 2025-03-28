@@ -61,17 +61,6 @@ except pd.errors.ParserError:
     user_experience.to_csv(user_experience_path, index=False)
     print("File cleaned and saved successfully.")
 
-# Function to update user experience
-def update_user_experience(user_id, option):
-    global user_experience
-    timestamp_col = f'timestamp_{option}'
-    q_col = f'q_{option}'
-
-    if user_id in user_experience['User ID'].values:
-        user_experience.loc[user_experience['User ID'] == user_id, timestamp_col] = datetime.now().strftime('%d-%m-%Y %H:%M')
-        user_experience.loc[user_experience['User ID'] == user_id, q_col] += 1
-        user_experience.to_csv(user_experience_path, index=False)
-
 logging.basicConfig(
     filename='deltix_log.log',
     level=logging.WARNING,
@@ -84,6 +73,16 @@ logger.setLevel(logging.WARNING)
 nest_asyncio.apply()
 
 ANSWER_charlar, ANSWER_meme, ANSWER_colaborar, ANSWER_mensajear, ANSWER_informacion, ANSWER_mareas_suscribir, ANSWER_windguru_suscribir, ANSWER_desuscribir, ANSWER_meme2, ANSWER_charlar_windguru, ANSWER_colectivas, ANSWER_jilguero, ANSWER_interislena, ANSWER_lineasdelta, ANSWER_direction, ANSWER_schedule, ANSWER_almacenera_select, ANSWER_hidrografia_suscribir, ANSWER_suscribirme = range(19)
+
+def update_user_experience(user_id, option):
+    global user_experience
+    timestamp_col = f'timestamp_{option}'
+    q_col = f'q_{option}'
+
+    if user_id in user_experience['User ID'].values:
+        user_experience.loc[user_experience['User ID'] == user_id, timestamp_col] = datetime.now().strftime('%d-%m-%Y %H:%M')
+        user_experience.loc[user_experience['User ID'] == user_id, q_col] += 1
+        user_experience.to_csv(user_experience_path, index=False)
 
 def generate_main_menu():
     '''
