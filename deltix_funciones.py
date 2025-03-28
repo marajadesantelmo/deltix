@@ -2,12 +2,11 @@ import pandas as pd
 import random
 import time
 from datetime import datetime
-from telegram import Update, ReplyKeyboardMarkup
-from telegram.ext import ContextTypes, ConversationHandler
-from telegram import ReplyKeyboardMarkup
-from telegram import Update, ReplyKeyboardMarkup
+from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import ContextTypes, ConversationHandler
 import os
+import smtplib 
+from email.message import EmailMessage
 
 # Defino paths segun donde se ejecute el bot
 if os.path.exists('/home/facundol/deltix/'):
