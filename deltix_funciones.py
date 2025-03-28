@@ -691,7 +691,6 @@ async def answer_colaborar(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     if user_response == 'aportar':
         user = update.effective_user
         chat_id=update.effective_chat.id
-        logger.warning(f"{user.id} - {user.first_name} entró en aportar en chat {chat_id}")
         await update.message.reply_text("Muchas gracias por pensar en aportar &#128591 Nos viene muy bien para poder seguir dedicándole tiempo a Deltix y hacer que crezca este proyecto", parse_mode='HTML')
         await update.message.reply_text("Podés aportar por medio de la página cafecito:", parse_mode='HTML')
         await update.message.reply_text("<a href='https://cafecito.app/deltix' rel='noopener' target='_blank' > 'Entrá a este enlace para hacer tu aporte'  </a>",
@@ -1068,7 +1067,6 @@ async def almaceneras(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         return ANSWER_almacenera_select
         
     except Exception as e:
-        logger.warning(f"Error al mostrar lista de almaceneras: {e}")
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
             text="Lo siento, tuve un problema al obtener la información de las almaceneras. Por favor, intentá más tarde.",
@@ -1137,7 +1135,6 @@ async def almacenera_selected(update: Update, context: ContextTypes.DEFAULT_TYPE
         return ConversationHandler.END
         
     except Exception as e:
-        logger.warning(f"Error al mostrar información de almacenera: {e}")
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
             text="Lo siento, tuve un problema al mostrar la información. Por favor, intentá más tarde.",
@@ -1153,7 +1150,6 @@ async def hidrografia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     user = update.effective_user
     chat_id = update.effective_chat.id
     update_user_experience(user.id, 'hidrografia') 
-    logger.warning(f"{user.id} - {user.first_name} pidió informe de mareas de hidrografía en chat {chat_id}")
     
     try:
         # Read data from table_data.txt
@@ -1202,7 +1198,6 @@ async def hidrografia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
             return ANSWER_hidrografia_suscribir
         
     except Exception as e:
-        logger.warning(f"Error al procesar datos de hidrografía: {e}")
         await update.message.reply_text("Lo siento, ocurrió un error al procesar los datos de mareas.")
     
     return ConversationHandler.END
@@ -1217,7 +1212,6 @@ async def hidrografia_suscribir(update: Update, context: ContextTypes.DEFAULT_TY
         subscribers_hidrografia = pd.read_csv(subscribers_hidrografia_path)
         chat_id = update.effective_chat.id
         user = update.effective_user
-        logger.warning(f"{user.id} - {user.first_name} se inscribió a hidrografia en chat {chat_id}")
         #Chequeo si ya está suscrito
         user_id = update.message.from_user.id
         if user_id in subscribers_hidrografia['User ID'].values:
