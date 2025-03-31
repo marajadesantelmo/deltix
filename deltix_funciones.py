@@ -42,6 +42,7 @@ mareas_hidrografia_path = base_path + 'table_data.txt'
 amanita_path = base_path + 'actividades_productos/amanita.png'
 alfareria_path = base_path + 'actividades_productos/alfareria.png'
 labusqueda_path = base_path + 'actividades_productos/labusqueda.png'    
+canaveral_path = base_path + 'actividades_productos/canaveralkayaks.png'
 
 user_experience = pd.read_csv(user_experience_path)
 
@@ -80,9 +81,10 @@ def generate_main_menu():
             "\n"
             "<b>Actividades y emprendimientos isleños</b>\n"
             "\n"
-            "- <b>/amanita </b>   <i> paseos en canoa isleña por Amanita</i>\n"
-            "- <b>/alfareria</b>   <i> encuentros con el barro por Kutral alfarería</i>\n"
-            "- <b>/labusqueda</b>   <i> espacio para encuentros, ceremonias y hostal</i>\n")
+            "- <b>/amanita </b>   <i> paseos en canoa isleña</i>\n"
+            "- <b>/alfareria</b>   <i> encuentros con el barro</i>\n"
+            "- <b>/labusqueda</b>   <i> espacio para ceremonias, hostal y mas</i>\n"
+            "- <b>/canaveralkayaks</b>   <i> excursiones en kayak</i>\n")
 
 main_menu_keyboard = ReplyKeyboardMarkup([["/windguru", "/mareas", "/hidrografia"],
                                           ["/colectivas", "/almaceneras", "/memes"],
@@ -241,6 +243,26 @@ async def labusqueda(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
             "<i>Conexión con la naturaleza</i>\n\n"
             "Instagram: instagram.com/labusqueda_cabanadelta\n"
             "Contacto: 1150459556"
+        ),
+        parse_mode='HTML')
+    return ConversationHandler.END
+
+async def canaveralkayaks(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
+    '''
+    Respuesta cuando el usuario pide información de Cañanveral Kayaks
+    '''
+    chat_id = update.effective_chat.id
+    user = update.effective_user
+    await context.bot.send_photo(chat_id, open(canaveral_path, "rb"))
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=(
+            "<b>Cañaveral Kayaks</b>\n\n"
+            "<i>Excursiones en Kayak</i>\n"
+            "<i>Paseos con guía</i>\n"
+            "<i>Remadas nocturnas</i>\n\n"
+            "linktr.ee/canaveralkayaks\n"
+            "Contacto: 1126961274"
         ),
         parse_mode='HTML')
     return ConversationHandler.END
