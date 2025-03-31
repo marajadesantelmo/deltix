@@ -104,6 +104,7 @@ if __name__ == '__main__':
         MessageHandler(filters.Regex(r'^(Amanita|amanita|AMANITA)$'), amanita),
         MessageHandler(filters.Regex(r'^(Alfareria|alfareria|ALFARERIA)$'), alfareria),
         MessageHandler(filters.Regex(r'^(Labusqueda|labusqueda|LABUSQUEDA)$'), labusqueda),
+        MessageHandler(filters.Regex(r'^(Canaveralkayaks|canaveralkayaks|CANAVERALKAYAKS)$'), canaveralkayaks),
         
         # Handlers for words contained in messages
         MessageHandler(filters.Regex(r'(?i)(.*\bcharlar\b.*)'), charlar),
@@ -130,6 +131,8 @@ if __name__ == '__main__':
         MessageHandler(filters.Regex(r'(?i)(.*\bamanita\b.*)'), amanita),
         MessageHandler(filters.Regex(r'(?i)(.*\balfareria\b.*)'), alfareria),
         MessageHandler(filters.Regex(r'(?i)(.*\blabusqueda\b.*)'), labusqueda),
+        MessageHandler(filters.Regex(r'(?i)(.*\bcanaveralkayaks\b.*)'), canaveralkayaks),
+        MessageHandler(filters.Regex(r'(?i)(.*\bkayak\b.*)'), canaveralkayaks),
         # Replace the start2 handler with the LLM fallback handler
         MessageHandler(filters.TEXT, llm_fallback)
     ]
