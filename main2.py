@@ -114,6 +114,7 @@ if __name__ == '__main__':
         CommandHandler('amanita', amanita),
         CommandHandler('alfareria', alfareria),
         CommandHandler('labusqueda', labusqueda),
+        CommandHandler('canaveralkayaks', canaveralkayaks),
     ]
     
     # Other handlers for message text
@@ -165,7 +166,7 @@ if __name__ == '__main__':
         MessageHandler(filters.Regex(r'(?i)(.*\blabusqueda\b.*)'), labusqueda),
         MessageHandler(filters.Regex(r'(?i)(.*\bcanaveralkayaks\b.*)'), canaveralkayaks),
         MessageHandler(filters.Regex(r'(?i)(.*\bkayak\b.*)'), canaveralkayaks),
-        # Replace the start2 handler with the LLM fallback handler
+        # LLM como fallback
         MessageHandler(filters.TEXT, llm_fallback)
     ]
     
@@ -194,7 +195,7 @@ if __name__ == '__main__':
             ANSWER_colectivas: [MessageHandler(filters.TEXT, answer_colectivas)],
             ANSWER_suscribirme: [MessageHandler(filters.Regex(r'^(Mareas|mareas|Hidrografia|hidrografia|Windguru|windguru)$'), answer_suscribirme)],
         },
-        # Add LLM fallback handler to the fallbacks
+        # LLM fallback handler
         fallbacks=[MessageHandler(filters.TEXT, llm_fallback)] + handlers,
     )
 
