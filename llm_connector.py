@@ -33,6 +33,11 @@ JILGUERO_KEYWORDS = ['jilguero', 'carapachay', 'angostura']
 INTERISLENA_KEYWORDS = ['interisleña', 'interislena', 'sarmiento', 'san antonio', 'capitan', 'capitán']
 LINEASDELTA_KEYWORDS = ['lineasdelta', 'caraguatá', 'caraguata', 'canal arias', 'paraná miní', 'parana mini', 'lineas delta']
 
+# Combined keywords for all activities
+EMPRENDIMIENTOS_KEYWORDS = ['actividades', 'emprendimientos', 'hacer', 'visitar', 'conocer', 'experiencias', 'atracciones', 'paseos',
+                           'actividades delta', 'canoa', 'taxi', 'kayak', 'kayakear', 'paseos en lancha', 'arcilla', 'barro', 'alfareria', 'hospedaje', 'alquiler',
+                           'cañaveral', 'canaveral', 'eventos']
+
 def create_conversation():
     """Create a new conversation conversation in Supabase"""
     response = supabase.from_("conversations").insert({"name": "Nueva conversacion"}).execute()
@@ -115,6 +120,40 @@ def load_file_content(filename):
         print(f"Error loading file {filename}: {e}")
         return ""
 
+def get_activity_info():
+    """Create formatted information about island activities"""
+    activity_info = """
+ACTIVIDADES Y EMPRENDIMIENTOS ISLEÑOS:
+
+1. AMANITA - EXPERIENCIAS EN CANOA ISLEÑA
+Paseos por el Delta del Paraná
+Con Guía Bilingüe (opcional)
+Servicio puerta a puerta (opcional)
+Instagram: amanitaturismodelta
+Contacto: 1169959272
+
+2. KUTRAL ALFARERÍA
+Encuentros con el barro
+Talleres de alfarería
+Experimentación y creación con arcilla
+Instagram: kutralalfareria
+
+3. LA BÚSQUEDA
+Espacio para encuentros y ceremonias
+Hostal en el Delta
+Conexión con la naturaleza
+Instagram: labusqueda_cabanadelta
+Contacto: 1150459556
+
+4. CAÑAVERAL KAYAKS
+Excursiones en Kayak
+Paseos con guía
+Remadas nocturnas
+Linktr.ee: canaveralkayaks
+Contacto: 1126961274
+"""
+    return activity_info
+
 def get_llm_response(user_input, conversation_id=None, previous_messages=None, retries=3, delay=2):
     """Get a response from the LLM with context from the RAG system"""
     if conversation_id is None:
@@ -151,6 +190,11 @@ def get_llm_response(user_input, conversation_id=None, previous_messages=None, r
         if contains_keywords(user_input, LINEASDELTA_KEYWORDS):
             context.append(f"Información sobre la lancha colectiva LineasDelta:\n{load_file_content('lineasdelta.txt')}")
         
+        # Add island activities information based on keywords
+        if contains_keywords(user_input, EMPRENDIMIENTOS_KEYWORDS):
+            # Add general information about all activities
+            context.append(get_activity_info())
+
         # Get previous messages if not provided
         if previous_messages is None:
             previous_messages = supabase.from_("chat_history").select("*").eq("conversation_id", conversation_id).execute().data
