@@ -8,3 +8,4 @@ typing_extensions
 requests
 supabase<2.0
 gotrue<2.0
+asyncio
