@@ -33,14 +33,14 @@ JILGUERO_KEYWORDS = ['jilguero', 'carapachay', 'angostura']
 INTERISLENA_KEYWORDS = ['interisleña', 'interislena', 'sarmiento', 'san antonio', 'capitan', 'capitán']
 LINEASDELTA_KEYWORDS = ['lineasdelta', 'caraguatá', 'caraguata', 'canal arias', 'paraná miní', 'parana mini', 'lineas delta']
 
-def create_project():
-    """Create a new conversation project in Supabase"""
-    response = supabase.from_("projects").insert({"name": "Nueva conversacion"}).execute()
+def create_conversation():
+    """Create a new conversation conversation in Supabase"""
+    response = supabase.from_("conversations").insert({"name": "Nueva conversacion"}).execute()
     return response.data[0]["id"]
 
-def store_chat_message(project_id, role, content):
+def store_chat_message(conversation_id, role, content):
     """Store a chat message in Supabase"""
-    supabase.from_("chat_history").insert({"project_id": project_id, "role": role, "content": content}).execute()
+    supabase.from_("chat_history").insert({"conversation_id": conversation_id, "role": role, "content": content}).execute()
 
 def contains_keywords(user_input, keyword_list):
     """Check if user input contains any of the keywords in the list"""
@@ -115,10 +115,10 @@ def load_file_content(filename):
         print(f"Error loading file {filename}: {e}")
         return ""
 
-def get_llm_response(user_input, project_id=None, previous_messages=None, retries=3, delay=2):
+def get_llm_response(user_input, conversation_id=None, previous_messages=None, retries=3, delay=2):
     """Get a response from the LLM with context from the RAG system"""
-    if project_id is None:
-        project_id = create_project()
+    if conversation_id is None:
+        conversation_id = create_conversation()
     
     try:
         # Prepare context based on user input
@@ -153,7 +153,7 @@ def get_llm_response(user_input, project_id=None, previous_messages=None, retrie
         
         # Get previous messages if not provided
         if previous_messages is None:
-            previous_messages = supabase.from_("chat_history").select("*").eq("project_id", project_id).execute().data
+            previous_messages = supabase.from_("chat_history").select("*").eq("conversation_id", conversation_id).execute().data
         
         previous_messages_content = "\n".join([msg["content"] for msg in previous_messages if msg["role"] == "user"][-5:])
         
@@ -178,9 +178,9 @@ def get_llm_response(user_input, project_id=None, previous_messages=None, retrie
                 )
                 
                 # Store the message and response in Supabase
-                store_chat_message(project_id, "user", user_input)
+                store_chat_message(conversation_id, "user", user_input)
                 response_text = response.choices[0].message.content
-                store_chat_message(project_id, "assistant", response_text)
+                store_chat_message(conversation_id, "assistant", response_text)
                 
                 return response_text
             
