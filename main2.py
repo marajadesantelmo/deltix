@@ -2,6 +2,8 @@ from telegram.ext import ApplicationBuilder,  CommandHandler, ConversationHandle
 import pandas as pd
 import nest_asyncio
 import os
+import asyncio
+import random
 from tokens import telegram_token
 from deltix_funciones import *
 from llm_connector import get_llm_response, create_project
@@ -44,17 +46,47 @@ async def llm_fallback(update, context):
     
     project_id = user_projects[user_id]
     
-    # Let the user know we're processing their request
-    await update.message.reply_text("Dejame pensar...")
+    # Create a task to send "Dejame pensar..." after 3 seconds
+    thinking_message_task = asyncio.create_task(
+        send_thinking_message_after_delay(update, 3)
+    )
     
     # Get response from LLM
     llm_response = get_llm_response(user_input, project_id)
+    
+    # Cancel the thinking message task if it hasn't been sent yet
+    thinking_message_task.cancel()
     
     # Send the response back to the user
     await update.message.reply_text(llm_response)
     
     # Return to the conversation handler state
     return ConversationHandler.END
+
+# Helper function to send "Dejame pensar..." after a delay
+async def send_thinking_message_after_delay(update, delay_seconds):
+    # List of possible thinking messages
+    thinking_messages = [
+        "Dejame pensar...",
+        "...estoy pensando...",
+        "...deltix pensando...",
+        "Aguantame que pienso qué responderte",
+        "Procesando tu consulta...",
+        "Dame unos segundos para pensar...",
+        "Estoy elaborando una respuesta...",
+        "Un momento, por favor...",
+        "Conectando neuronas artificiales...",
+        "Buscando la mejor respuesta..."
+    ]
+    
+    try:
+        await asyncio.sleep(delay_seconds)
+        # Choose a random message from the list
+        thinking_message = random.choice(thinking_messages)
+        await update.message.reply_text(thinking_message)
+    except asyncio.CancelledError:
+        # Task was cancelled because response arrived before timeout
+        pass
 
 nest_asyncio.apply()
 
