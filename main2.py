@@ -73,7 +73,7 @@ async def send_thinking_message_after_delay(update, delay_seconds):
         "Aguantame que pienso qué responderte",
         "Procesando tu consulta...",
         "Dame unos segundos para pensar...",
-        "Estoy elaborando una respuesta...",
+        "ya te pienso una respuesta...",
         "Un momento, por favor...",
         "Conectando neuronas artificiales...",
         "Buscando la mejor respuesta..."
