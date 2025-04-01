@@ -42,7 +42,7 @@ async def llm_fallback(update, context):
     
     # Get or create project ID for this user
     if user_id not in user_projects:
-        user_projects[user_id] = create_project()
+        user_projects[user_id] = create_conversation()
     
     project_id = user_projects[user_id]
     
