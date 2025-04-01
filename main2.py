@@ -6,7 +6,7 @@ import asyncio
 import random
 from tokens import telegram_token
 from deltix_funciones import *
-from llm_connector import get_llm_response, create_project
+from llm_connector import get_llm_response, create_conversation
 
 # Initialize a dictionary to store project IDs for each user
 user_projects = {}
