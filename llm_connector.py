@@ -208,7 +208,7 @@ def get_llm_response(user_input, conversation_id=None, previous_messages=None, r
             try:
                 response = client.chat.completions.create(
                     extra_body={},
-                    model="deepseek/deepseek-chat:free",
+                    model="deepseek/deepseek-chat",
                     messages=[
                         {
                             "role": "system",

@@ -165,7 +165,6 @@ if __name__ == '__main__':
         MessageHandler(filters.Regex(r'(?i)(.*\balfareria\b.*)'), alfareria),
         MessageHandler(filters.Regex(r'(?i)(.*\blabusqueda\b.*)'), labusqueda),
         MessageHandler(filters.Regex(r'(?i)(.*\bcanaveralkayaks\b.*)'), canaveralkayaks),
-        MessageHandler(filters.Regex(r'(?i)(.*\bkayak\b.*)'), canaveralkayaks),
         # LLM como fallback
         MessageHandler(filters.TEXT, llm_fallback)
     ]
