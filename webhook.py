@@ -22,7 +22,7 @@ def webhook():
   to='whatsapp:+5491151128207'
 )
         
-        return str(response)
+        return str(message)
     else:
         # Handle GET request (browser access)
         return "Deltix webhook endpoint is active. Send a POST request to use it."
