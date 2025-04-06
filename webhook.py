@@ -1,5 +1,4 @@
 from flask import Flask, request
-from twilio.twiml.messaging_response import MessagingResponse
 from twilio.rest import Client
 import os
 from token import account_sid, auth_token
@@ -17,11 +16,11 @@ def home():
 def webhook():
     if request.method == 'POST':
         # Handle POST request (Twilio webhook)
-        response = MessagingResponse()
-        msg = response.message()
-        
-        # Always return the same message regardless of input
-        msg.body("Hola, Soy deltix!")
+        message = client.messages.create(
+  from_='whatsapp:+14155238886',
+  body='123 Probando',
+  to='whatsapp:+5491151128207'
+)
         
         return str(response)
     else:
