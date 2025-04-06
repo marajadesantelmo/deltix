@@ -3,7 +3,7 @@ from twilio.twiml.messaging_response import MessagingResponse
 from twilio.rest import Client
 import os
 from token import account_sid, auth_token
-
+#Nueva versión
 client = Client(account_sid, auth_token)
 
 # Initialize Flask app
