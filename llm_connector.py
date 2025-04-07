@@ -216,7 +216,11 @@ def get_llm_response(user_input, conversation_id=None, previous_messages=None, r
                         },
                         {
                             "role": "user",
+<<<<<<< HEAD
                             "content": f"Ultimo mensaje:\n\n {user_input}\n\nMensajes anteriores:\n{previous_messages_content}\n\nContexto:\n{context_text}"
+=======
+                            "content": f"Ultimo mensaje:\n\n {user_input}\n\nMensajes anteriores:\n{previous_messages_content}\n\nContexto:\n{context_text} \n\n  La Primera Sección de Islas del Delta pertenece al partido de Tigre. Ocupa una superficie de 221 km2 y limita al norte con el río Paraná de las Palmas, al sur con el río Luján, al oeste con el canal Gobernador Arias y al este con el Río de la Plata.\n\nINFORMACION GENERAL DE LAS ISLAS DEL TIGRE:\n\nEl Delta de Tigre cuenta con más de 350 ríos y arroyos. Este complejo sistema hídrico, surgido de la formación y el crecimiento de las islas que van dividiendo el curso de las aguas, contribuye a dar su forma al paisaje, constituye vías de comunicación, modela la vida y las costumbres de sus habitantes y juega un papel insoslayable en la historia y la cultura lugareña. El medio de transporte mas utilizado en la isla son las lanchas colectivas. L empresa Interisleña recorre el río Sarmiento, Capitán, Espera, San Antonio, Paraná de las Palmas, entre otros ríos arroyos. La empresa El Jilguero viaja por el río Carapachay, Angostura, y Paraná de las Palmas. La empresa Líneas Delta Argentino recorre el Luján, el Caraguatá, Canal Arias, Paraná de las Palmas y Parana miní, entre otros. También existen lanchas taxis que salen del puerto de frutos o del Reconquista y Luján."
+>>>>>>> 893b9250c7bdbc2481d96bdc9ec3351fb17248db
                         }
                     ]
                 )
