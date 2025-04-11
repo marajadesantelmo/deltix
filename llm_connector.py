@@ -154,7 +154,7 @@ Contacto: 1126961274
 """
     return activity_info
 
-def get_llm_response(user_input, conversation_id=None, previous_messages=None, retries=3, delay=2):
+def get_llm_response(user_input, conversation_id=None, previous_messages=None, retries=2, delay=1):
     """Get a response from the LLM with context from the RAG system"""
     if conversation_id is None:
         conversation_id = create_conversation()
@@ -171,8 +171,7 @@ def get_llm_response(user_input, conversation_id=None, previous_messages=None, r
         if contains_keywords(user_input, WEATHER_KEYWORDS):
             weather_data = load_weather_data()
             if weather_data:
-                weather_context = format_weather_for_context(weather_data)
-                context.append(weather_context)
+                context.append(format_weather_for_context(weather_data))
 
         # Add almacen data if applicable
         if contains_keywords(user_input, ALMACEN_KEYWORDS):
@@ -182,26 +181,32 @@ def get_llm_response(user_input, conversation_id=None, previous_messages=None, r
         
         # Add transportation data if applicable
         if contains_keywords(user_input, JILGUERO_KEYWORDS):
-            context.append(f"Información sobre la lancha colectiva Jilguero:\n{load_file_content('jilguero.txt')}")
+            context.append(load_file_content('jilguero.txt'))
                 
         if contains_keywords(user_input, INTERISLENA_KEYWORDS):
-            context.append(f"Información sobre la lancha colectiva Interisleña:\n{load_file_content('interislena.txt')}")
+            context.append(load_file_content('interislena.txt'))
                 
         if contains_keywords(user_input, LINEASDELTA_KEYWORDS):
-            context.append(f"Información sobre la lancha colectiva LineasDelta:\n{load_file_content('lineasdelta.txt')}")
+            context.append(load_file_content('lineasdelta.txt'))
         
         # Add island activities information based on keywords
         if contains_keywords(user_input, EMPRENDIMIENTOS_KEYWORDS):
-            # Add general information about all activities
             context.append(get_activity_info())
 
         # Get previous messages if not provided
         if previous_messages is None:
-            previous_messages = supabase.from_("chat_history").select("*").eq("conversation_id", conversation_id).execute().data
+            previous_messages = supabase.from_("chat_history").select("content").eq("conversation_id", conversation_id).execute().data
         
-        previous_messages_content = "\n".join([msg["content"] for msg in previous_messages if msg["role"] == "user"][-5:])
+        previous_messages_content = "\n".join([msg["content"] for msg in previous_messages if msg["role"] == "user"][-3:])
         
         context_text = "\n\n".join(context)
+        
+        # Simplified system prompt
+        system_prompt = (
+            "Vos sos Deltix, el bot del humedal. Sos un carpincho digital que ayuda a habitantes y visitantes del Delta del Paraná en Tigre. "
+            "Responde al último mensaje del usuario usando el contexto proporcionado. No inventes información ni alucines. "
+            "Si no puedes responder, guía al usuario para que ingrese palabras clave como: clima, mareas, windguru, colectivas, almaceneras, suscribirme."
+        )
         
         # Make request to LLM with retries
         for attempt in range(retries):
@@ -210,15 +215,10 @@ def get_llm_response(user_input, conversation_id=None, previous_messages=None, r
                     extra_body={},
                     model="deepseek/deepseek-chat",
                     messages=[
-                        {
-                            "role": "system",
-                            "content": "Vos sos Deltix, el bot del humedal. Sos un carpincho digital que está programado para ayudar a habitantes y visitantes del Delta del Paraná en Tigre. Eres argentino y amable. Debes contestar al ultimo mensaje del usuario, pero no es necesario que contestes a los mensajes anteriores. Solo toma los mensajes anteriores como contexto. No digas 'Hola' en todas tus respuestas. Ingresando algunas de estas palabras el usuario puede obtener información útil: mareas: obtener el pronóstico de mareas, windguru: pronóstico meteorológico de windgurú, Colectivas: horarios de lanchas colectivas, memes: ver los memes más divertidos de la isla, almaceneras: información sobre lanchas almacenes de la isla, suscribirme: suscribirte a los envios automaticos de mareas y pronostico. Si hay información de contexto, intenta responder con esa información sin inventar ni alucinar. Si el usuario pregunta por el clima, responde con detalle con la información de contexto. Si no puedes responder a una pregunta, no inventes respuestas sino que guia al usuario para que ingrese alguna de las palabras clave."
-                        },
+                        {"role": "system", "content": system_prompt},
                         {
                             "role": "user",
-
-                            "content": f"Ultimo mensaje:\n\n {user_input}\n\nMensajes anteriores:\n{previous_messages_content}\n\nContexto:\n{context_text} \n\n  La Primera Sección de Islas del Delta pertenece al partido de Tigre. Ocupa una superficie de 221 km2 y limita al norte con el río Paraná de las Palmas, al sur con el río Luján, al oeste con el canal Gobernador Arias y al este con el Río de la Plata.\n\nINFORMACION GENERAL DE LAS ISLAS DEL TIGRE:\n\nEl Delta de Tigre cuenta con más de 350 ríos y arroyos. Este complejo sistema hídrico, surgido de la formación y el crecimiento de las islas que van dividiendo el curso de las aguas, contribuye a dar su forma al paisaje, constituye vías de comunicación, modela la vida y las costumbres de sus habitantes y juega un papel insoslayable en la historia y la cultura lugareña. El medio de transporte mas utilizado en la isla son las lanchas colectivas. L empresa Interisleña recorre el río Sarmiento, Capitán, Espera, San Antonio, Paraná de las Palmas, entre otros ríos arroyos. La empresa El Jilguero viaja por el río Carapachay, Angostura, y Paraná de las Palmas. La empresa Líneas Delta Argentino recorre el Luján, el Caraguatá, Canal Arias, Paraná de las Palmas y Parana miní, entre otros. También existen lanchas taxis que salen del puerto de frutos o del Reconquista y Luján."
-
+                            "content": f"Ultimo mensaje:\n\n{user_input}\n\nMensajes anteriores:\n{previous_messages_content}\n\nContexto:\n{context_text}"
                         }
                     ]
                 )
@@ -238,4 +238,4 @@ def get_llm_response(user_input, conversation_id=None, previous_messages=None, r
     except Exception as e:
         error_message = f"Error getting LLM response: {str(e)}"
         print(error_message)
-        return f"Lo siento, ocurrió un error al procesar tu mensaje. Por favor, intenta de nuevo más tarde."
+        return "Lo siento, ocurrió un error al procesar tu mensaje. Por favor, intenta de nuevo más tarde."

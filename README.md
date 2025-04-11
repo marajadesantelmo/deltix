@@ -36,23 +36,26 @@ Soy *Deltix, el bot del humedal!* Mi objetivo es ayudar a quienes habitan y visi
 
 ## Principales Scripts de la App
 
-### `main.py`
-Bot de telegram
+### `main2.py`
+Bot de telegram (versión 2.0, marzo 2025)
 
 ### `app.py`
-Aplicación Streamlit
+Aplicación Streamlit (en desuso
+
+### `llm_connector.py`
+Conexión con modelo LLM DeepSeek a través del de API de Open Router
 
 ### `scraping.py`
-Este script se encarga de obtener los datos actualizados de mareas y pronósticos meteorológicos. Utiliza Selenium para tomar capturas de pantalla de Windguru y urllib para descargar la imagen de mareas del sitio del INA.
+Scrapeo de datos de mareas y pronósticos meteorológicos. Utiliza `Selenium` para tomar capturas de pantalla de Windguru, `BeautifulSoup` para datos de Hidrografía Naval y `urllib` para descargar la imagen de mareas del sitio del INA.
 
 ### `auto_push.py`
 Este script verifica si hay cambios en el repositorio local y, de ser así, los sube automáticamente a GitHub. Es útil para mantener el repositorio actualizado con los últimos datos obtenidos por el script de scraping.
 
 ### `pull_data.yml`
-Este archivo de configuración de GitHub Actions se encarga de actualizar los archivos `mareas.png` y `windguru.png` en el repositorio público. Se ejecuta cada vez que hay un push a la rama `main`.
+GitHub Action para actualizar los archivos scrapeados en el repositorio público. Se ejecuta cada vez que hay un push a la rama `main`.
 
-## Desarrollo de la WebApp en Streamlit
+## Próximamente
 
-Actualmente, se está desarrollando una versión del bot como una aplicación web utilizando Streamlit e integrando interacción conun  LLM. Esta versión permitirá a los usuarios interactuar con el bot directamente desde un navegador web, proporcionando una experiencia más accesible y amigable.
+Actualmente se está desarrollando una integración a Whatssapp
 
 
