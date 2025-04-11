@@ -5,7 +5,7 @@
 </h1>
 
 
-Soy *Deltix, el bot del humedal!* Mi objetivo es ayudar a quienes habitan y visitan el delta inferior del Paraná. Fui diseñado para proporcionar información y servicios útiles a las personas que habitan o visitan la hermosa región del Delta del Tigre, en Buenos Aires. Por ahora mis principales funcionalidades son enviar pronósticos meteorológico y de maraes, horarios de lanchas colectivas y mandar los Memes Islenials más divertidos de la isla :P En el futuro te voy a poder ayudar también cuando estés buscando recomendaciones locales, información sobre actividades en el delta o simplemente quieras mantenerte al tanto de las novedades de la zona.
+Soy *Deltix, el bot del humedal!* Mi objetivo es ayudar a quienes habitan y visitan el delta inferior del Paraná. Fui diseñado para proporcionar información y servicios útiles a las personas que habitan o visitan la hermosa región del Delta del Tigre, en Buenos Aires.
 
 *Deltix es un proyecto abierto para colaborar. Contactanos si querés aportar con nuevas ideas y funcionalidades!*
 
@@ -15,9 +15,14 @@ Soy *Deltix, el bot del humedal!* Mi objetivo es ayudar a quienes habitan y visi
       <h2>Características Destacadas</h2>
       <ul>
         <li>🌊 Información de Mareas: Recibí el pronóstico de mareas en tiempo real para la región del Delta del Tigre.</li>
+        <li>🔭 Hidrografía Naval: Consultá los datos de mareas de Hidrografía Naval.</li>
         <li>🌦️ Pronóstico Meteorológico: Consultá el pronóstico meteorológico de WindGurú para la zona.</li>
-        <li>⛵ Colectivas: Tené siempre a mano los horarios de lanchas colectivas</li>
+        <li>⛵ Colectivas: Tené siempre a mano los horarios de lanchas colectivas (Jilguero, Interisleña, Líneas Delta).</li>
+        <li>🛒 Almaceneras: Conocé los recorridos y contactos de lanchas almaceneras que operan en el Delta.</li>
+        <li>🚣 Actividades Isleñas: Descubrí actividades y emprendimientos locales.</li>
         <li>🤣 Memes Islenials: Descubrí los memes más divertidos de la isla.</li>
+        <li>🤖 Asistente IA: Podés hacerme preguntas varias y te responderé utilizando inteligencia artificial.</li>
+        <li>🔔 Suscripciones: Recibí actualizaciones diarias de mareas, pronósticos y más.</li>
         <li>🤝 Colaborar y Sugerir: Compartí tus sugerencias y colaborá con el bot para mejorarlo.</li>
         <li>📤 Desuscribirte: Si deseas dejar de recibir actualizaciones, podés hacerlo en cualquier momento.</li>
         <li>✉️ Mensajear al Desarrollador: Mandale un mensajito al desarrollador del bot.</li>
