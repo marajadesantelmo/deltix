@@ -52,8 +52,8 @@ def webhook():
         user_conversations[sender_number] = create_conversation()
     conversation_id = user_conversations[sender_number]
     
-    # Initial response to acknowledge receipt
-    resp.message("Estoy analizando tu mensaje... 🤔")
+    # Create a TwiML response (still needed for the webhook to respond to Twilio)
+    resp = MessagingResponse()
     
     try:
         # Process commands first

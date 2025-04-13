@@ -39,12 +39,12 @@ MESSAGE_TEMPLATES = {
 
 # The list of capabilities of the bot
 BOT_CAPABILITIES = [
-    "Pronóstico de mareas en tiempo real",
-    "Pronóstico meteorológico de WindGurú",
-    "Hidrografía Naval",
+    "Pronóstico de mareas INA",
+    "Pronóstico meteorológico de windgurú",
+    "Pronóstico de mareas Hidrografía Naval",
     "Horarios de lanchas colectivas",
     "Información sobre lanchas almaceneras",
-    "Memes Isleñales divertidos",
+    "Memes Islenials",
     "Asistente IA para consultas",
     "Información sobre actividades isleñas"
 ]
