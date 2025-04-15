@@ -231,18 +231,41 @@ def get_llm_response(user_input, conversation_id=None, previous_messages=None, r
                     ]
                 )
                 
-                # Validate response structure
-                if not response or "choices" not in response or not response.choices:
-                    raise ValueError(f"Unexpected response structure: {response}")
+                # Extract the response text directly
+                try:
+                    # First try accessing via attributes (normal OpenAI-style)
+                    if hasattr(response, "choices") and len(response.choices) > 0:
+                        if hasattr(response.choices[0], "message") and hasattr(response.choices[0].message, "content"):
+                            response_text = response.choices[0].message.content
+                        else:
+                            # Log the structure for debugging
+                            print(f"Response choice structure: {response.choices[0]}")
+                            # Try accessing dict-style for different API response formats
+                            if isinstance(response.choices[0], dict) and "message" in response.choices[0]:
+                                if isinstance(response.choices[0]["message"], dict) and "content" in response.choices[0]["message"]:
+                                    response_text = response.choices[0]["message"]["content"]
+                                else:
+                                    response_text = str(response.choices[0]["message"])
+                            else:
+                                response_text = str(response.choices[0])
+                    else:
+                        # For non-standard response structures
+                        print(f"Attempting to parse response: {response}")
+                        response_text = str(response)
+                        if isinstance(response, dict) and "choices" in response:
+                            if isinstance(response["choices"], list) and len(response["choices"]) > 0:
+                                if isinstance(response["choices"][0], dict) and "message" in response["choices"][0]:
+                                    if isinstance(response["choices"][0]["message"], dict) and "content" in response["choices"][0]["message"]:
+                                        response_text = response["choices"][0]["message"]["content"]
                 
-                # Extract the first choice
-                choice = response.choices[0]
-                if not hasattr(choice, "message") or not hasattr(choice.message, "content"):
-                    raise ValueError(f"Missing 'message' or 'content' in response choice: {choice}")
+                except Exception as extract_error:
+                    print(f"Error extracting response content: {extract_error}")
+                    if hasattr(response, "__dict__"):
+                        print(f"Response attributes: {vars(response)}")
+                    raise ValueError(f"Failed to extract content from response: {response}")
                 
                 # Store the message and response in Supabase
                 store_chat_message(conversation_id, "user", user_input)
-                response_text = choice.message.content
                 store_chat_message(conversation_id, "assistant", response_text)
                 
                 return response_text
