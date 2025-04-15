@@ -55,10 +55,16 @@ def contains_keywords(user_input, keyword_list):
 def load_weather_data():
     """Load the latest weather data from the JSON file"""
     try:
-        weather_file_path = "rag/weather_data.json"
+        # Use an absolute path to ensure the file is located correctly
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        weather_file_path = os.path.join(base_dir, "rag", "weather_data.json")
+        
         with open(weather_file_path, 'r') as file:
             weather_data = json.load(file)
         return weather_data
+    except FileNotFoundError:
+        print("Warning: Weather data file not found. Using default empty data.")
+        return None  # Return None to indicate missing data
     except Exception as e:
         print(f"Error loading weather data: {e}")
         return None
@@ -172,6 +178,8 @@ def get_llm_response(user_input, conversation_id=None, previous_messages=None, r
             weather_data = load_weather_data()
             if weather_data:
                 context.append(format_weather_for_context(weather_data))
+            else:
+                context.append("No se pudo cargar la información del clima en este momento.")
 
         # Add almacen data if applicable
         if contains_keywords(user_input, ALMACEN_KEYWORDS):
@@ -199,7 +207,7 @@ def get_llm_response(user_input, conversation_id=None, previous_messages=None, r
         
         previous_messages_content = "\n".join([msg["content"] for msg in previous_messages if msg["role"] == "user"][-3:])
         
-        context_text = "\n\n".join(context)
+        context_text = "\n\n".join(context) if context else "No hay contexto disponible."
         
         # Simplified system prompt
         system_prompt = (
