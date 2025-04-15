@@ -235,8 +235,9 @@ def get_llm_response(user_input, conversation_id=None, previous_messages=None, r
                 if not response or "choices" not in response or not response.choices:
                     raise ValueError(f"Unexpected response structure: {response}")
                 
+                # Extract the first choice
                 choice = response.choices[0]
-                if "message" not in choice or "content" not in choice.message:
+                if not hasattr(choice, "message") or not hasattr(choice.message, "content"):
                     raise ValueError(f"Missing 'message' or 'content' in response choice: {choice}")
                 
                 # Store the message and response in Supabase
