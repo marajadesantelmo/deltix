@@ -154,7 +154,7 @@ Contacto: 1126961274
 """
     return activity_info
 
-def get_llm_response(user_input, conversation_id=None, previous_messages=None, retries=2, delay=1):
+def get_llm_response(user_input, conversation_id=None, previous_messages=None, retries=5, delay=2):
     """Get a response from the LLM with context from the RAG system"""
     if conversation_id is None:
         conversation_id = create_conversation()
