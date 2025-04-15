@@ -223,9 +223,17 @@ def get_llm_response(user_input, conversation_id=None, previous_messages=None, r
                     ]
                 )
                 
+                # Validate response structure
+                if not response or "choices" not in response or not response.choices:
+                    raise ValueError(f"Unexpected response structure: {response}")
+                
+                choice = response.choices[0]
+                if "message" not in choice or "content" not in choice.message:
+                    raise ValueError(f"Missing 'message' or 'content' in response choice: {choice}")
+                
                 # Store the message and response in Supabase
                 store_chat_message(conversation_id, "user", user_input)
-                response_text = response.choices[0].message.content
+                response_text = choice.message.content
                 store_chat_message(conversation_id, "assistant", response_text)
                 
                 return response_text
