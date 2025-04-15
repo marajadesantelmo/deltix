@@ -231,11 +231,12 @@ def get_llm_response(user_input, conversation_id=None, previous_messages=None, r
                 return response_text
             
             except Exception as e:
+                print(f"Attempt {attempt + 1} failed: {str(e)}")  # Log the error
                 if attempt == retries - 1:
                     raise e
                 time.sleep(delay)
     
     except Exception as e:
         error_message = f"Error getting LLM response: {str(e)}"
-        print(error_message)
+        print(error_message)  # Log the detailed error
         return "Lo siento, ocurrió un error al procesar tu mensaje. Por favor, intenta de nuevo más tarde."
