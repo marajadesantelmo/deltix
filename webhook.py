@@ -47,7 +47,6 @@ STATE_HIDROGRAFIA_SUSCRIBIR = 'hidrografia_suscribir'
 STATE_DESUSCRIBIR = 'desuscribir'
 STATE_COLABORAR = 'colaborar'
 STATE_MENSAJEAR = 'mensajear'
-STATE_INFORMACION = 'informacion'
 STATE_COLECTIVAS = 'colectivas'
 STATE_JILGUERO = 'jilguero'
 STATE_INTERISLENA = 'interislena'
@@ -70,7 +69,6 @@ def get_menu_message():
         "- */memes* _los memes más divertidos de la isla_ 😂\n"
         "- */suscribirme* _suscribirte a mis envíos_ 🦉\n"
         "- */charlar* _charlar conmigo y suscribirte a mis envíos_\n"
-        "- */informacion* _saber más sobre Deltix_ 🦫\n"
         "- */colaborar* _hacer sugerencias o aportar_\n"
         "- */desuscribirme* _darte de baja de mis envíos_ 🦉\n"
         "- */mensajear* _mandarle un mensajito al equipo Deltix_\n\n"
@@ -145,8 +143,6 @@ def process_message(sender_number, message, current_state):
         handle_colaborar_response(sender_number, message)
     elif current_state == STATE_MENSAJEAR:
         handle_mensajear_response(sender_number, message)
-    elif current_state == STATE_INFORMACION:
-        handle_informacion_response(sender_number, message)
     elif current_state == STATE_COLECTIVAS:
         handle_colectivas_response(sender_number, message)
     elif current_state == STATE_JILGUERO:
@@ -164,22 +160,20 @@ def process_message(sender_number, message, current_state):
     elif current_state == STATE_SUSCRIBIRME:
         handle_suscribirme_response(sender_number, message)
     # Command based processing
-    elif message == 'mareas' or message == '/mareas':
+    elif 'mareas' in message:
         send_mareas(sender_number)
-    elif message == 'windguru' or message == '/windguru':
+    elif 'windguru' in message:
         send_windguru(sender_number)
-    elif message == 'hidrografia' or message == '/hidrografia':
+    elif 'hidrografia' in message:
         send_hidrografia(sender_number)
-    elif message == 'memes' or message == '/memes':
+    elif 'memes' in message:
         send_meme(sender_number)
-    elif message == 'colectivas' or message == '/colectivas':
+    elif 'colectivas' in message:
         send_colectivas_options(sender_number)
-    elif message == 'almaceneras' or message == '/almaceneras':
+    elif 'almaceneras' in message:
         send_almaceneras_list(sender_number)
     elif message == 'charlar' or message == '/charlar':
         start_charlar(sender_number)
-    elif message == 'informacion' or message == '/informacion':
-        send_informacion(sender_number)
     elif message == 'colaborar' or message == '/colaborar':
         send_colaborar(sender_number)
     elif message == 'mensajear' or message == '/mensajear':
@@ -491,50 +485,6 @@ def handle_charlar_response(sender_number, message):
             to=sender_number
         )
         user_states[sender_number] = STATE_WINDGURU_SUSCRIBIR
-
-# --- INFORMACION FUNCTIONS --- #
-
-def send_informacion(sender_number):
-    """Send information about the bot"""
-    client.messages.create(
-        body='Te cuento un poco de mí! Soy un bot en desarrollo que tiene como objetivo ayudar a quienes habitamos en la isla, principalmente en la 1era sección',
-        from_=twilio_phone_number,
-        to=sender_number
-    )
-    
-    client.messages.create(
-        body='Mis primeras funcionalidades son mandar el reporte de mareas del Instituto Nacional del Agua y el pronóstico del clima de WindGurú. Si te suscribís, lo vas a recibir todos los días. Hace poquito que también mando horarios de lanchas colectivas',
-        from_=twilio_phone_number,
-        to=sender_number
-    )
-    
-    # Add delay
-    time.sleep(2)
-    
-    client.messages.create(
-        body='En el futuro espero sumar más funcionalidades, como enviar info con notas de interés y eventos de la isla a quienes quieran, o armar un sistema automático de avisos de voy-y-vuelvo para compartir viajes en botes desde y hacia la isla\n\nPero bueno, vamos de a poquito. Soy un proyecto que recién empieza y hacemos todo a pulmón... querés saber más?',
-        from_=twilio_phone_number,
-        to=sender_number
-    )
-    
-    user_states[sender_number] = STATE_INFORMACION
-
-def handle_informacion_response(sender_number, message):
-    """Handle response to informacion query"""
-    if message in ['si', 'sí', 'SI', 'Si', 'Sí']:
-        client.messages.create(
-            body="Estoy desarrollado en código python por Facu, vecino de 1era sección de la isla, y los diseños tan lindos están hechos por Eli. Si querés decirle algo lo podés mensajear. Se aceptan mensajitos de aliento, sugerencias o cualquier comentario :) También les podés pedir que te desarrollen un bot para tu emprendimiento...",
-            from_=twilio_phone_number,
-            to=sender_number
-        )
-    else:
-        client.messages.create(
-            body="okisss... igual no había mucho más para contar tampocoo",
-            from_=twilio_phone_number,
-            to=sender_number
-        )
-    
-    user_states[sender_number] = STATE_START
 
 # --- COLABORAR FUNCTIONS --- #
 
