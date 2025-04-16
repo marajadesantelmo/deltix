@@ -115,7 +115,10 @@ Pronóstico para las próximas 24 horas:
 def load_file_content(filename):
     """Load content from a text file in the rag directory"""
     try:
-        file_path = os.path.join(os.getcwd(), "rag", filename)
+        # Use an absolute path to ensure the file is located correctly
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        file_path = os.path.join(base_dir, "rag", filename)
+        
         if os.path.exists(file_path):
             with open(file_path, 'r', encoding='utf-8') as file:
                 return file.read()
