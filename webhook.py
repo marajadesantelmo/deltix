@@ -817,7 +817,9 @@ def send_llm_response(sender_number, message):
         
         # Validate input data
         if not conversation_id or not isinstance(conversation_id, str):
-            raise ValueError("Invalid conversation_id")
+            print(f"Invalid conversation_id detected: {conversation_id}. Reinitializing...")
+            conversation_id = create_conversation()
+            user_conversations[sender_number] = conversation_id
         
         llm_response = get_llm_response(message, conversation_id)
         
