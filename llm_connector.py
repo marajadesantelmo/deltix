@@ -1,13 +1,13 @@
-from supabase import create_client
-from openai import OpenAI
 import os
 import json
 import time
+from supabase import create_client
+from openai import OpenAI
+
+# Load environment variables or tokens
 try:
-    # Try to import tokens directly (useful for testing)
     from tokens import supabase_url, supabase_key, openrouter_key
 except ImportError:
-    # Fallback to environment variables (useful for production)
     supabase_url = os.getenv('SUPABASE_URL')
     supabase_key = os.getenv('SUPABASE_KEY')
     openrouter_key = os.getenv('OPENROUTER_API_KEY')
@@ -15,260 +15,146 @@ except ImportError:
 # Validate environment variables
 if not supabase_url or not supabase_key:
     raise ValueError("Supabase URL and Key must be set in environment variables")
-
 if not openrouter_key:
     raise ValueError("OpenRouter API Key must be set in environment variables")
 
-# Initialize Supabase client
+# Initialize Supabase and OpenAI clients
 supabase = create_client(supabase_url, supabase_key)
+openai_client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=openrouter_key)
 
-# Initialize OpenAI client for OpenRouter
-client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=openrouter_key,
-)
+# Keywords for context generation
+KEYWORDS = {
+    "weather": ['clima', 'temperatura', 'pronostico', 'tiempo', 'lluvia', 'viento', 'llover', 'soleado', 'ventoso', 'humedad', 'tormenta', 'nublado', 'calor', 'frio'],
+    "almacen": ['almacen', 'almacén', 'almacenera', 'almaceneras'],
+    "jilguero": ['jilguero', 'carapachay', 'angostura'],
+    "interislena": ['interisleña', 'interislena', 'sarmiento', 'san antonio', 'capitan', 'capitán'],
+    "lineasdelta": ['lineasdelta', 'caraguatá', 'caraguata', 'canal arias', 'paraná miní', 'parana mini', 'lineas delta'],
+    "activities": ['actividades', 'emprendimientos', 'hacer', 'visitar', 'conocer', 'experiencias', 'atracciones', 'paseos', 'canoa', 'kayak', 'arcilla', 'barro', 'alfareria', 'hospedaje']
+}
 
-# Keywords for context retrieval
-WEATHER_KEYWORDS = ['clima', 'temperatura', 'pronostico', 'tiempo', 'lluvia', 'viento', 'llover', 'soleado', 'ventoso', 'humedad', 'tormenta', 'nublado', 'calor', 'frio']
-ALMACEN_KEYWORDS = ['almacen', 'almacén', 'almacenera', 'almaceneras']
-JILGUERO_KEYWORDS = ['jilguero', 'carapachay', 'angostura']
-INTERISLENA_KEYWORDS = ['interisleña', 'interislena', 'sarmiento', 'san antonio', 'capitan', 'capitán']
-LINEASDELTA_KEYWORDS = ['lineasdelta', 'caraguatá', 'caraguata', 'canal arias', 'paraná miní', 'parana mini', 'lineas delta']
+class ContextManager:
+    """Manages context generation based on user input."""
+    def __init__(self):
+        self.base_dir = os.path.dirname(os.path.abspath(__file__))
 
-# Combined keywords for all activities
-EMPRENDIMIENTOS_KEYWORDS = ['actividades', 'emprendimientos', 'hacer', 'visitar', 'conocer', 'experiencias', 'atracciones', 'paseos',
-                           'actividades delta', 'canoa', 'taxi', 'kayak', 'kayakear', 'paseos en lancha', 'arcilla', 'barro', 'alfareria', 'hospedaje', 'alquiler',
-                           'cañaveral', 'canaveral', 'eventos']
+    def load_file(self, filename):
+        """Load content from a file in the 'rag' directory."""
+        try:
+            file_path = os.path.join(self.base_dir, "rag", filename)
+            with open(file_path, 'r', encoding='utf-8') as file:
+                return file.read()
+        except FileNotFoundError:
+            print(f"File not found: {filename}")
+            return ""
+        except Exception as e:
+            print(f"Error loading file {filename}: {e}")
+            return ""
 
+    def load_weather_data(self):
+        """Load weather data from a JSON file."""
+        try:
+            weather_file = os.path.join(self.base_dir, "rag", "weather_data.json")
+            with open(weather_file, 'r') as file:
+                return json.load(file)
+        except FileNotFoundError:
+            print("Weather data file not found.")
+            return None
+        except Exception as e:
+            print(f"Error loading weather data: {e}")
+            return None
+
+    def generate_context(self, user_input):
+        """Generate context based on user input."""
+        context = []
+
+        # Add weather data if applicable
+        if any(keyword in user_input.lower() for keyword in KEYWORDS["weather"]):
+            weather_data = self.load_weather_data()
+            if weather_data:
+                context.append(self.format_weather_data(weather_data))
+            else:
+                context.append("No se pudo cargar la información del clima en este momento.")
+
+        # Add other context files based on keywords
+        if any(keyword in user_input.lower() for keyword in KEYWORDS["almacen"]):
+            context.append(self.load_file("almaceneras.txt"))
+        if any(keyword in user_input.lower() for keyword in KEYWORDS["jilguero"]):
+            context.append(self.load_file("jilguero.txt"))
+        if any(keyword in user_input.lower() for keyword in KEYWORDS["interislena"]):
+            context.append(self.load_file("interislena.txt"))
+        if any(keyword in user_input.lower() for keyword in KEYWORDS["lineasdelta"]):
+            context.append(self.load_file("lineasdelta.txt"))
+        if any(keyword in user_input.lower() for keyword in KEYWORDS["activities"]):
+            context.append(self.load_file("activities.txt"))
+
+        return "\n\n".join(context) if context else "No hay contexto disponible."
+
+    def format_weather_data(self, weather_data):
+        """Format weather data into a readable string."""
+        try:
+            current = weather_data.get('current_weather', {})
+            location = current.get('name', 'Desconocido')
+            temp = current.get('main', {}).get('temp', 'N/A')
+            description = current.get('weather', [{}])[0].get('description', 'N/A')
+            return f"Clima actual en {location}: {temp}°C, {description}"
+        except Exception as e:
+            print(f"Error formatting weather data: {e}")
+            return "Información del clima no disponible."
+
+class LLMClient:
+    """Handles interactions with the LLM."""
+    def __init__(self, client, retries=3, delay=2):
+        self.client = client
+        self.retries = retries
+        self.delay = delay
+
+    def get_response(self, user_input, context, conversation_id):
+        """Get a response from the LLM."""
+        system_prompt = (
+            "Vos sos Deltix, el bot del humedal. Ayudas a habitantes y visitantes del Delta del Paraná en Tigre. "
+            "Responde al último mensaje del usuario usando el contexto proporcionado. No inventes información."
+        )
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": f"Mensaje: {user_input}\n\nContexto:\n{context}"}
+        ]
+
+        for attempt in range(self.retries):
+            try:
+                response = self.client.chat.completions.create(
+                    model="deepseek/deepseek-chat",
+                    messages=messages
+                )
+                return response.choices[0].message.content
+            except Exception as e:
+                print(f"Attempt {attempt + 1} failed: {e}")
+                if attempt == self.retries - 1:
+                    raise
+                time.sleep(self.delay)
+
+# Public API
 def create_conversation():
-    """Create a new conversation conversation in Supabase"""
+    """Create a new conversation in Supabase."""
     response = supabase.from_("conversations").insert({"name": "Nueva conversacion"}).execute()
     return response.data[0]["id"]
 
 def store_chat_message(conversation_id, role, content):
-    """Store a chat message in Supabase"""
+    """Store a chat message in Supabase."""
     supabase.from_("chat_history").insert({"conversation_id": conversation_id, "role": role, "content": content}).execute()
 
-def contains_keywords(user_input, keyword_list):
-    """Check if user input contains any of the keywords in the list"""
-    lower_input = user_input.lower()
-    return any(keyword in lower_input for keyword in keyword_list)
+def get_llm_response(user_input, conversation_id):
+    """Main function to get a response from the LLM."""
+    context_manager = ContextManager()
+    llm_client = LLMClient(openai_client)
 
-def load_weather_data():
-    """Load the latest weather data from the JSON file"""
-    try:
-        # Use an absolute path to ensure the file is located correctly
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        weather_file_path = os.path.join(base_dir, "rag", "weather_data.json")
-        
-        with open(weather_file_path, 'r') as file:
-            weather_data = json.load(file)
-        return weather_data
-    except FileNotFoundError:
-        print("Warning: Weather data file not found. Using default empty data.")
-        return None  # Return None to indicate missing data
-    except Exception as e:
-        print(f"Error loading weather data: {e}")
-        return None
+    # Generate context
+    context = context_manager.generate_context(user_input)
 
-def format_weather_for_context(weather_data):
-    """Format weather data into a readable context in Spanish for the LLM"""
-    if not weather_data:
-        return ""
-    
-    try:
-        # Get current weather information
-        current = weather_data.get('current_weather', {})
-        location = current.get('name', 'Desconocido')
-        country = current.get('sys', {}).get('country', '')
-        temp = current.get('main', {}).get('temp', 'N/A')
-        feels_like = current.get('main', {}).get('feels_like', 'N/A')
-        description = current.get('weather', [{}])[0].get('description', 'N/A')
-        humidity = current.get('main', {}).get('humidity', 'N/A')
-        wind_speed = current.get('wind', {}).get('speed', 'N/A')
-        
-        # Get timestamp
-        timestamp_str = weather_data.get('timestamp', 'Desconocido')
-        
-        # Format forecast information (next 24 hours)
-        forecast_items = weather_data.get('forecast', {}).get('list', [])[:8]  # First 24 hours (8 * 3-hour intervals)
-        forecast_text = ""
-        
-        for item in forecast_items:
-            dt_txt = item.get('dt_txt', '')
-            temp_forecast = item.get('main', {}).get('temp', 'N/A')
-            desc_forecast = item.get('weather', [{}])[0].get('description', 'N/A')
-            forecast_text += f"- {dt_txt}: {temp_forecast}°C, {desc_forecast}\n"
-        
-        # Create the context in Spanish
-        context = f"""
-Información del clima para {location}, {country} (actualizado el {timestamp_str}):
-Condiciones actuales: {temp}°C (sensación térmica de {feels_like}°C), {description}
-Humedad: {humidity}%, Velocidad del viento: {wind_speed} m/s
+    # Get response from LLM
+    response = llm_client.get_response(user_input, context, conversation_id)
 
-Pronóstico para las próximas 24 horas:
-{forecast_text}
-"""
-        return context
-    except Exception as e:
-        print(f"Error formatting weather data: {e}")
-        return "La información del clima está disponible pero no se pudo formatear correctamente."
+    # Store messages in Supabase
+    store_chat_message(conversation_id, "user", user_input)
+    store_chat_message(conversation_id, "assistant", response)
 
-def load_file_content(filename):
-    """Load content from a text file in the rag directory"""
-    try:
-        # Use an absolute path to ensure the file is located correctly
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        file_path = os.path.join(base_dir, "rag", filename)
-        
-        if os.path.exists(file_path):
-            with open(file_path, 'r', encoding='utf-8') as file:
-                return file.read()
-        else:
-            print(f"File not found at: {file_path}")
-            return ""
-    except Exception as e:
-        print(f"Error loading file {filename}: {e}")
-        return ""
-
-def get_activity_info():
-    """Create formatted information about island activities"""
-    activity_info = """
-ACTIVIDADES Y EMPRENDIMIENTOS ISLEÑOS:
-
-1. AMANITA - EXPERIENCIAS EN CANOA ISLEÑA
-Paseos por el Delta del Paraná
-Con Guía Bilingüe (opcional)
-Servicio puerta a puerta (opcional)
-Instagram: amanitaturismodelta
-Contacto: 1169959272
-
-2. KUTRAL ALFARERÍA
-Encuentros con el barro
-Talleres de alfarería
-Experimentación y creación con arcilla
-Instagram: kutralalfareria
-
-3. LA BÚSQUEDA
-Espacio para encuentros y ceremonias
-Hostal en el Delta
-Conexión con la naturaleza
-Instagram: labusqueda_cabanadelta
-Contacto: 1150459556
-
-4. CAÑAVERAL KAYAKS
-Excursiones en Kayak
-Paseos con guía
-Remadas nocturnas
-Linktr.ee: canaveralkayaks
-Contacto: 1126961274
-"""
-    return activity_info
-
-def get_llm_response(user_input, conversation_id=None, previous_messages=None, retries=5, delay=2):
-    """Get a response from the LLM with context from the RAG system"""
-    if conversation_id is None:
-        conversation_id = create_conversation()
-    
-    try:
-        # Prepare context based on user input
-        context = []
-        
-        # Check for security/emergency keywords
-        if any(keyword in user_input.lower() for keyword in ['seguridad', 'policia', 'emergencia', 'telefono']):
-            context.append(load_file_content("policia.txt"))
-        
-        # Add weather data if applicable
-        if contains_keywords(user_input, WEATHER_KEYWORDS):
-            weather_data = load_weather_data()
-            if weather_data:
-                context.append(format_weather_for_context(weather_data))
-            else:
-                context.append("No se pudo cargar la información del clima en este momento.")
-
-        # Add almacen data if applicable
-        if contains_keywords(user_input, ALMACEN_KEYWORDS):
-            almacen_context = load_file_content("almaceneras.txt")
-            if almacen_context:
-                context.append(f"Información sobre almacenes de la isla:\n{almacen_context}")
-        
-        # Add transportation data if applicable
-        if contains_keywords(user_input, JILGUERO_KEYWORDS):
-            context.append(load_file_content('jilguero.txt'))
-                
-        if contains_keywords(user_input, INTERISLENA_KEYWORDS):
-            context.append(load_file_content('interislena.txt'))
-                
-        if contains_keywords(user_input, LINEASDELTA_KEYWORDS):
-            context.append(load_file_content('lineasdelta.txt'))
-        
-        # Add island activities information based on keywords
-        if contains_keywords(user_input, EMPRENDIMIENTOS_KEYWORDS):
-            context.append(get_activity_info())
-
-        # Get previous messages if not provided
-        if previous_messages is None:
-            previous_messages = supabase.from_("chat_history").select("content").eq("conversation_id", conversation_id).execute().data
-        
-        previous_messages_content = "\n".join([msg["content"] for msg in previous_messages if msg["role"] == "user"][-3:])
-        
-        context_text = "\n\n".join(context) if context else "No hay contexto disponible."
-        
-        # Simplified system prompt
-        system_prompt = (
-            "Vos sos Deltix, el bot del humedal. Sos un carpincho digital que ayuda a habitantes y visitantes del Delta del Paraná en Tigre. "
-            "Responde al último mensaje del usuario usando el contexto proporcionado. No inventes información ni alucines. "
-            "Si no puedes responder, guía al usuario para que ingrese palabras clave como: clima, mareas, windguru, colectivas, almaceneras."
-        )
-        
-        # Make request to LLM with retries
-        for attempt in range(retries):
-            try:
-                response = client.chat.completions.create(
-                    model="deepseek/deepseek-chat",
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {
-                            "role": "user",
-                            "content": f"Ultimo mensaje:\n\n{user_input}\n\nMensajes anteriores:\n{previous_messages_content}\n\nContexto:\n{context_text}"
-                        }
-                    ]
-                )
-                
-                # Debug: Log the raw response to inspect its structure
-                print(f"LLM raw response: {response}")
-
-                # Log the response content for debugging
-                try:
-                    print(f"LLM response content: {response.choices[0].message.content}")
-                except Exception as log_error:
-                    print(f"Error logging LLM response content: {log_error}")
-
-                # Extract the response text directly
-                if hasattr(response, "choices") and len(response.choices) > 0:
-                    choice = response.choices[0]
-                    if hasattr(choice, "message") and hasattr(choice.message, "content"):
-                        response_text = choice.message.content
-                    elif isinstance(choice, dict) and "message" in choice:
-                        response_text = choice["message"].get("content", "No content found")
-                    else:
-                        raise ValueError("Unexpected response structure: missing 'message' or 'content'")
-                else:
-                    raise ValueError("Unexpected response structure: missing 'choices'")
-                
-                # Store the message and response in Supabase
-                store_chat_message(conversation_id, "user", user_input)
-                store_chat_message(conversation_id, "assistant", response_text)
-                
-                return response_text
-            
-            except Exception as e:
-                print(f"Attempt {attempt + 1} failed: {str(e)}")  # Log the error
-                if attempt == retries - 1:
-                    raise e
-                time.sleep(delay)
-    
-    except Exception as e:
-        error_message = f"Error getting LLM response: {str(e)}"
-        print(error_message)  # Log the detailed error
-        return "Lo siento, ocurrió un error al procesar tu mensaje. Por favor, intenta de nuevo más tarde."
+    return response
