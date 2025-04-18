@@ -216,14 +216,13 @@ def get_llm_response(user_input, conversation_id=None, previous_messages=None, r
         system_prompt = (
             "Vos sos Deltix, el bot del humedal. Sos un carpincho digital que ayuda a habitantes y visitantes del Delta del Paraná en Tigre. "
             "Responde al último mensaje del usuario usando el contexto proporcionado. No inventes información ni alucines. "
-            "Si no puedes responder, guía al usuario para que ingrese palabras clave como: clima, mareas, windguru, colectivas, almaceneras, suscribirme."
+            "Si no puedes responder, guía al usuario para que ingrese palabras clave como: clima, mareas, windguru, colectivas, almaceneras."
         )
         
         # Make request to LLM with retries
         for attempt in range(retries):
             try:
                 response = client.chat.completions.create(
-                    extra_body={},
                     model="deepseek/deepseek-chat",
                     messages=[
                         {"role": "system", "content": system_prompt},
