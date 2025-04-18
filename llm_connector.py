@@ -237,6 +237,12 @@ def get_llm_response(user_input, conversation_id=None, previous_messages=None, r
                 # Debug: Log the raw response to inspect its structure
                 print(f"LLM raw response: {response}")
 
+                # Log the response content for debugging
+                try:
+                    print(f"LLM response content: {response.choices[0].message.content}")
+                except Exception as log_error:
+                    print(f"Error logging LLM response content: {log_error}")
+
                 # Extract the response text directly
                 if hasattr(response, "choices") and len(response.choices) > 0:
                     choice = response.choices[0]
