@@ -3,12 +3,14 @@ from openai import OpenAI
 import os
 import json
 import time
-from tokens import supabase_url, supabase_key, openrouter_key
-
-# Environment variables
-#supabase_url = os.getenv('SUPABASE_URL')
-#supabase_key = os.getenv('SUPABASE_KEY')
-#openrouter_key = os.getenv('OPENROUTER_API_KEY')
+try:
+    # Try to import tokens directly (useful for testing)
+    from tokens import supabase_url, supabase_key, openrouter_key
+except ImportError:
+    # Fallback to environment variables (useful for production)
+    supabase_url = os.getenv('SUPABASE_URL')
+    supabase_key = os.getenv('SUPABASE_KEY')
+    openrouter_key = os.getenv('OPENROUTER_API_KEY')
 
 # Validate environment variables
 if not supabase_url or not supabase_key:
