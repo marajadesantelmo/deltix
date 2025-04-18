@@ -812,6 +812,13 @@ def send_llm_response(sender_number, message):
     )
     
     try:
+        # Debugging: Log the conversation_id and message
+        print(f"Debug: Sending message to LLM. conversation_id={conversation_id}, message={message}")
+        
+        # Validate input data
+        if not conversation_id or not isinstance(conversation_id, str):
+            raise ValueError("Invalid conversation_id")
+        
         llm_response = get_llm_response(message, conversation_id)
         
         client.messages.create(
@@ -820,7 +827,8 @@ def send_llm_response(sender_number, message):
             to=sender_number
         )
     except Exception as e:
-        print(f"Error getting LLM response: {str(e)}")
+        # Log the error with more context
+        print(f"Error getting LLM response: {str(e)}. conversation_id={conversation_id}, message={message}")
         client.messages.create(
             body="Lo siento, tuve un problema al procesar tu mensaje. ¿Podés intentar con algo más simple o usar uno de mis comandos?",
             from_=twilio_phone_number,
