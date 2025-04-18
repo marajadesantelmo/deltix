@@ -115,20 +115,14 @@ def webhook():
 def process_message(sender_number, message, current_state):
     """Process incoming message based on current state and message content"""
     # Command messages - override current state
-    if message.startswith('/start') or message == 'hola' or message == 'menu' or message == 'ayuda':
+    if 'hola' in message:
         send_start_message(sender_number)
         user_states[sender_number] = STATE_START
         return
     
     # Process based on current state
-    if current_state == STATE_CHARLAR:
-        handle_charlar_response(sender_number, message)
-    elif current_state == STATE_MEME:
+    if current_state == STATE_MEME:
         handle_meme_response(sender_number, message)
-    elif current_state == STATE_MEME2:
-        handle_meme2_response(sender_number, message)
-    elif current_state == STATE_COLABORAR:
-        handle_colaborar_response(sender_number, message)
     elif current_state == STATE_MENSAJEAR:
         handle_mensajear_response(sender_number, message)
     elif current_state == STATE_COLECTIVAS:
@@ -156,25 +150,21 @@ def process_message(sender_number, message, current_state):
         send_colectivas_options(sender_number)
     elif 'almaceneras' in message:
         send_almaceneras_list(sender_number)
-    elif message == 'charlar' or message == '/charlar':
-        start_charlar(sender_number)
-    elif message == 'colaborar' or message == '/colaborar':
-        send_colaborar(sender_number)
-    elif message == 'mensajear' or message == '/mensajear':
+    elif 'mensajear' in message:
         request_mensaje(sender_number)
-    elif message == 'amanita' or message == '/amanita':
+    elif 'amanita' in message:
         send_amanita(sender_number)
-    elif message == 'alfareria' or message == '/alfareria':
+    elif 'alfareria' in message:
         send_alfareria(sender_number)
-    elif message == 'labusqueda' or message == '/labusqueda':
+    elif 'labusqueda' in message:
         send_labusqueda(sender_number)
-    elif message == 'canaveralkayaks' or message == '/canaveralkayaks':
+    elif 'canaveralkayaks' in message:
         send_canaveralkayaks(sender_number)
-    elif message == 'jilguero' or message == '/jilguero':
+    elif 'jilguero' in message:
         start_jilguero(sender_number)
-    elif message == 'interislena' or message == '/interislena':
+    elif 'interislena' in message:
         start_interislena(sender_number)
-    elif message == 'lineasdelta' or message == '/lineasdelta':
+    elif 'lineasdelta' in message:
         start_lineasdelta(sender_number)
     elif 'gracias' in message:
         send_de_nada(sender_number)
