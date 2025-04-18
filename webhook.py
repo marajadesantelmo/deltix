@@ -59,23 +59,23 @@ GITHUB_BASE_URL = "https://raw.githubusercontent.com/marajadesantelmo/deltix/mai
 def get_menu_message():
     """Generate the main menu message in WhatsApp format"""
     return (
-        "- */mareas* _pronóstico de mareas INA_ ⛵\n"
-        "- */hidrografia* _mareas hidrografia_\n"
-        "- */windguru* _pronóstico del clima de windgurú_\n"
-        "- */colectivas* _horarios lanchas colectivas_ 🕖\n"
-        "- */almaceneras* _lanchas almaceneras_ 🚤\n"
-        "- */memes* _los memes más divertidos de la isla_ 😂\n"
-        "- */mensajear* _mandarle un mensajito al equipo Deltix_\n\n"
+        "- *mareas* _pronóstico de mareas INA_ ⛵\n"
+        "- *hidrografia* _mareas hidrografia_\n"
+        "- *windguru* _pronóstico del clima de windgurú_\n"
+        "- *colectivas* _horarios lanchas colectivas_ 🕖\n"
+        "- *almaceneras* _lanchas almaceneras_ 🚤\n"
+        "- *memes* _los memes más divertidos de la isla_ 😂\n"
+        "- *mensajear* _mandarle un mensajito al equipo Deltix_\n\n"
         "*Actividades y emprendimientos isleños*\n\n"
-        "- */amanita* _paseos en canoa isleña_\n"
-        "- */alfareria* _encuentros con el barro_\n"
-        "- */labusqueda* _espacio para ceremonias, hostal y mas_\n"
-        "- */canaveralkayaks* _excursiones en kayak_"
+        "- *amanita* _paseos en canoa isleña_\n"
+        "- *alfareria* _encuentros con el barro_\n"
+        "- *labusqueda* _espacio para ceremonias, hostal y mas_\n"
+        "- *canaveralkayaks* _excursiones en kayak_"
     )
 
 @app.route('/', methods=['GET'])
 def home():
-    return "Deltix WhatsApp webhook server is running!"
+    return "Deltix WhatsApp webhook está funcionando!"
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
@@ -174,19 +174,18 @@ def process_message(sender_number, message, current_state):
 
 def send_start_message(sender_number):
     """Send welcome message and menu options"""
-    welcome_message = "¡Hola! Soy Deltix, el bot del humedal 🦫\n\nEn qué te puedo ayudar? Elegí alguna actividad para continuar:\n"
     client.messages.create(
-        body=welcome_message,
+        body="¡Hola! Soy Deltix, el bot del humedal 🦫\n\nEn qué te puedo ayudar? Ingresando algunas de las siguientes palabras podés acceder a info sobre la isla:\n",
         from_=twilio_phone_number,
-        to=sender_number
-    )
+        to=sender_number)
     client.messages.create(
         body=get_menu_message(),
         from_=twilio_phone_number,
-        to=sender_number
-    )
-
-# --- MAREAS FUNCTIONS --- #
+        to=sender_number)
+    client.messages.create(
+        body="... o también me podés preguntar lo que quieras y yo te voy a responder lo mejor que pueda usando mi inteligencia artificial de carpincho digital",
+        from_=twilio_phone_number,
+        to=sender_number)
 
 def send_mareas(sender_number):
     """Send mareas information and offer subscription"""
@@ -199,9 +198,6 @@ def send_mareas(sender_number):
     
     user_states[sender_number] = STATE_START
 
-
-# --- WINDGURU FUNCTIONS --- #
-
 def send_windguru(sender_number):
     """Send windguru information and offer subscription"""
     client.messages.create(
@@ -212,8 +208,6 @@ def send_windguru(sender_number):
     )
     
     user_states[sender_number] = STATE_START
-
-# --- HIDROGRAFIA FUNCTIONS --- #
 
 def send_hidrografia(sender_number):
     """Send hidrografia information and offer subscription"""
@@ -243,9 +237,6 @@ def send_hidrografia(sender_number):
         )
         user_states[sender_number] = STATE_START
 
-
-# --- MEMES FUNCTIONS --- #
-
 def send_meme(sender_number):
     """Send a random meme and ask if user wants another"""
     client.messages.create(
@@ -253,7 +244,6 @@ def send_meme(sender_number):
         from_=twilio_phone_number,
         to=sender_number
     )
-    
     meme_url = get_random_meme_url()
     client.messages.create(
         media_url=[meme_url],
@@ -319,8 +309,6 @@ def handle_meme2_response(sender_number, message):
             to=sender_number
         )
         user_states[sender_number] = STATE_START
-
-# --- MENSAJEAR FUNCTIONS --- #
 
 def request_mensaje(sender_number):
     """Request a message to forward to the developer"""
@@ -711,98 +699,6 @@ def handle_almacenera_select(sender_number, message):
     
     user_states[sender_number] = STATE_START
 
-# --- SUSCRIBIRME FUNCTIONS --- #
-
-def start_suscribirme(sender_number):
-    """Start subscription process"""
-    client.messages.create(
-        body="¿A qué te gustaría suscribirte? (Responde: Mareas, Hidrografia o Windguru)",
-        from_=twilio_phone_number,
-        to=sender_number
-    )
-    user_states[sender_number] = STATE_SUSCRIBIRME
-
-def handle_suscribirme_response(sender_number, message):
-    """Handle subscription selection"""
-    message = message.lower()
-    
-    if message == "mareas":
-        # Handle mareas subscription
-        client.messages.create(
-            body="¡Gracias por suscribirte! Voy a intentar mandarte el pronóstico de mareas una vez al día.",
-            from_=twilio_phone_number,
-            to=sender_number
-        )
-    elif message == "hidrografia":
-        # Handle hidrografia subscription
-        client.messages.create(
-            body="¡Gracias por suscribirte! Voy a intentar mandarte el pronóstico de mareas de Hidrografía Naval una vez al día.",
-            from_=twilio_phone_number,
-            to=sender_number
-        )
-    elif message == "windguru":
-        # Handle windguru subscription
-        client.messages.create(
-            body="¡Gracias por suscribirte! Te enviaré el pronóstico de Windguru una vez al día.",
-            from_=twilio_phone_number,
-            to=sender_number
-        )
-    else:
-        client.messages.create(
-            body="No comprendí tu elección. Por favor, selecciona 'Mareas', 'Hidrografia' o 'Windguru'.",
-            from_=twilio_phone_number,
-            to=sender_number
-        )
-        return
-    
-    user_states[sender_number] = STATE_START
-
-# --- DESUSCRIBIRME FUNCTIONS --- #
-
-def start_desuscribirme(sender_number):
-    """Start unsubscription process"""
-    client.messages.create(
-        body="¿A cuál envío quieres desuscribirte: Mareas, Windguru o Hidrografía?",
-        from_=twilio_phone_number,
-        to=sender_number
-    )
-    user_states[sender_number] = STATE_DESUSCRIBIR
-
-def handle_desuscribir_response(sender_number, message):
-    """Handle unsubscription selection"""
-    message = message.lower()
-    
-    if message == "mareas":
-        # Handle mareas unsubscription
-        client.messages.create(
-            body="Te has desuscrito con éxito del pronóstico de mareas. Si deseas desuscribirte de otro servicio o realizar otra acción, decime nomas",
-            from_=twilio_phone_number,
-            to=sender_number
-        )
-    elif message == "windguru":
-        # Handle windguru unsubscription
-        client.messages.create(
-            body="Te has desuscrito con éxito del pronóstico de Windguru. Si deseas desuscribirte de otro servicio o realizar otra acción, decime nomas",
-            from_=twilio_phone_number,
-            to=sender_number
-        )
-    elif message == "hidrografía" or message == "hidrografia":
-        # Handle hidrografia unsubscription
-        client.messages.create(
-            body="Te has desuscrito con éxito del pronóstico de Hidrografía Naval. Si deseas desuscribirte de otro servicio o realizar otra acción, decime nomas",
-            from_=twilio_phone_number,
-            to=sender_number
-        )
-    else:
-        client.messages.create(
-            body="No comprendí tu elección. Por favor, selecciona 'Mareas', 'Windguru' o 'Hidrografía' para desuscribirte.",
-            from_=twilio_phone_number,
-            to=sender_number
-        )
-        return
-    
-    user_states[sender_number] = STATE_START
-
 # --- ACTIVIDADES FUNCTIONS --- #
 
 def send_amanita(sender_number):
@@ -888,8 +784,6 @@ def send_canaveralkayaks(sender_number):
         to=sender_number
     )
 
-# --- OTHER FUNCTIONS --- #
-
 def send_de_nada(sender_number):
     """Send response to thanks"""
     client.messages.create(
@@ -912,7 +806,6 @@ def send_llm_response(sender_number, message):
             "...estoy pensando...",
             "...deltix pensando...",
             "Aguantame que pienso qué responderte",
-            "Procesando tu consulta...",
         ]),
         from_=twilio_phone_number,
         to=sender_number
