@@ -85,7 +85,7 @@ class ContextManager:
         if any(keyword in user_input.lower() for keyword in KEYWORDS["lineasdelta"]):
             context.append(self.load_file("lineasdelta.txt"))
         if any(keyword in user_input.lower() for keyword in KEYWORDS["activities"]):
-            context.append(self.load_file("activities.txt"))
+            context.append(self.load_file("actividades.txt"))
 
         return "\n\n".join(context) if context else "No hay contexto disponible."
 
