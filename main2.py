@@ -51,14 +51,19 @@ async def llm_fallback(update, context):
         send_thinking_message_after_delay(update, 3)
     )
     
-    # Get response from LLM
-    llm_response = get_llm_response(user_input, project_id)
-    
-    # Cancel the thinking message task if it hasn't been sent yet
-    thinking_message_task.cancel()
-    
-    # Send the response back to the user
-    await update.message.reply_text(llm_response)
+    try:
+        # Get response from LLM (ensure this is awaited)
+        llm_response = await asyncio.to_thread(get_llm_response, user_input, project_id)
+        
+        # Cancel the thinking message task if it hasn't been sent yet
+        thinking_message_task.cancel()
+        
+        # Send the response back to the user
+        await update.message.reply_text(llm_response)
+    except Exception as e:
+        # Log the error and notify the user
+        print(f"Error in LLM fallback: {e}")
+        await update.message.reply_text("Lo siento, ocurrió un error al procesar tu consulta. Por favor, intentá más tarde.")
     
     # Return to the conversation handler state
     return ConversationHandler.END

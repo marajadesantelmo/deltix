@@ -799,8 +799,11 @@ async def answer_colectivas(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     elif "lineas delta" in user_response or "lineasdelta" in user_response:
         return await LineasDelta(update, context)
     else:
-        await update.message.reply_text("No reconozco esa empresa de lanchas. Por favor, selecciona una de las opciones disponibles.")
-        return await colectivas(update, context)
+        await update.message.reply_text(
+            "Perdón no entendí.",
+            reply_markup=main_menu_keyboard
+        )
+        return ConversationHandler.END
 
 async def Interislena(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await update.message.reply_text("Para Interisleña, por ahora solo tengo los horarios de Ida hacia la isla. Querés los horarios de verano o de inverno?",
@@ -811,32 +814,27 @@ async def Interislena(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
     return ANSWER_interislena
 
 async def answer_interislena(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    chat_id=update.effective_chat.id
+    chat_id = update.effective_chat.id
     user_response = update.message.text.lower()
     if 'invierno' in user_response:
         await context.bot.send_photo(chat_id, open(interislena_ida_invierno_path, "rb"))
         await context.bot.send_message(chat_id, f"Estos son los horarios de {user_response} de Interisleña. Si ves que hay algún horario incorrecto o información a corregir, no dudes en mandarle un mensajito al equipo Deltix")
         time.sleep(1)
         await context.bot.send_message(chat_id, f"Siempre recomiendo llamar antes a la empresa porque los horarios suelen cambiar. El teléfono es 4749-0900",
-                           reply_markup=ReplyKeyboardMarkup(
-                           [["Jilguero", "LineasDelta", "Interislena"],
-                            ["/mensajear", "/menu", "/memes"] ],
-                           one_time_keyboard=True,
-                           input_field_placeholder="Querés hacer algo más??"))
+                           reply_markup=main_menu_keyboard)
         return ConversationHandler.END
     elif 'verano' in user_response:
         await context.bot.send_photo(chat_id, open(interislena_ida_verano_path, "rb"))
         await context.bot.send_message(chat_id, f"Estos son los horarios de {user_response} de Interisleña. Si ves que hay algún horario incorrecto o información a corregir, no dudes en mandarle un mensajito al equipo Deltix")
         time.sleep(1)
         await context.bot.send_message(chat_id, f"Siempre recomiendo llamar antes a la empresa porque los horarios suelen cambiar. El teléfono es 4749-0900",
-                           reply_markup=ReplyKeyboardMarkup(
-                           [["Jilguero", "LineasDelta", "Interislena"],
-                            ["/mensajear", "/menu", "/memes"] ],
-                           one_time_keyboard=True,
-                           input_field_placeholder="Si querés, elegí otra empresa de lanchas u otra actividad para hacer conmigo"))
+                           reply_markup=main_menu_keyboard)
         return ConversationHandler.END
     else:
-        await update.message.reply_text("No comprendí tu elección")
+        await update.message.reply_text(
+            "Perdón no entendí.",
+            reply_markup=main_menu_keyboard
+        )
         return ConversationHandler.END
 
 async def Jilguero(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -848,32 +846,27 @@ async def Jilguero(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return ANSWER_jilguero
 
 async def answer_jilguero(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    chat_id=update.effective_chat.id
+    chat_id = update.effective_chat.id
     user_response = update.message.text.lower()
     if 'ida' in user_response or 'isla' in user_response:
         await context.bot.send_message(chat_id, f"Estos son los horarios de ida a la isla de Jilguero. Si ves que hay algún horario incorrecto o información a corregir, no dudes en mandarle un mensajito al equipo Deltix")
         await context.bot.send_photo(chat_id, open(jilguero_ida_path, "rb"))
         time.sleep(1)
         await context.bot.send_message(chat_id, f"Siempre recomiendo llamar antes a la empresa porque los horarios suelen cambiar. El teléfono es 4749-0987",
-                           reply_markup=ReplyKeyboardMarkup(
-                           [["Jilguero", "LineasDelta", "Interislena"],
-                            ["/mensajear", "/menu", "/memes"] ],
-                           one_time_keyboard=True,
-                           input_field_placeholder="Elegí otra empresa de lanchas o actividad para hacer conmigo"))
+                           reply_markup=main_menu_keyboard)
         return ConversationHandler.END
     elif 'vuelta' in user_response or 'tigre' in user_response:
         await context.bot.send_message(chat_id, f"Estos son los horarios de vuelta a Tigre de Jilguero. Si ves que hay algún horario incorrecto o información a corregir, no dudes en mandarle un mensajito al equipo Deltix")
         await context.bot.send_photo(chat_id, open(jilguero_vuelta_path, "rb"))
         time.sleep(1)
         await context.bot.send_message(chat_id, f"Siempre recomiendo llamar antes a la empresa porque los horarios suelen cambiar. El teléfono es 4749-0987",
-                           reply_markup=ReplyKeyboardMarkup(
-                           [["Jilguero", "LineasDelta", "Interislena"],
-                            ["/mensajear", "/menu", "/memes"] ],
-                           one_time_keyboard=True,
-                           input_field_placeholder="Te ayudo en algo más?"))
+                           reply_markup=main_menu_keyboard)
         return ConversationHandler.END
     else:
-        await update.message.reply_text("No comprendí tu elección")
+        await update.message.reply_text(
+            "Perdón no entendí.",
+            reply_markup=main_menu_keyboard
+        )
         return ConversationHandler.END
 
 async def LineasDelta(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
