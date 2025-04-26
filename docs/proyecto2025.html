@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proyecto de Financiamiento para el Chatbot Deltix</title>
+    <style>
+        /* Colores Solarized adaptados a tonos verdes */
+        :root {
+            --background: #002b36; /* Fondo verde oscuro inspirado */
+            --foreground: #839496; /* Gris claro */
+            --accent: #859900; /* Verde brillante para resaltar */
+            --border-color: #073642; /* Verde más oscuro para bordes */
+            --heading-color: #b58900; /* Amarillo dorado */
+            --code-bg: #073642; /* Fondo para bloques de código */
+            --link-color: #2aa198; /* Verde azulado para enlaces */
+            --link-hover: #93a1a1; /* Gris claro al pasar el cursor */
+        }
+
+        /* Estilo global */
+        body {
+            background-color: var(--background);
+            color: var(--foreground);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        /* Títulos */
+        h1, h2, h3 {
+            color: var(--heading-color);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 1.5em;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        /* Estilo de enlaces */
+        a {
+            color: var(--link-color);
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: var(--link-hover);
+            text-decoration: underline;
+        }
+
+        /* Listas */
+        ul {
+            padding-left: 20px;
+            margin-bottom: 20px;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        /* Código en línea */
+        code {
+            background-color: var(--code-bg);
+            color: var(--foreground);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: "Courier New", Courier, monospace;
+        }
+
+        /* Contenedor de contenido */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--background);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <h1>Proyecto de Financiamiento para el Chatbot <strong>Deltix</strong></h1>
+
+    <h2>Introducción</h2>
+    <p>
+        <strong>Deltix</strong> es un chatbot diseñado para asistir a los habitantes y visitantes del Delta del Tigre, 
+        proporcionando información útil y servicios locales. Actualmente, el principal cuello de botella para su operación 
+        es el costo de la plataforma <strong>Twilio</strong>, que permite la interacción en WhatsApp. Este proyecto busca 
+        financiamiento para cubrir un año de mantenimiento del bot, con el objetivo de que se convierta en una herramienta 
+        de uso común y sea económicamente sostenible a través de un esquema de suscripciones.
+    </p>
+
+    <h2>Esquema de Suscripciones</h2>
+    <p>
+        Para garantizar la sostenibilidad del bot, se implementará un esquema de suscripciones:
+    </p>
+    <ul>
+        <li>
+            <strong>Publicaciones gratuitas:</strong> Los pequeños emprendimientos locales podrán publicar sus productos y servicios 
+            en la agenda isleña sin costo alguno.
+        </li>
+        <li>
+            <strong>Suscripciones:</strong> Se solicitará una colaboración mensual a complejos de cabañas, empresas de turismo y 
+            lanchas taxis para mantener el bot operativo.
+        </li>
+    </ul>
+
+    <h2>Costos Estimados</h2>
+    <p>
+        Los costos operativos del bot son los siguientes:
+    </p>
+    <ul>
+        <li><strong>Twilio:</strong> USD 8 mensuales + USD 0.05 por usuario que interactúe con el bot.</li>
+        <li><strong>Servidor de Telegram:</strong> USD 2 mensuales.</li>
+        <li><strong>API de DeepSeek:</strong> Costo mínimo.</li>
+    </ul>
+    <p>
+        Se estima un presupuesto total de <strong>USD 1,500</strong> para cubrir un año de operación, incluyendo los costos de 
+        Twilio, el servidor y una campaña de lanzamiento.
+    </p>
+
+    <h2>Campaña de Lanzamiento</h2>
+    <p>
+        Para promover el uso del bot, se realizará una campaña de lanzamiento que incluirá:
+    </p>
+    <ul>
+        <li>Diseño e impresión de stickers y carteles con códigos QR.</li>
+        <li>Distribución en muelles y puntos estratégicos de las islas.</li>
+        <li>Promoción en redes sociales y grupos locales.</li>
+    </ul>
+
+    <h2>Mejoras Pendientes</h2>
+    <p>
+        Además del mantenimiento, se planea abordar las mejoras pendientes del proyecto anterior, que incluyen:
+    </p>
+    <ul>
+        <li>Funcionalidad de "Voy y Vuelvo" para compartir viajes en embarcaciones privadas.</li>
+        <li>Guía de productos y servicios locales con filtros y categorías.</li>
+        <li>Implementación de un CMS en PHP para la autogestión de contenido.</li>
+    </ul>
+
+    <h2>Objetivo</h2>
+    <p>
+        El objetivo es que, al cabo de un año, <strong>Deltix</strong> sea una herramienta ampliamente utilizada en la región 
+        y pueda sostenerse económicamente gracias al esquema de suscripciones.
+    </p>
+</body>
+</html>

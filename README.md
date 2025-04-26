@@ -61,6 +61,13 @@ GitHub Action para actualizar los archivos scrapeados en el repositorio público
 
 ## Próximamente
 
-Actualmente se está desarrollando una integración a Whatssapp
+Actualmente se está desarrollando un esquema de suscripciones para garantizar la sostenibilidad del bot. 
+Los pequeños emprendimientos locales podrán publicar gratuitamente en la agenda isleña, mientras que 
+complejos de cabañas, empresas de turismo y lanchas taxis contribuirán con una suscripción mensual. 
+
+Además, se planea implementar las siguientes mejoras:
+- Funcionalidad de "Voy y Vuelvo" para compartir viajes en embarcaciones privadas.
+- Guía de productos y servicios locales con filtros y categorías.
+- CMS en PHP para la autogestión de contenido por parte de los usuarios.
 
 
