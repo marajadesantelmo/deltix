@@ -175,33 +175,74 @@ def process_message(sender_number, message, current_state):
     else:
         send_llm_response(sender_number, message)
 
+def send_menu_buttons(sender_number):
+    """Send menu options as interactive buttons"""
+    client.messages.create(
+        from_=twilio_phone_number,
+        to=sender_number,
+        interactive={
+            "type": "button",
+            "body": {
+                "text": "¿En qué te puedo ayudar? 🦫"
+            },
+            "action": {
+                "buttons": [
+                    {
+                        "type": "reply",
+                        "reply": {
+                            "id": "mareas",
+                            "title": "Mareas ⛵"
+                        }
+                    },
+                    {
+                        "type": "reply",
+                        "reply": {
+                            "id": "hidrografia",
+                            "title": "Hidrografía 🌊"
+                        }
+                    },
+                    {
+                        "type": "reply",
+                        "reply": {
+                            "id": "windguru",
+                            "title": "Windguru ☁️"
+                        }
+                    },
+                    {
+                        "type": "reply",
+                        "reply": {
+                            "id": "colectivas",
+                            "title": "Colectivas 🕖"
+                        }
+                    },
+                    {
+                        "type": "reply",
+                        "reply": {
+                            "id": "almaceneras",
+                            "title": "Almaceneras 🚤"
+                        }
+                    },
+                    {
+                        "type": "reply",
+                        "reply": {
+                            "id": "memes",
+                            "title": "Memes 😂"
+                        }
+                    }
+                ]
+            }
+        }
+    )
+
 def send_start_message(sender_number):
     """Send welcome message and menu options"""
     client.messages.create(
-        body="¡Hola! Soy Deltix, el bot del humedal 🦫 En qué te puedo ayudar?\n",
+        body="¡Hola! Soy Deltix, el bot del humedal 🦫",
         from_=twilio_phone_number,
-        to=sender_number)
+        to=sender_number
+    )
     time.sleep(1)
-    client.messages.create(
-        body="- *mareas* _pronóstico de mareas INA_ ⛵\n"
-            "- *hidrografia* _mareas hidrografia_\n"
-            "- *windguru* _pronóstico del clima de windgurú_\n"
-            "- *colectivas* _horarios lanchas colectivas_ 🕖\n"
-            "- *almaceneras* _lanchas almaceneras_ 🚤\n"
-            "- *memes* _los memes más divertidos de la isla_ 😂\n"
-            "- *mensajear* _mandarle un mensajito al equipo Deltix_\n\n"
-            "*Actividades y emprendimientos isleños*\n\n"
-            "- *amanita* _paseos en canoa isleña_\n"
-            "- *alfareria* _encuentros con el barro_\n"
-            "- *labusqueda* _espacio para ceremonias, hostal y mas_\n"
-            "- *canaveralkayaks* _excursiones en kayak_",
-        from_=twilio_phone_number,
-        to=sender_number)
-    time.sleep(2)
-    client.messages.create(
-        body="... o también me podés preguntar lo que quieras y yo te voy a responder lo mejor que pueda usando mi inteligencia artificial de carpincho digital",
-        from_=twilio_phone_number,
-        to=sender_number)
+    send_menu_buttons(sender_number)
 
 def send_mareas(sender_number):
     """Send mareas information and offer subscription"""
