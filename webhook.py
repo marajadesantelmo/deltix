@@ -176,32 +176,36 @@ def process_message(sender_number, message, current_state):
         send_llm_response(sender_number, message)
 
 def send_start_message(sender_number):
-    """Send welcome message and menu options"""
+    """Send welcome message and menu options with buttons"""
     client.messages.create(
-        body="¡Hola! Soy Deltix, el bot del humedal 🦫\n\nEn qué te puedo ayudar?\n",
+        body="¡Hola! Soy Deltix, el bot del humedal 🦫 ¿En qué te puedo ayudar?",
         from_=twilio_phone_number,
-        to=sender_number)
+        to=sender_number
+    )
     time.sleep(1)
     client.messages.create(
-        body="- *mareas* _pronóstico de mareas INA_ ⛵\n"
-            "- *hidrografia* _mareas hidrografia_\n"
-            "- *windguru* _pronóstico del clima de windgurú_\n"
-            "- *colectivas* _horarios lanchas colectivas_ 🕖\n"
-            "- *almaceneras* _lanchas almaceneras_ 🚤\n"
-            "- *memes* _los memes más divertidos de la isla_ 😂\n"
-            "- *mensajear* _mandarle un mensajito al equipo Deltix_\n\n"
-            "*Actividades y emprendimientos isleños*\n\n"
-            "- *amanita* _paseos en canoa isleña_\n"
-            "- *alfareria* _encuentros con el barro_\n"
-            "- *labusqueda* _espacio para ceremonias, hostal y mas_\n"
-            "- *canaveralkayaks* _excursiones en kayak_",
+        body="Seleccioná una opción del menú:",
         from_=twilio_phone_number,
-        to=sender_number)
+        to=sender_number
+    )
+    client.messages.create(
+        body=(
+            "1️⃣ *mareas* _pronóstico de mareas INA_ ⛵\n"
+            "2️⃣ *hidrografia* _mareas hidrografia_\n"
+            "3️⃣ *windguru* _pronóstico del clima de windgurú_\n"
+            "4️⃣ *colectivas* _horarios lanchas colectivas_ 🕖\n"
+            "5️⃣ *almaceneras* _lanchas almaceneras_ 🚤\n"
+            "6️⃣ *memes* _los memes más divertidos de la isla_ 😂"
+        ),
+        from_=twilio_phone_number,
+        to=sender_number
+    )
     time.sleep(2)
     client.messages.create(
-        body="... o también me podés preguntar lo que quieras y yo te voy a responder lo mejor que pueda usando mi inteligencia artificial de carpincho digital",
+        body="... o también me podés preguntar lo que quieras y yo te voy a responder lo mejor que pueda usando mi inteligencia artificial de carpincho digital.",
         from_=twilio_phone_number,
-        to=sender_number)
+        to=sender_number
+    )
 
 def send_mareas(sender_number):
     """Send mareas information and offer subscription"""
