@@ -3,6 +3,7 @@ import json
 import time
 from openai import OpenAI
 import mysql.connector
+from mysql.connector import Error
 
 
 # Load environment variables or tokens
@@ -13,13 +14,36 @@ except ImportError:
     mysql_password = os.getenv('MYSQL_PASSWORD')
     mysql_database = os.getenv('MYSQL_DATABASE')
 
-# Connect to the MySQL database
-db = mysql.connector.connect(
-    host="facundol.mysql.pythonanywhere-services.com",
-    user="facundol",
-    password=mysql_password,
-    database=mysql_database
-)
+# Database connection function with reconnect capability
+def get_db_connection():
+    """Create or refresh a database connection and return it"""
+    try:
+        # Check if there's a global connection that's still active
+        global db
+        if 'db' in globals() and db.is_connected():
+            return db
+        
+        # Create a new connection
+        db = mysql.connector.connect(
+            host="facundol.mysql.pythonanywhere-services.com",
+            user="facundol",
+            password=mysql_password,
+            database=mysql_database,
+            use_pure=True,  # Use pure Python implementation for better compatibility
+            connection_timeout=30
+        )
+        print("Database connection established")
+        return db
+    except Error as err:
+        print(f"Error connecting to database: {err}")
+        raise
+
+# Initial database connection
+try:
+    db = get_db_connection()
+except Error as err:
+    print(f"Initial database connection failed: {err}")
+    # Continue execution as we'll try to reconnect when needed
 
 # Validate environment variables
 if not openrouter_key:
@@ -140,48 +164,88 @@ class LLMClient:
                 time.sleep(self.delay)
 
 # Public API
+def conversation_exists(conversation_id):
+    """Check if a conversation exists in the database."""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT id FROM conversations WHERE id = %s", (conversation_id,))
+        result = cursor.fetchone()
+        cursor.close()
+        return result is not None
+    except Error as err:
+        print(f"Error checking conversation: {err}")
+        return False
+
 def create_conversation():
     """Create a new conversation in MySQL."""
     try:
-        cursor = db.cursor(dictionary=True)
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
         cursor.execute("INSERT INTO conversations (name, created_at) VALUES ('Nueva conversacion', NOW())")
-        db.commit()
+        conn.commit()
         conversation_id = cursor.lastrowid
         cursor.close()
+        print(f"Created new conversation with ID: {conversation_id}")
         return conversation_id
-    except mysql.connector.Error as err:
+    except Error as err:
         print(f"Error creating conversation: {err}")
-        db.rollback()
+        if conn:
+            conn.rollback()
         raise
+
+def get_or_create_conversation(conversation_id=None):
+    """Get an existing conversation or create a new one if invalid."""
+    if conversation_id and conversation_exists(conversation_id):
+        return conversation_id
+    else:
+        return create_conversation()
 
 def store_chat_message(conversation_id, role, content):
     """Store a chat message in MySQL."""
     try:
-        cursor = db.cursor()
+        conn = get_db_connection()
+        cursor = conn.cursor()
         cursor.execute(
             "INSERT INTO chat_history (conversation_id, role, content, timestamp) VALUES (%s, %s, %s, NOW())",
             (conversation_id, role, content)
         )
-        db.commit()
+        conn.commit()
         cursor.close()
-    except mysql.connector.Error as err:
+        return True
+    except Error as err:
         print(f"Error storing chat message: {err}")
-        db.rollback()
-        raise
+        if conn:
+            conn.rollback()
+        return False
 
-def get_llm_response(user_input, conversation_id):
+def get_llm_response(user_input, conversation_id=None):
     """Main function to get a response from the LLM."""
-    context_manager = ContextManager()
-    llm_client = LLMClient(openai_client)
+    try:
+        # Ensure we have a valid conversation ID
+        valid_conversation_id = get_or_create_conversation(conversation_id)
+        if valid_conversation_id != conversation_id:
+            print(f"Using new conversation ID: {valid_conversation_id} (was {conversation_id})")
+        
+        context_manager = ContextManager()
+        llm_client = LLMClient(openai_client)
 
-    # Generate context
-    context = context_manager.generate_context(user_input)
+        # Generate context
+        context = context_manager.generate_context(user_input)
 
-    # Get response from LLM
-    response = llm_client.get_response(user_input, context, conversation_id)
+        # Get response from LLM
+        response = llm_client.get_response(user_input, context, valid_conversation_id)
 
-    # Store messages in MySQL
-    store_chat_message(conversation_id, "user", user_input)
-    store_chat_message(conversation_id, "assistant", response)
+        # Store messages in MySQL
+        user_stored = store_chat_message(valid_conversation_id, "user", user_input)
+        assistant_stored = store_chat_message(valid_conversation_id, "assistant", response)
+        
+        if not user_stored or not assistant_stored:
+            print("Warning: Failed to store one or more chat messages")
 
-    return response
+        return response, valid_conversation_id
+    except Exception as e:
+        print(f"Error in get_llm_response: {e}")
+        # Return a fallback message and the conversation ID if we have one
+        fallback_msg = "Lo siento, tuve un problema técnico. Por favor, intentá nuevamente en unos momentos."
+        return fallback_msg, conversation_id or create_conversation()
