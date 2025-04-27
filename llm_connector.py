@@ -1,29 +1,31 @@
 import os
 import json
 import time
-from supabase import create_client
 from openai import OpenAI
-
+import mysql.connector
 
 
 # Load environment variables or tokens
 try:
-    from tokens import supabase_url, supabase_key, openrouter_key, mysql_password, mysql_database
+    from tokens import openrouter_key, mysql_password, mysql_database
 except ImportError:
-    supabase_url = os.getenv('SUPABASE_URL')
-    supabase_key = os.getenv('SUPABASE_KEY')
     openrouter_key = os.getenv('OPENROUTER_API_KEY')
     mysql_password = os.getenv('MYSQL_PASSWORD')
     mysql_database = os.getenv('MYSQL_DATABASE')
 
+# Connect to the MySQL database
+db = mysql.connector.connect(
+    host="facundol.mysql.pythonanywhere-services.com",
+    user="facundol",
+    password=mysql_password,
+    database=mysql_database
+)
+
 # Validate environment variables
-if not supabase_url or not supabase_key:
-    raise ValueError("Supabase URL and Key must be set in environment variables")
 if not openrouter_key:
     raise ValueError("OpenRouter API Key must be set in environment variables")
 
-# Initialize Supabase and OpenAI clients
-supabase = create_client(supabase_url, supabase_key)
+# Initialize OpenAI client
 openai_client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=openrouter_key)
 
 # Keywords for context generation
@@ -74,7 +76,7 @@ class ContextManager:
         # Add weather data if applicable
         if any(keyword in user_input.lower() for keyword in KEYWORDS["weather"]):
             weather_data = self.load_weather_data()
-            if weather_data:
+            if (weather_data):
                 context.append(self.format_weather_data(weather_data))
             else:
                 context.append("No se pudo cargar la información del clima en este momento.")
@@ -139,13 +141,33 @@ class LLMClient:
 
 # Public API
 def create_conversation():
-    """Create a new conversation in Supabase."""
-    response = supabase.from_("conversations").insert({"name": "Nueva conversacion"}).execute()
-    return response.data[0]["id"]
+    """Create a new conversation in MySQL."""
+    try:
+        cursor = db.cursor(dictionary=True)
+        cursor.execute("INSERT INTO conversations (name, created_at) VALUES ('Nueva conversacion', NOW())")
+        db.commit()
+        conversation_id = cursor.lastrowid
+        cursor.close()
+        return conversation_id
+    except mysql.connector.Error as err:
+        print(f"Error creating conversation: {err}")
+        db.rollback()
+        raise
 
 def store_chat_message(conversation_id, role, content):
-    """Store a chat message in Supabase."""
-    supabase.from_("chat_history").insert({"conversation_id": conversation_id, "role": role, "content": content}).execute()
+    """Store a chat message in MySQL."""
+    try:
+        cursor = db.cursor()
+        cursor.execute(
+            "INSERT INTO chat_history (conversation_id, role, content, timestamp) VALUES (%s, %s, %s, NOW())",
+            (conversation_id, role, content)
+        )
+        db.commit()
+        cursor.close()
+    except mysql.connector.Error as err:
+        print(f"Error storing chat message: {err}")
+        db.rollback()
+        raise
 
 def get_llm_response(user_input, conversation_id):
     """Main function to get a response from the LLM."""
@@ -158,7 +180,7 @@ def get_llm_response(user_input, conversation_id):
     # Get response from LLM
     response = llm_client.get_response(user_input, context, conversation_id)
 
-    # Store messages in Supabase
+    # Store messages in MySQL
     store_chat_message(conversation_id, "user", user_input)
     store_chat_message(conversation_id, "assistant", response)
 
