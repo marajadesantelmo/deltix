@@ -164,12 +164,12 @@ class LLMClient:
                 time.sleep(self.delay)
 
 # Public API
-def conversation_exists(phone_number):
+def conversation_exists(conversation_id):
     """Check if a conversation exists in the database."""
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT name FROM conversations WHERE name = %s", (phone_number,))
+        cursor.execute("SELECT id FROM conversations WHERE id = %s", (conversation_id,))
         result = cursor.fetchone()
         cursor.close()
         return result is not None
@@ -194,28 +194,64 @@ def create_conversation(phone_number="Nueva conversacion"):
             conn.rollback()
         raise
 
-def get_or_create_conversation(phone_number=None):
+def get_or_create_conversation(conversation_id=None, phone_number=None):
     """Get an existing conversation or create a new one if invalid."""
-    if phone_number and conversation_exists(phone_number):
-        return phone_number
-    else:
-        return create_conversation(phone_number)
+    try:
+        # If we have a valid conversation_id, use it
+        if conversation_id and conversation_exists(conversation_id):
+            print(f"Using existing conversation ID: {conversation_id}")
+            return conversation_id
+            
+        # Check if we already have a conversation for this phone number
+        if phone_number:
+            conn = get_db_connection()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT id FROM conversations WHERE name = %s ORDER BY created_at DESC LIMIT 1", (phone_number,))
+            result = cursor.fetchone()
+            cursor.close()
+            
+            if result:
+                existing_id = result['id']
+                print(f"Found existing conversation for {phone_number}: ID={existing_id}")
+                return existing_id
+        
+        # Create new conversation if we reached here
+        new_id = create_conversation(phone_number) 
+        print(f"Created new conversation for {phone_number}: ID={new_id}")
+        return new_id
+    except Error as err:
+        print(f"Error in get_or_create_conversation: {err}")
+        # Fallback to creating a new conversation
+        return create_conversation(phone_number or "Fallback conversation")
 
 def store_chat_message(conversation_id, role, content):
     """Store a chat message in MySQL."""
+    if conversation_id is None:
+        print("Warning: Attempted to store message with null conversation_id")
+        return False
+        
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
+        
+        # Debug output
+        print(f"Storing message: conversation_id={conversation_id}, role={role}, content={content[:30]}...")
+        
         cursor.execute(
             "INSERT INTO chat_history (conversation_id, role, content, timestamp) VALUES (%s, %s, %s, NOW())",
             (conversation_id, role, content)
         )
         conn.commit()
+        
+        # Verify insertion
+        message_id = cursor.lastrowid
+        print(f"Message stored with ID: {message_id}")
+        
         cursor.close()
         return True
     except Error as err:
         print(f"Error storing chat message: {err}")
-        if conn:
+        if 'conn' in locals() and conn:
             conn.rollback()
         return False
 
