@@ -198,8 +198,8 @@ def get_or_create_conversation(conversation_id=None, phone_number=None):
     """Get an existing conversation or create a new one if invalid."""
     try:
         # If we have a valid conversation_id, use it
-        if conversation_id and conversation_exists(conversation_id):
-            print(f"Using existing conversation ID: {conversation_id}")
+        if conversation_id and conversation_exists(phone_number):
+            print(f"Using existing conversation ID: {conversation_id} for phone: {phone_number}")
             return conversation_id
             
         # Check if we already have a conversation for this phone number
