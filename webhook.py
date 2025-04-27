@@ -53,6 +53,7 @@ STATE_LINEASDELTA_DIRECTION = 'lineasdelta_direction'
 STATE_LINEASDELTA_SCHEDULE = 'lineasdelta_schedule'
 STATE_ALMACENERA_SELECT = 'almacenera_select'
 STATE_INTERISLENA_2DO_INTENTO = 'interislena_2do_intento'
+STATE_JILGUERO_2DO_INTENTO = 'jilguero_2do_intento'   #Pendiente para agregar
 
 # URLs for static resources
 GITHUB_BASE_URL = "https://raw.githubusercontent.com/marajadesantelmo/deltix/main/"
