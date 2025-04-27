@@ -190,7 +190,7 @@ def send_start_message(sender_number):
             "- *almaceneras* _lanchas almaceneras_ 🚤\n"
             "- *memes* _los memes más divertidos de la isla_ 😂\n"
             "- *mensajear* _mandarle un mensajito al equipo Deltix_\n\n"
-            "*Actividades y emprendimientos isleños*\n\n"
+            "*Agenda isleña*\n\n"
             "- *amanita* _paseos en canoa isleña_\n"
             "- *alfareria* _encuentros con el barro_\n"
             "- *labusqueda* _espacio para ceremonias, hostal y mas_\n"
