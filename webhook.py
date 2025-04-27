@@ -656,6 +656,8 @@ def send_almaceneras_list(sender_number):
 
 def handle_almacenera_select(sender_number, message):
     """Handle almacenera selection"""
+    almaceneras_list = list(ALMACENERAS_DATA.keys())
+    
     if message.lower() == "ver todas":
         # Send info about all almaceneras
         client.messages.create(
@@ -678,27 +680,34 @@ def handle_almacenera_select(sender_number, message):
             )
             time.sleep(0.3)  # Small pause between messages
     else:
-        # Try to find the requested almacenera
+        # Try to find the requested almacenera by name or number
         found = False
-        for nombre in ALMACENERAS_DATA.keys():
-            if nombre.lower() == message.lower():
+        if message.isdigit():
+            index = int(message) - 1
+            if 0 <= index < len(almaceneras_list):
+                nombre = almaceneras_list[index]
                 info = ALMACENERAS_DATA[nombre]
-                
-                formatted_message = f"*{nombre}* de {info['propietario']}\n"
-                if info['recorridos']:
-                    formatted_message += f"\n{info['recorridos']}\n"
-                if info['telefono']:
-                    formatted_message += f"\n📞 Teléfono: {info['telefono']}"
-                
-                client.messages.create(
-                    body=formatted_message,
-                    from_=twilio_phone_number,
-                    to=sender_number
-                )
                 found = True
-                break
+        else:
+            for nombre in almaceneras_list:
+                if nombre.lower() == message.lower():
+                    info = ALMACENERAS_DATA[nombre]
+                    found = True
+                    break
         
-        if not found:
+        if found:
+            formatted_message = f"*{nombre}* de {info['propietario']}\n"
+            if info['recorridos']:
+                formatted_message += f"\n{info['recorridos']}\n"
+            if info['telefono']:
+                formatted_message += f"\n📞 Teléfono: {info['telefono']}"
+            
+            client.messages.create(
+                body=formatted_message,
+                from_=twilio_phone_number,
+                to=sender_number
+            )
+        else:
             client.messages.create(
                 body="No encontré información sobre esa almacenera. Por favor, elegí una de la lista o escribe 'Ver todas'.",
                 from_=twilio_phone_number,
