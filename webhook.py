@@ -52,6 +52,7 @@ STATE_INTERISLENA = 'interislena'
 STATE_LINEASDELTA_DIRECTION = 'lineasdelta_direction'
 STATE_LINEASDELTA_SCHEDULE = 'lineasdelta_schedule'
 STATE_ALMACENERA_SELECT = 'almacenera_select'
+STATE_INTERISLENA_2DO_INTENTO = 'interislena_2do_intento'
 
 # URLs for static resources
 GITHUB_BASE_URL = "https://raw.githubusercontent.com/marajadesantelmo/deltix/main/"
@@ -526,11 +527,21 @@ def handle_interislena_response(sender_number, message):
         user_states[sender_number] = STATE_START
     
     else:
-        client.messages.create(
-            body="No comprendí tu elección. Por favor, indica si necesitas los horarios de verano o invierno.",
-            from_=twilio_phone_number,
-            to=sender_number
-        )
+        # Check if it's the second attempt
+        if user_states.get(sender_number) == STATE_INTERISLENA_2DO_INTENTO:
+            client.messages.create(
+                body="No logré entender tu elección después de dos intentos. Empecemos de nuevo! Por favor, selecciona otra opción del menú principal.",
+                from_=twilio_phone_number,
+                to=sender_number
+            )
+            user_states[sender_number] = STATE_START
+        else:
+            client.messages.create(
+                body="No comprendí tu elección. Por favor, indica si necesitas los horarios de verano o invierno.",
+                from_=twilio_phone_number,
+                to=sender_number
+            )
+            user_states[sender_number] = STATE_INTERISLENA_2DO_INTENTO
 
 # --- LINEASDELTA FUNCTIONS --- #
 
