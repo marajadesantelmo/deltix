@@ -177,16 +177,16 @@ def conversation_exists(conversation_id):
         print(f"Error checking conversation: {err}")
         return False
 
-def create_conversation():
+def create_conversation(phone_number="Nueva conversacion"):
     """Create a new conversation in MySQL."""
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("INSERT INTO conversations (name, created_at) VALUES ('Nueva conversacion', NOW())")
+        cursor.execute("INSERT INTO conversations (name, created_at) VALUES (%s, NOW())", (phone_number,))
         conn.commit()
         conversation_id = cursor.lastrowid
         cursor.close()
-        print(f"Created new conversation with ID: {conversation_id}")
+        print(f"Created new conversation with ID: {conversation_id} for phone: {phone_number}")
         return conversation_id
     except Error as err:
         print(f"Error creating conversation: {err}")
@@ -194,12 +194,12 @@ def create_conversation():
             conn.rollback()
         raise
 
-def get_or_create_conversation(conversation_id=None):
+def get_or_create_conversation(conversation_id=None, phone_number=None):
     """Get an existing conversation or create a new one if invalid."""
     if conversation_id and conversation_exists(conversation_id):
         return conversation_id
     else:
-        return create_conversation()
+        return create_conversation(phone_number)
 
 def store_chat_message(conversation_id, role, content):
     """Store a chat message in MySQL."""
@@ -219,11 +219,11 @@ def store_chat_message(conversation_id, role, content):
             conn.rollback()
         return False
 
-def get_llm_response(user_input, conversation_id=None):
+def get_llm_response(user_input, conversation_id=None, phone_number=None):
     """Main function to get a response from the LLM."""
     try:
         # Ensure we have a valid conversation ID
-        valid_conversation_id = get_or_create_conversation(conversation_id)
+        valid_conversation_id = get_or_create_conversation(conversation_id, phone_number)
         if valid_conversation_id != conversation_id:
             print(f"Using new conversation ID: {valid_conversation_id} (was {conversation_id})")
         

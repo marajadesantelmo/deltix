@@ -93,7 +93,7 @@ def webhook():
     
     # Get or create a conversation ID for this user
     if sender_number not in user_conversations:
-        user_conversations[sender_number] = create_conversation()
+        user_conversations[sender_number] = create_conversation(sender_number)
     conversation_id = user_conversations[sender_number]
     
     # Get the current state for this user
@@ -832,7 +832,7 @@ def send_llm_response(sender_number, message):
     """Get and send response from LLM for any other message"""
     conversation_id = user_conversations.get(sender_number)
     if not conversation_id:
-        conversation_id = create_conversation()
+        conversation_id = create_conversation(sender_number)
         user_conversations[sender_number] = conversation_id
     
     # Send a "thinking" message for better UX
@@ -852,12 +852,16 @@ def send_llm_response(sender_number, message):
         print(f"Debug: Sending message to LLM. conversation_id={conversation_id}, message={message}")
         
         # Validate input data
-        if not conversation_id or not isinstance(conversation_id, str):
+        if not conversation_id or not isinstance(conversation_id, int):  # Changed from str to int since MySQL IDs are integers
             print(f"Invalid conversation_id detected: {conversation_id}. Reinitializing...")
-            conversation_id = create_conversation()
+            conversation_id = create_conversation(sender_number)
             user_conversations[sender_number] = conversation_id
         
-        llm_response = get_llm_response(message, conversation_id)
+        llm_response, valid_conversation_id = get_llm_response(message, conversation_id, sender_number)
+        
+        # Update conversation ID if it changed
+        if valid_conversation_id != conversation_id:
+            user_conversations[sender_number] = valid_conversation_id
         
         client.messages.create(
             body=llm_response,
