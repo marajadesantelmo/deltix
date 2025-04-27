@@ -633,7 +633,7 @@ def send_almaceneras_list(sender_number):
     """Send list of almaceneras"""
     # Create a message with the list of available almaceneras
     client.messages.create(
-        body="📋 Acá te muestro las lanchas almaceneras disponibles. ¿Sobre cuál querés información?\n\nEnvía el nombre exacto de la almacenera o 'Ver todas' para ver la lista completa.",
+        body="📋 Acá te muestro las lanchas almaceneras disponibles. ¿Sobre cuál querés información?\n\nEnvía, numero, nombre exacto de la almacenera o 'Ver todas' para ver la lista completa.",
         from_=twilio_phone_number,
         to=sender_number
     )
