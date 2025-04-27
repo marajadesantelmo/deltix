@@ -137,8 +137,11 @@ def process_message(sender_number, message, current_state):
         handle_lineasdelta_schedule(sender_number, message)
     elif current_state == STATE_ALMACENERA_SELECT:
         handle_almacenera_select(sender_number, message)
+
     # Command based processing
     elif 'mareas' in message:
+        send_mareas(sender_number)
+    elif 'marea' in message:
         send_mareas(sender_number)
     elif 'windguru' in message:
         send_windguru(sender_number)
@@ -175,13 +178,26 @@ def process_message(sender_number, message, current_state):
 def send_start_message(sender_number):
     """Send welcome message and menu options"""
     client.messages.create(
-        body="¡Hola! Soy Deltix, el bot del humedal 🦫\n\nEn qué te puedo ayudar? Ingresando algunas de las siguientes palabras podés acceder a info sobre la isla:\n",
+        body="¡Hola! Soy Deltix, el bot del humedal 🦫\n\nEn qué te puedo ayudar?\n",
         from_=twilio_phone_number,
         to=sender_number)
+    time.sleep(1)
     client.messages.create(
-        body=get_menu_message(),
+        body="- *mareas* _pronóstico de mareas INA_ ⛵\n"
+            "- *hidrografia* _mareas hidrografia_\n"
+            "- *windguru* _pronóstico del clima de windgurú_\n"
+            "- *colectivas* _horarios lanchas colectivas_ 🕖\n"
+            "- *almaceneras* _lanchas almaceneras_ 🚤\n"
+            "- *memes* _los memes más divertidos de la isla_ 😂\n"
+            "- *mensajear* _mandarle un mensajito al equipo Deltix_\n\n"
+            "*Actividades y emprendimientos isleños*\n\n"
+            "- *amanita* _paseos en canoa isleña_\n"
+            "- *alfareria* _encuentros con el barro_\n"
+            "- *labusqueda* _espacio para ceremonias, hostal y mas_\n"
+            "- *canaveralkayaks* _excursiones en kayak_",
         from_=twilio_phone_number,
         to=sender_number)
+    time.sleep(2)
     client.messages.create(
         body="... o también me podés preguntar lo que quieras y yo te voy a responder lo mejor que pueda usando mi inteligencia artificial de carpincho digital",
         from_=twilio_phone_number,
