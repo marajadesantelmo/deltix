@@ -164,12 +164,12 @@ class LLMClient:
                 time.sleep(self.delay)
 
 # Public API
-def conversation_exists(conversation_id):
+def conversation_exists(phone_number):
     """Check if a conversation exists in the database."""
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT id FROM conversations WHERE id = %s", (conversation_id,))
+        cursor.execute("SELECT id FROM conversations WHERE name = %s", (phone_number,))
         result = cursor.fetchone()
         cursor.close()
         return result is not None
