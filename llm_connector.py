@@ -257,7 +257,7 @@ def get_llm_response(user_input, phone_number=None):
         context = context_manager.generate_context(user_input)
 
         # Get response from LLM
-        response = llm_client.get_response(user_input, context, conversation_id)
+        response = llm_client.get_response(user_input, context)
 
         # Store messages in MySQL
         user_stored = store_chat_message(phone_number, "user", user_input)
