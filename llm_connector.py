@@ -138,8 +138,22 @@ class LLMClient:
         self.retries = retries
         self.delay = delay
 
-    def get_response(self, user_input, context):
+    def get_response(self, user_input, context, phone_number):
         """Get a response from the LLM."""
+        conn = get_db_connection()
+        cursor = conn.cursor()    
+        cursor.execute("SELECT id FROM conversations WHERE name = %s", (phone_number,))
+        conversation_id = cursor.fetchone()   
+
+        conn = get_db_connection()
+        cursor = conn.cursor()    
+        cursor.execute(
+            "SELECT content FROM chat_history WHERE conversation_id = %s  ORDER BY created_at DESC LIMIT 5", (conversation_id[0],)
+        )
+        chat_history = cursor.fetchall()
+        chat_history = [message for message in chat_history]
+        
+
         system_prompt = (
             "Vos sos Deltix, el bot del humedal. Sos un carpincho digital que ayuda a habitantes y visitantes del Delta del Paraná en Tigre. "
             "Responde al último mensaje del usuario usando el contexto proporcionado. No inventes información ni alucines. Tu opinión es anticapitalista y ambientalista. "
@@ -147,7 +161,7 @@ class LLMClient:
         )
         messages = [
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": f"Mensaje: {user_input}\n\nContexto:\n{context}"}
+            {"role": "user", "content": f"Mensaje: {user_input}\n\nContexto:\n{context}\n\nHistorial de chat:\n{chat_history}"},
         ]
 
         for attempt in range(self.retries):
@@ -249,7 +263,7 @@ def get_llm_response(user_input, phone_number=None):
         # Generate context
         context = context_manager.generate_context(user_input)
         # Get response from LLM
-        response = llm_client.get_response(user_input, context)
+        response = llm_client.get_response(user_input, context, phone_number)
         # Store messages in MySQL
         user_stored = store_chat_message(phone_number, "user", user_input)
         assistant_stored = store_chat_message(phone_number, "assistant", response)
