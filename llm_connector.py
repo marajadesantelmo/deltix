@@ -224,7 +224,7 @@ def get_or_create_conversation(conversation_id=None, phone_number=None):
         # Fallback to creating a new conversation
         return create_conversation(phone_number or "Fallback conversation")
 
-def store_chat_message(conversation_id, role, content):
+def store_chat_message(phone_number, role, content):
     """Store a chat message in MySQL."""
     if conversation_id is None:
         print("Warning: Attempted to store message with null conversation_id")
@@ -235,12 +235,12 @@ def store_chat_message(conversation_id, role, content):
         cursor = conn.cursor()
         
         # get conversation ID from the database by phone number
-        cursor.execute("SELECT id FROM conversations WHERE id = %s", (conversation_id,))
+        cursor.execute("SELECT id FROM conversations WHERE name = %s", (phone_number,))
         conversation_id = cursor.fetchone()
         
         cursor.execute(
             "INSERT INTO chat_history (conversation_id, role, content, timestamp) VALUES (%s, %s, %s, NOW())",
-            (conversation_id['id'], role, content)
+            (conversation_id[0], role, content)
         )
         conn.commit()
         
