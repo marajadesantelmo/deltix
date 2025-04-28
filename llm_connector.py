@@ -239,7 +239,7 @@ def store_chat_message(phone_number, role, content):
         conversation_id = cursor.fetchone()
         
         cursor.execute(
-            "INSERT INTO chat_history (conversation_id, role, content, timestamp) VALUES (%s, %s, %s, NOW())",
+            "INSERT INTO chat_history (conversation_id, role, content) VALUES (%s, %s, %s)",
             (conversation_id[0], role, content)
         )
         conn.commit()
