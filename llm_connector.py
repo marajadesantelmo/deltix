@@ -145,10 +145,21 @@ class LLMClient:
         cursor.execute("SELECT id FROM conversations WHERE name = %s", (phone_number,))
         conversation_id = cursor.fetchone()   
 
+        if conversation_id is None:
+            print(f"No conversation found for phone: {phone_number}. Creating a new one.")
+            conversation_id = create_conversation(phone_number)
+        
         conn = get_db_connection()
-        cursor = conn.cursor()    
+        cursor = conn.cursor()
+        
+        # Handle both cases where conversation_id might be subscriptable or an int
+        if isinstance(conversation_id, tuple) or isinstance(conversation_id, list):
+            conversation_id_value = conversation_id[0]
+        else:
+            conversation_id_value = conversation_id
+
         cursor.execute(
-            "SELECT content FROM chat_history WHERE conversation_id = %s  ORDER BY created_at DESC LIMIT 5", (conversation_id[0],)
+            "SELECT content FROM chat_history WHERE conversation_id = %s ORDER BY created_at DESC LIMIT 5", (conversation_id_value,)
         )
         chat_history = cursor.fetchall()
         chat_history = [message for message in chat_history]
