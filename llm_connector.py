@@ -213,10 +213,6 @@ def get_or_create_conversation(phone_number=None):
         
 def store_chat_message(phone_number, role, content):
     """Store a chat message in MySQL."""
-    if conversation_id is None:
-        print("Warning: Attempted to store message with null conversation_id")
-        return False
-        
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -224,7 +220,6 @@ def store_chat_message(phone_number, role, content):
         # get conversation ID from the database by phone number
         cursor.execute("SELECT id FROM conversations WHERE name = %s", (phone_number,))
         conversation_id = cursor.fetchone()
-        
         cursor.execute(
             "INSERT INTO chat_history (conversation_id, role, content) VALUES (%s, %s, %s)",
             (conversation_id[0], role, content)
