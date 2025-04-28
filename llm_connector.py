@@ -219,7 +219,10 @@ def store_chat_message(phone_number, role, content):
         
         # get conversation ID from the database by phone number
         cursor.execute("SELECT id FROM conversations WHERE name = %s", (phone_number,))
-        conversation_id = cursor.fetchone()
+        conversation_id = cursor.fetchone()   
+
+        conn = get_db_connection()
+        cursor = conn.cursor()    
         cursor.execute(
             "INSERT INTO chat_history (conversation_id, role, content) VALUES (%s, %s, %s)",
             (conversation_id[0], role, content)
