@@ -138,7 +138,7 @@ class LLMClient:
         self.retries = retries
         self.delay = delay
 
-    def get_response(self, user_input, context, conversation_id):
+    def get_response(self, user_input, context):
         """Get a response from the LLM."""
         system_prompt = (
             "Vos sos Deltix, el bot del humedal. Sos un carpincho digital que ayuda a habitantes y visitantes del Delta del Paraná en Tigre. "
@@ -172,7 +172,7 @@ def conversation_exists(phone_number):
         cursor.execute("SELECT id FROM conversations WHERE name = %s", (phone_number,))
         result = cursor.fetchone()
         cursor.close()
-        return result is not None
+        return result[0]
     except Error as err:
         print(f"Error checking conversation: {err}")
         return False
@@ -194,36 +194,23 @@ def create_conversation(phone_number="Nueva conversacion"):
             conn.rollback()
         raise
 
-def get_or_create_conversation(conversation_id=None, phone_number=None):
+def get_or_create_conversation(phone_number=None):
     """Get an existing conversation or create a new one if invalid."""
     try:
         # If we have a valid conversation_id, use it
-        if conversation_id and conversation_exists(phone_number):
+        conversation_id = conversation_exists(phone_number)
+        if conversation_id: 
             print(f"Using existing conversation ID: {conversation_id} for phone: {phone_number}")
             return conversation_id
-            
-        # Check if we already have a conversation for this phone number
-        if phone_number:
-            conn = get_db_connection()
-            cursor = conn.cursor(dictionary=True)
-            cursor.execute("SELECT id FROM conversations WHERE name = %s ORDER BY created_at DESC LIMIT 1", (phone_number,))
-            result = cursor.fetchone()
-            cursor.close()
-            
-            if result:
-                existing_id = result['id']
-                print(f"Found existing conversation for {phone_number}: ID={existing_id}")
-                return existing_id
-        
-        # Create new conversation if we reached here
-        new_id = create_conversation(phone_number) 
-        print(f"Created new conversation for {phone_number}: ID={new_id}")
-        return new_id
+    
+        else:
+            print(f"No existing conversation found for phone: {phone_number}. Creating a new one.")
+            conversation_id = create_conversation(phone_number)
+            return conversation_id
     except Error as err:
-        print(f"Error in get_or_create_conversation: {err}")
-        # Fallback to creating a new conversation
-        return create_conversation(phone_number or "Fallback conversation")
-
+        print(f"Error getting or creating conversation: {err}")
+        return None
+        
 def store_chat_message(phone_number, role, content):
     """Store a chat message in MySQL."""
     if conversation_id is None:
@@ -256,14 +243,13 @@ def store_chat_message(phone_number, role, content):
             conn.rollback()
         return False
 
-def get_llm_response(user_input, conversation_id=None, phone_number=None):
+def get_llm_response(user_input, phone_number=None):
     """Main function to get a response from the LLM."""
     try:
-        # Ensure we have a valid conversation ID
-        valid_conversation_id = get_or_create_conversation(conversation_id, phone_number)
-        if valid_conversation_id != conversation_id:
-            print(f"Using new conversation ID: {valid_conversation_id} (was {conversation_id})")
-        
+        conversation_id = get_or_create_conversation(phone_number)
+        if conversation_id is None:
+            raise ValueError("Failed to create or retrieve conversation ID")
+                
         context_manager = ContextManager()
         llm_client = LLMClient(openai_client)
 
@@ -271,16 +257,16 @@ def get_llm_response(user_input, conversation_id=None, phone_number=None):
         context = context_manager.generate_context(user_input)
 
         # Get response from LLM
-        response = llm_client.get_response(user_input, context, valid_conversation_id)
+        response = llm_client.get_response(user_input, context, conversation_id)
 
         # Store messages in MySQL
-        user_stored = store_chat_message(valid_conversation_id, "user", user_input)
-        assistant_stored = store_chat_message(valid_conversation_id, "assistant", response)
+        user_stored = store_chat_message(phone_number, "user", user_input)
+        assistant_stored = store_chat_message(phone_number, "assistant", response)
         
         if not user_stored or not assistant_stored:
             print("Warning: Failed to store one or more chat messages")
 
-        return response, valid_conversation_id
+        return response, conversation_id
     except Exception as e:
         print(f"Error in get_llm_response: {e}")
         # Return a fallback message and the conversation ID if we have one
