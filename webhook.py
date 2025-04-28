@@ -858,7 +858,7 @@ def send_llm_response(sender_number, message):
             conversation_id = create_conversation(sender_number)
             user_conversations[sender_number] = conversation_id
         
-        llm_response, valid_conversation_id = get_llm_response(message, conversation_id, sender_number)
+        llm_response, valid_conversation_id = get_llm_response(message, sender_number)
         
         # Update conversation ID if it changed
         if valid_conversation_id != conversation_id:
