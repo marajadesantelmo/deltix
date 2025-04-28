@@ -245,20 +245,13 @@ def store_chat_message(phone_number, role, content):
 
 def get_llm_response(user_input, phone_number=None):
     """Main function to get a response from the LLM."""
-    try:
-        conversation_id = get_or_create_conversation(phone_number)
-        if conversation_id is None:
-            raise ValueError("Failed to create or retrieve conversation ID")
-                
+    try:               
         context_manager = ContextManager()
         llm_client = LLMClient(openai_client)
-
         # Generate context
         context = context_manager.generate_context(user_input)
-
         # Get response from LLM
         response = llm_client.get_response(user_input, context)
-
         # Store messages in MySQL
         user_stored = store_chat_message(phone_number, "user", user_input)
         assistant_stored = store_chat_message(phone_number, "assistant", response)
@@ -266,9 +259,9 @@ def get_llm_response(user_input, phone_number=None):
         if not user_stored or not assistant_stored:
             print("Warning: Failed to store one or more chat messages")
 
-        return response, conversation_id
+        return response
     except Exception as e:
         print(f"Error in get_llm_response: {e}")
         # Return a fallback message and the conversation ID if we have one
         fallback_msg = "Lo siento, tuve un problema técnico. Por favor, intentá nuevamente en unos momentos."
-        return fallback_msg, conversation_id or create_conversation()
+        return fallback_msg or create_conversation()
