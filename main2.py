@@ -40,6 +40,12 @@ async def llm_fallback(update, context):
     user_id = update.effective_user.id
     user_input = update.message.text
     
+    # Get or create project ID for this user
+    if user_id not in user_projects:
+        user_projects[user_id] = create_conversation()
+    
+    project_id = user_projects[user_id]
+    
     # Create a task to send "Dejame pensar..." after 3 seconds
     thinking_message_task = asyncio.create_task(
         send_thinking_message_after_delay(update, 3)
@@ -47,7 +53,7 @@ async def llm_fallback(update, context):
     
     try:
         # Get response from LLM (ensure this is awaited)
-        llm_response = await asyncio.to_thread(get_llm_response, user_input, user_id)
+        llm_response = await asyncio.to_thread(get_llm_response, user_input, project_id)
         
         # Cancel the thinking message task if it hasn't been sent yet
         thinking_message_task.cancel()
