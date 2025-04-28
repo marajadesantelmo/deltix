@@ -234,12 +234,13 @@ def store_chat_message(conversation_id, role, content):
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # Debug output
-        print(f"Storing message: conversation_id={conversation_id}, role={role}, content={content[:30]}...")
+        # get conversation ID from the database by phone number
+        cursor.execute("SELECT id FROM conversations WHERE id = %s", (conversation_id,))
+        conversation_id = cursor.fetchone()
         
         cursor.execute(
             "INSERT INTO chat_history (conversation_id, role, content, timestamp) VALUES (%s, %s, %s, NOW())",
-            (conversation_id, role, content)
+            (conversation_id['id'], role, content)
         )
         conn.commit()
         
