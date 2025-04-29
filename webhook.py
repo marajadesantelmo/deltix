@@ -437,7 +437,6 @@ def handle_jilguero_response(sender_number, message):
         )
         
         user_states[sender_number] = STATE_START
-    
     elif 'vuelta' in message or 'tigre' in message:
         client.messages.create(
             body="Estos son los horarios de vuelta a Tigre de Jilguero. Si ves que hay algún horario incorrecto o información a corregir, no dudes en mandarle un mensajito al equipo Deltix",
