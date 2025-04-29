@@ -4,6 +4,7 @@ from mysql.connector import Error
 import smtplib 
 from email.message import EmailMessage
 from tokens import gmail_token
+from datetime import datetime, timedelta
 
 # Load environment variables or tokens
 try:
@@ -45,22 +46,31 @@ except Error as err:
     # Continue execution as we'll try to reconnect when needed
 
 def fetch_conversations_and_chats():
-    """Fetch all conversations and their chat histories from the database."""
+    """Fetch yesterday's conversations and their chat histories from the database."""
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         
-        # Fetch all conversations
-        cursor.execute("SELECT * FROM conversations ORDER BY created_at")
+        # Calculate yesterday's date
+        yesterday = (datetime.now() - timedelta(days=1)).date()
+        
+        # Fetch conversations created yesterday
+        cursor.execute("""
+            SELECT * 
+            FROM conversations 
+            WHERE DATE(created_at) = %s
+            ORDER BY created_at ASC
+        """, (yesterday,))
         conversations = cursor.fetchall()
         
-        # Fetch all chat histories
+        # Fetch chat histories for conversations created yesterday
         cursor.execute("""
             SELECT ch.conversation_id, ch.role, ch.content, ch.created_at, c.name 
             FROM chat_history ch
             JOIN conversations c ON ch.conversation_id = c.id
-            ORDER BY ch.conversation_id, ch.created_at
-        """)
+            WHERE DATE(ch.created_at) = %s
+            ORDER BY ch.created_at ASC
+        """, (yesterday,))
         chat_histories = cursor.fetchall()
         
         cursor.close()
