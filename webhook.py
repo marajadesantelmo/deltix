@@ -16,7 +16,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import deltix functions and utils
 from deltix_funciones import ALMACENERAS_DATA
-from llm_connector import get_llm_response, create_conversation, store_chat_message
+from llm_connector import get_llm_response, create_conversation
 from whatsapp_utils import format_whatsapp_text, format_mareas_data, get_random_meme_url
 
 # Import tokens
@@ -92,9 +92,6 @@ def webhook():
     # Log incoming message
     print(f"Received message: '{incoming_msg}' from {sender_number}")
     
-    # Store incoming message in chat history
-    store_chat_message(sender_number, "user", incoming_msg)
-    
     # Get or create a conversation ID for this user
     if sender_number not in user_conversations:
         user_conversations[sender_number] = create_conversation(sender_number)
@@ -105,20 +102,15 @@ def webhook():
     
     try:
         # Process message based on current state and command
-        response_message = process_message(sender_number, incoming_msg, current_state)
-        # Store outgoing message in chat history
-        store_chat_message(sender_number, "assistant", response_message)
+        process_message(sender_number, incoming_msg, current_state)
     except Exception as e:
         error_msg = f"Ocurrió un error: {str(e)}"
         print(error_msg)
-        error_response = "Ups, algo salió mal. Por favor, intenta nuevamente más tarde."
         client.messages.create(
-            body=error_response,
+            body="Ups, algo salió mal. Por favor, intenta nuevamente más tarde.",
             from_=twilio_phone_number,
             to=sender_number
         )
-        # Store error response in chat history
-        store_chat_message(sender_number, "assistant", error_response)
     
     return str(resp)
 
@@ -128,7 +120,7 @@ def process_message(sender_number, message, current_state):
     if 'hola' in message:
         send_start_message(sender_number)
         user_states[sender_number] = STATE_START
-        return "¡Hola! Soy Deltix, el bot del humedal 🦫 En qué te puedo ayudar?"
+        return
     
     # Process based on current state
     if current_state == STATE_MEME:
