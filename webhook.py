@@ -10,6 +10,7 @@ from datetime import datetime
 import requests
 import smtplib
 from email.message import EmailMessage
+import redis  # Import Redis
 
 # Add the deltix directory to path so we can import modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -35,9 +36,11 @@ client = Client(account_sid, auth_token)
 # Initialize Flask app
 app = Flask(__name__)
 
-# Store user conversation states
-user_conversations = {}
-user_states = {}
+# Initialize Redis client
+redis_host = os.environ.get('REDIS_HOST', 'localhost')
+redis_port = os.environ.get('REDIS_PORT', 6379)
+redis_password = os.environ.get('REDIS_PASSWORD', None)
+redis_client = redis.StrictRedis(host=redis_host, port=redis_port, password=redis_password, decode_responses=True)
 
 # Define conversation states (mirroring your Telegram implementation)
 STATE_START = 'start'
@@ -98,7 +101,7 @@ def webhook():
     conversation_id = user_conversations[sender_number]
     
     # Get the current state for this user
-    current_state = user_states.get(sender_number, STATE_START)
+    current_state = get_user_state(sender_number)
     
     try:
         # Process message based on current state and command
@@ -114,12 +117,71 @@ def webhook():
     
     return str(resp)
 
+from llm_connector import get_db_connection  # Reuse the database connection function
+
+def get_user_state(phone_number):
+    """Retrieve the user's current state from MySQL."""
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT state FROM user_states WHERE phone_number = %s", (phone_number,))
+    result = cursor.fetchone()
+    cursor.close()
+    return result['state'] if result else STATE_START
+
+def set_user_state(phone_number, state):
+    """Set the user's current state in MySQL."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO user_states (phone_number, state) VALUES (%s, %s) "
+        "ON DUPLICATE KEY UPDATE state = %s, updated_at = NOW()",
+        (phone_number, state, state)
+    )
+    conn.commit()
+    cursor.close()
+
+def get_user_data(phone_number, key):
+    """Retrieve specific user data from MySQL."""
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT data FROM user_states WHERE phone_number = %s", (phone_number,))
+    result = cursor.fetchone()
+    cursor.close()
+    if result and result['data']:
+        user_data = json.loads(result['data'])
+        return user_data.get(key)
+    return None
+
+def set_user_data(phone_number, key, value):
+    """Set specific user data in MySQL."""
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT data FROM user_states WHERE phone_number = %s", (phone_number,))
+    result = cursor.fetchone()
+    user_data = json.loads(result['data']) if result and result['data'] else {}
+    user_data[key] = value
+    cursor.execute(
+        "INSERT INTO user_states (phone_number, data) VALUES (%s, %s) "
+        "ON DUPLICATE KEY UPDATE data = %s, updated_at = NOW()",
+        (phone_number, json.dumps(user_data), json.dumps(user_data))
+    )
+    conn.commit()
+    cursor.close()
+
+def delete_user_data(phone_number):
+    """Delete all user data for a specific user in MySQL."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE user_states SET data = NULL WHERE phone_number = %s", (phone_number,))
+    conn.commit()
+    cursor.close()
+
 def process_message(sender_number, message, current_state):
     """Process incoming message based on current state and message content"""
     # Command messages - override current state
     if 'hola' in message:
         send_start_message(sender_number)
-        user_states[sender_number] = STATE_START
+        set_user_state(sender_number, STATE_START)
         return
     
     # Process based on current state
@@ -214,7 +276,7 @@ def send_mareas(sender_number):
         media_url=[f'{GITHUB_BASE_URL}marea.png']
     )
     
-    user_states[sender_number] = STATE_START
+    set_user_state(sender_number, STATE_START)
 
 def send_windguru(sender_number):
     """Send windguru information and offer subscription"""
@@ -225,7 +287,7 @@ def send_windguru(sender_number):
         media_url=[f'{GITHUB_BASE_URL}windguru.png']
     )
     
-    user_states[sender_number] = STATE_START
+    set_user_state(sender_number, STATE_START)
 
 def send_hidrografia(sender_number):
     """Send hidrografia information and offer subscription"""
@@ -240,7 +302,7 @@ def send_hidrografia(sender_number):
                 to=sender_number
             )
             
-            user_states[sender_number] = STATE_START
+            set_user_state(sender_number, STATE_START)
         else:
             client.messages.create(
                 body="Lo siento, no pude obtener los datos de mareas de hidrografía en este momento.",
@@ -253,7 +315,7 @@ def send_hidrografia(sender_number):
             from_=twilio_phone_number,
             to=sender_number
         )
-        user_states[sender_number] = STATE_START
+        set_user_state(sender_number, STATE_START)
 
 def send_meme(sender_number):
     """Send a random meme and ask if user wants another"""
@@ -278,7 +340,7 @@ def send_meme(sender_number):
         to=sender_number
     )
     
-    user_states[sender_number] = STATE_MEME
+    set_user_state(sender_number, STATE_MEME)
 
 def handle_meme_response(sender_number, message):
     """Handle response to meme offer"""
@@ -294,14 +356,14 @@ def handle_meme_response(sender_number, message):
             from_=twilio_phone_number,
             to=sender_number
         )
-        user_states[sender_number] = STATE_MEME2
+        set_user_state(sender_number, STATE_MEME2)
     else:
         client.messages.create(
             body="Bueno... si querés podes elegir otra de las actividades para hacer conmigo",
             from_=twilio_phone_number,
             to=sender_number
         )
-        user_states[sender_number] = STATE_START
+        set_user_state(sender_number, STATE_START)
 
 def handle_meme2_response(sender_number, message):
     """Handle response to second meme offer"""
@@ -319,14 +381,14 @@ def handle_meme2_response(sender_number, message):
             from_=twilio_phone_number,
             to=sender_number
         )
-        user_states[sender_number] = STATE_MEME
+        set_user_state(sender_number, STATE_MEME)
     else:
         client.messages.create(
             body="Bueno... si querés podes elegir otra de las actividades para hacer conmigo",
             from_=twilio_phone_number,
             to=sender_number
         )
-        user_states[sender_number] = STATE_START
+        set_user_state(sender_number, STATE_START)
 
 def request_mensaje(sender_number):
     """Request a message to forward to the developer"""
@@ -335,7 +397,7 @@ def request_mensaje(sender_number):
         from_=twilio_phone_number,
         to=sender_number
     )
-    user_states[sender_number] = STATE_MENSAJEAR
+    set_user_state(sender_number, STATE_MENSAJEAR)
 
 def handle_mensajear_response(sender_number, message):
     """Handle and forward user message to developer"""
@@ -368,7 +430,7 @@ def handle_mensajear_response(sender_number, message):
             from_=twilio_phone_number,
             to=sender_number
         )
-    user_states[sender_number] = STATE_START
+    set_user_state(sender_number, STATE_START)
 
 # --- COLECTIVAS FUNCTIONS --- #
 
@@ -385,7 +447,7 @@ Responde con el nombre de la empresa que te interesa.""",
         to=sender_number
     )
     
-    user_states[sender_number] = STATE_COLECTIVAS
+    set_user_state(sender_number, STATE_COLECTIVAS)
 
 def handle_colectivas_response(sender_number, message):
     """Handle selection of colectivas company"""
@@ -413,7 +475,7 @@ def start_jilguero(sender_number):
         from_=twilio_phone_number,
         to=sender_number
     )
-    user_states[sender_number] = STATE_JILGUERO
+    set_user_state(sender_number, STATE_JILGUERO)
 
 def handle_jilguero_response(sender_number, message):
     """Handle Jilguero direction selection"""
@@ -436,7 +498,7 @@ def handle_jilguero_response(sender_number, message):
             to=sender_number
         )
         
-        user_states[sender_number] = STATE_START
+        set_user_state(sender_number, STATE_START)
     elif 'vuelta' in message or 'tigre' in message:
         client.messages.create(
             body="Estos son los horarios de vuelta a Tigre de Jilguero. Si ves que hay algún horario incorrecto o información a corregir, no dudes en mandarle un mensajito al equipo Deltix",
@@ -454,7 +516,7 @@ def handle_jilguero_response(sender_number, message):
             to=sender_number
         )
         
-        user_states[sender_number] = STATE_START
+        set_user_state(sender_number, STATE_START)
     
     else:
         client.messages.create(
@@ -472,7 +534,7 @@ def start_interislena(sender_number):
         from_=twilio_phone_number,
         to=sender_number
     )
-    user_states[sender_number] = STATE_INTERISLENA
+    set_user_state(sender_number, STATE_INTERISLENA)
 
 def handle_interislena_response(sender_number, message):
     """Handle Interislena season selection"""
@@ -500,7 +562,7 @@ def handle_interislena_response(sender_number, message):
             to=sender_number
         )
         
-        user_states[sender_number] = STATE_START
+        set_user_state(sender_number, STATE_START)
     
     elif 'verano' in message:
         client.messages.create(
@@ -524,24 +586,24 @@ def handle_interislena_response(sender_number, message):
             to=sender_number
         )
         
-        user_states[sender_number] = STATE_START
+        set_user_state(sender_number, STATE_START)
     
     else:
         # Check if it's the second attempt
-        if user_states.get(sender_number) == STATE_INTERISLENA_2DO_INTENTO:
+        if get_user_state(sender_number) == STATE_INTERISLENA_2DO_INTENTO:
             client.messages.create(
                 body="No logré entender tu elección después de dos intentos. Empecemos de nuevo! Por favor, selecciona otra opción del menú principal.",
                 from_=twilio_phone_number,
                 to=sender_number
             )
-            user_states[sender_number] = STATE_START
+            set_user_state(sender_number, STATE_START)
         else:
             client.messages.create(
                 body="No comprendí tu elección. Por favor, indica si necesitas los horarios de verano o invierno.",
                 from_=twilio_phone_number,
                 to=sender_number
             )
-            user_states[sender_number] = STATE_INTERISLENA_2DO_INTENTO
+            set_user_state(sender_number, STATE_INTERISLENA_2DO_INTENTO)
 
 # --- LINEASDELTA FUNCTIONS --- #
 
@@ -552,7 +614,7 @@ def start_lineasdelta(sender_number):
         from_=twilio_phone_number,
         to=sender_number
     )
-    user_states[sender_number] = STATE_LINEASDELTA_DIRECTION
+    set_user_state(sender_number, STATE_LINEASDELTA_DIRECTION)
 
 def handle_lineasdelta_direction(sender_number, message):
     """Handle LineasDelta direction selection"""
@@ -560,9 +622,7 @@ def handle_lineasdelta_direction(sender_number, message):
     
     if "ida" in message:
         # Store direction in user context (you might want to use a dict for this)
-        user_data = user_states.get(f"{sender_number}_data", {})
-        user_data["direction"] = "ida a la isla"
-        user_states[f"{sender_number}_data"] = user_data
+        set_user_data(sender_number, "direction", "ida a la isla")
         
         client.messages.create(
             body="En época escolar o no escolar?",
@@ -570,12 +630,10 @@ def handle_lineasdelta_direction(sender_number, message):
             to=sender_number
         )
         
-        user_states[sender_number] = STATE_LINEASDELTA_SCHEDULE
+        set_user_state(sender_number, STATE_LINEASDELTA_SCHEDULE)
     
     elif "vuelta" in message:
-        user_data = user_states.get(f"{sender_number}_data", {})
-        user_data["direction"] = "vuelta a tigre"
-        user_states[f"{sender_number}_data"] = user_data
+        set_user_data(sender_number, "direction", "vuelta a tigre")
         
         client.messages.create(
             body="En época escolar o no escolar?",
@@ -583,7 +641,7 @@ def handle_lineasdelta_direction(sender_number, message):
             to=sender_number
         )
         
-        user_states[sender_number] = STATE_LINEASDELTA_SCHEDULE
+        set_user_state(sender_number, STATE_LINEASDELTA_SCHEDULE)
     
     else:
         client.messages.create(
@@ -595,15 +653,12 @@ def handle_lineasdelta_direction(sender_number, message):
 def handle_lineasdelta_schedule(sender_number, message):
     """Handle LineasDelta schedule type selection"""
     message = message.lower()
-    user_data = user_states.get(f"{sender_number}_data", {})
-    direction = user_data.get("direction", "ida a la isla")
+    direction = get_user_data(sender_number, "direction")
     
     if "escolar" in message and "no" not in message:
-        user_data["epoca"] = "escolar"
-        user_states[f"{sender_number}_data"] = user_data
+        set_user_data(sender_number, "epoca", "escolar")
     elif "no escolar" in message:
-        user_data["epoca"] = "no escolar"
-        user_states[f"{sender_number}_data"] = user_data
+        set_user_data(sender_number, "epoca", "no escolar")
     else:
         client.messages.create(
             body="Por favor, elegí 'Escolar' o 'No escolar'.",
@@ -613,19 +668,19 @@ def handle_lineasdelta_schedule(sender_number, message):
         return
     
     client.messages.create(
-        body=f"Estos son los horarios de {direction} en época {user_data['epoca']}.",
+        body=f"Estos son los horarios de {direction} en época {get_user_data(sender_number, 'epoca')}.",
         from_=twilio_phone_number,
         to=sender_number
     )
     
     # Send the appropriate image based on user choices
     if direction == "ida a la isla":
-        if user_data["epoca"] == "escolar":
+        if get_user_data(sender_number, "epoca") == "escolar":
             media_path = f"{GITHUB_BASE_URL}colectivas/lineas_delta_ida_escolar.png"
         else:
             media_path = f"{GITHUB_BASE_URL}colectivas/lineas_delta_ida_no_escolar.png"
     else:  # vuelta a tigre
-        if user_data["epoca"] == "escolar":
+        if get_user_data(sender_number, "epoca") == "escolar":
             media_path = f"{GITHUB_BASE_URL}colectivas/lineas_delta_vuelta_escolar.png"
         else:
             media_path = f"{GITHUB_BASE_URL}colectivas/lineas_delta_vuelta_no_escolar.png"
@@ -636,7 +691,7 @@ def handle_lineasdelta_schedule(sender_number, message):
         to=sender_number
     )
     
-    user_states[sender_number] = STATE_START
+    set_user_state(sender_number, STATE_START)
 
 # --- ALMACENERAS FUNCTIONS --- #
 
@@ -663,7 +718,7 @@ def send_almaceneras_list(sender_number):
         to=sender_number
     )
     
-    user_states[sender_number] = STATE_ALMACENERA_SELECT
+    set_user_state(sender_number, STATE_ALMACENERA_SELECT)
 
 def handle_almacenera_select(sender_number, message):
     """Handle almacenera selection"""
@@ -733,7 +788,7 @@ def handle_almacenera_select(sender_number, message):
         to=sender_number
     )
     
-    user_states[sender_number] = STATE_START
+    set_user_state(sender_number, STATE_START)
 
 # --- ACTIVIDADES FUNCTIONS --- #
 
@@ -867,7 +922,7 @@ def send_llm_response(sender_number, message):
             to=sender_number
         )
     
-    user_states[sender_number] = STATE_START
+    set_user_state(sender_number, STATE_START)
 
 @app.route('/status', methods=['POST'])
 def status_callback():
