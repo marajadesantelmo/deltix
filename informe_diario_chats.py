@@ -1,7 +1,7 @@
 import os
 import mysql.connector
 from mysql.connector import Error
-import smtplib 
+import smtplib
 from email.message import EmailMessage
 from tokens import gmail_token
 from datetime import datetime, timedelta
@@ -22,7 +22,7 @@ def get_db_connection():
         global db
         if 'db' in globals() and db.is_connected():
             return db
-        
+
         # Create a new connection
         db = mysql.connector.connect(
             host="facundol.mysql.pythonanywhere-services.com",
@@ -50,29 +50,29 @@ def fetch_conversations_and_chats():
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        
+
         # Calculate yesterday's date
         yesterday = (datetime.now() - timedelta(days=1)).date()
-        
+
         # Fetch conversations created yesterday
         cursor.execute("""
-            SELECT * 
-            FROM conversations 
+            SELECT *
+            FROM conversations
             WHERE DATE(created_at) = %s
             ORDER BY created_at ASC
         """, (yesterday,))
         conversations = cursor.fetchall()
-        
+
         # Fetch chat histories for conversations created yesterday
         cursor.execute("""
-            SELECT ch.conversation_id, ch.role, ch.content, ch.created_at, c.name 
+            SELECT ch.conversation_id, ch.role, ch.content, ch.created_at, c.name
             FROM chat_history ch
             JOIN conversations c ON ch.conversation_id = c.id
             WHERE DATE(ch.created_at) = %s
             ORDER BY ch.created_at ASC
         """, (yesterday,))
         chat_histories = cursor.fetchall()
-        
+
         cursor.close()
         return conversations, chat_histories
     except Error as err:
@@ -82,21 +82,21 @@ def fetch_conversations_and_chats():
 def format_conversations_and_chats(conversations, chat_histories):
     """Format conversations and chat histories for email."""
     formatted_report = "📋 *Reporte Diario de Conversaciones*\n\n"
-    
+
     for conversation in conversations:
         formatted_report += f"🆔 *Conversación ID*: {conversation['id']}\n"
         formatted_report += f"👤 *Usuario*: {conversation['name']}\n"
         formatted_report += f"📅 *Creado el*: {conversation['created_at']}\n"
         formatted_report += "💬 *Historial de Mensajes*:\n"
-        
+
         # Filter chat histories for this conversation
         messages = [chat for chat in chat_histories if chat['conversation_id'] == conversation['id']]
         for message in messages:
             role = "👤 Usuario" if message['role'] == "user" else "🤖 Asistente"
             formatted_report += f"  - {role} ({message['created_at']}): {message['content']}\n"
-        
+
         formatted_report += "\n" + "-" * 50 + "\n\n"
-    
+
     return formatted_report
 
 def send_email_report(report_body):
@@ -120,9 +120,9 @@ def send_email_report(report_body):
 if __name__ == "__main__":
     # Fetch data from the database
     conversations, chat_histories = fetch_conversations_and_chats()
-    
+
     # Format the data for the email report
     report_body = format_conversations_and_chats(conversations, chat_histories)
-    
+
     # Send the email report
     send_email_report(report_body)
