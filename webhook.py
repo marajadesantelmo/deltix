@@ -864,10 +864,7 @@ def send_de_nada(sender_number):
 
 def send_llm_response(sender_number, message):
     """Get and send response from LLM for any other message"""
-    conversation_id = user_conversations.get(sender_number)
-    if not conversation_id:
-        conversation_id = create_conversation(sender_number)
-        user_conversations[sender_number] = conversation_id
+    conversation_id = get_or_create_conversation(sender_number)
     
     # Send a "thinking" message for better UX
     client.messages.create(
