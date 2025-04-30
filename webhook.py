@@ -51,6 +51,32 @@ STATE_INTERISLENA_2DO_INTENTO = "interislena_2do_intento"
 # URLs for static resourc
 GITHUB_BASE_URL = "https://raw.githubusercontent.com/marajadesantelmo/deltix/main/"
 
+# Simple in-memory storage for user states and data
+user_states = {}  # Dictionary to store user states by phone number
+user_data = {}    # Dictionary to store user data by phone number
+
+# User state management functions
+def set_user_state(sender_number, state):
+    """Set the current state for a user"""
+    user_states[sender_number] = state
+    print(f"User {sender_number} state set to {state}")
+    
+def get_user_state(sender_number):
+    """Get the current state for a user, default to START if not set"""
+    return user_states.get(sender_number, STATE_START)
+
+def set_user_data(sender_number, key, value):
+    """Store custom data for a user"""
+    if sender_number not in user_data:
+        user_data[sender_number] = {}
+    user_data[sender_number][key] = value
+    
+def get_user_data(sender_number, key):
+    """Retrieve custom data for a user"""
+    if sender_number in user_data and key in user_data[sender_number]:
+        return user_data[sender_number][key]
+    return None
+
 def get_menu_message():
     """Generate the main menu message in WhatsApp format"""
     return (
@@ -80,7 +106,6 @@ def webhook():
     sender_number = request.values.get('From', '')
     resp = MessagingResponse()
     print(f"Received message: '{incoming_msg}' from {sender_number}")
-    conversation_id = get_or_create_conversation(sender_number)
     current_state = get_user_state(sender_number)
     try:
         # Process message based on current state and command
@@ -98,69 +123,12 @@ def webhook():
 
 from llm_connector import get_db_connection  # Reuse the database connection function
 
-def get_user_state(phone_number):
-    """Retrieve the user's current state from MySQL."""
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT state FROM user_states WHERE phone_number = %s", (phone_number,))
-    result = cursor.fetchone()
-    cursor.close()
-    return result['state'] if result else STATE_START
-
-def set_user_state(phone_number, state):
-    """Set the user's current state in MySQL."""
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute(
-        "INSERT INTO user_states (phone_number, state) VALUES (%s, %s) "
-        "ON DUPLICATE KEY UPDATE state = %s, updated_at = NOW()",
-        (phone_number, state, state)
-    )
-    conn.commit()
-    cursor.close()
-
-def get_user_data(phone_number, key):
-    """Retrieve specific user data from MySQL."""
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT data FROM user_states WHERE phone_number = %s", (phone_number,))
-    result = cursor.fetchone()
-    cursor.close()
-    if result and result['data']:
-        user_data = json.loads(result['data'])
-        return user_data.get(key)
-    return None
-
-def set_user_data(phone_number, key, value):
-    """Set specific user data in MySQL."""
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT data FROM user_states WHERE phone_number = %s", (phone_number,))
-    result = cursor.fetchone()
-    user_data = json.loads(result['data']) if result and result['data'] else {}
-    user_data[key] = value
-    cursor.execute(
-        "INSERT INTO user_states (phone_number, data) VALUES (%s, %s) "
-        "ON DUPLICATE KEY UPDATE data = %s, updated_at = NOW()",
-        (phone_number, json.dumps(user_data), json.dumps(user_data))
-    )
-    conn.commit()
-    cursor.close()
-
-def delete_user_data(phone_number):
-    """Delete all user data for a specific user in MySQL."""
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("UPDATE user_states SET data = NULL WHERE phone_number = %s", (phone_number,))
-    conn.commit()
-    cursor.close()
 
 def process_message(sender_number, message, current_state):
     """Process incoming message based on current state and message content"""
     # Command messages - override current state
     if 'hola' in message:
         send_start_message(sender_number)
-        set_user_state(sender_number, STATE_START)
         return
     
     # Process based on current state
