@@ -17,7 +17,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import deltix functions and utils
 from deltix_funciones import ALMACENERAS_DATA
-from llm_connector import get_llm_response, create_conversation
+from llm_connector import get_llm_response, create_conversation, get_or_create_conversation
 from whatsapp_utils import format_whatsapp_text, format_mareas_data, get_random_meme_url
 
 # Import tokens
@@ -36,27 +36,17 @@ client = Client(account_sid, auth_token)
 # Initialize Flask app
 app = Flask(__name__)
 
-# Initialize Redis client
-redis_host = os.environ.get('REDIS_HOST', 'localhost')
-redis_port = os.environ.get('REDIS_PORT', 6379)
-redis_password = os.environ.get('REDIS_PASSWORD', None)
-redis_client = redis.StrictRedis(host=redis_host, port=redis_port, password=redis_password, decode_responses=True)
-
-# Define conversation states (mirroring your Telegram implementation)
-STATE_START = 'start'
-STATE_CHARLAR = 'charlar'
-STATE_MEME = 'meme'
-STATE_MEME2 = 'meme2'
-STATE_COLABORAR = 'colaborar'
-STATE_MENSAJEAR = 'mensajear'
-STATE_COLECTIVAS = 'colectivas'
-STATE_JILGUERO = 'jilguero'
-STATE_INTERISLENA = 'interislena'
-STATE_LINEASDELTA_DIRECTION = 'lineasdelta_direction'
-STATE_LINEASDELTA_SCHEDULE = 'lineasdelta_schedule'
-STATE_ALMACENERA_SELECT = 'almacenera_select'
-STATE_INTERISLENA_2DO_INTENTO = 'interislena_2do_intento'
-STATE_JILGUERO_2DO_INTENTO = 'jilguero_2do_intento'   #Pendiente para agregar
+STATE_START = "start"
+STATE_MEME = "meme"
+STATE_MEME2 = "meme2"
+STATE_MENSAJEAR = "mensajear"
+STATE_COLECTIVAS = "colectivas"
+STATE_JILGUERO = "jilguero"
+STATE_INTERISLENA = "interislena"
+STATE_LINEASDELTA_DIRECTION = "lineasdelta_direction"
+STATE_LINEASDELTA_SCHEDULE = "lineasdelta_schedule"
+STATE_ALMACENERA_SELECT = "almacenera_select"
+STATE_INTERISLENA_2DO_INTENTO = "interislena_2do_intento"
 
 # URLs for static resources
 GITHUB_BASE_URL = "https://raw.githubusercontent.com/marajadesantelmo/deltix/main/"
@@ -88,21 +78,10 @@ def webhook():
     # Get incoming message data
     incoming_msg = request.values.get('Body', '').strip().lower()
     sender_number = request.values.get('From', '')
-    
-    # Create a TwiML response
     resp = MessagingResponse()
-    
-    # Log incoming message
     print(f"Received message: '{incoming_msg}' from {sender_number}")
-    
-    # Get or create a conversation ID for this user
-    if sender_number not in user_conversations:
-        user_conversations[sender_number] = create_conversation(sender_number)
-    conversation_id = user_conversations[sender_number]
-    
-    # Get the current state for this user
+    conversation_id = get_or_create_conversation(sender_number)
     current_state = get_user_state(sender_number)
-    
     try:
         # Process message based on current state and command
         process_message(sender_number, incoming_msg, current_state)
