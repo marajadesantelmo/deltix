@@ -53,6 +53,7 @@ def fetch_conversations_and_chats():
 
         # Calculate yesterday's date
         yesterday = (datetime.now() - timedelta(days=1)).date()
+        #yesterday = datetime.now().date()
 
         # Fetch conversations created yesterday
         cursor.execute("""
