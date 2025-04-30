@@ -48,7 +48,7 @@ STATE_LINEASDELTA_SCHEDULE = "lineasdelta_schedule"
 STATE_ALMACENERA_SELECT = "almacenera_select"
 STATE_INTERISLENA_2DO_INTENTO = "interislena_2do_intento"
 
-# URLs for static resources
+# URLs for static resourc
 GITHUB_BASE_URL = "https://raw.githubusercontent.com/marajadesantelmo/deltix/main/"
 
 def get_menu_message():
