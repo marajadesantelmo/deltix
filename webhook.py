@@ -193,10 +193,12 @@ def send_start_message(sender_number):
         from_=twilio_phone_number,
         to=sender_number)
     time.sleep(1)
-    message = client.messages.create(
-    content_sid="HX68a6bc6b9cfc39c39891c6531552a58f",
+    client.messages.create(
+    content_sid="HXXXXXXXXX",
     from_=twilio_phone_number,
-    to=sender_number)
+    to=sender_number,
+    content_variables=json.dumps({"1": "Name"}),
+)
     time.sleep(2)
 
 def send_mareas(sender_number):
