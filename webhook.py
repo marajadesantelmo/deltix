@@ -194,11 +194,20 @@ def send_start_message(sender_number):
         to=sender_number)
     time.sleep(1)
     client.messages.create(
-    content_sid="HXXXXXXXXX",
-    from_=twilio_phone_number,
-    to=sender_number,
-    content_variables=json.dumps({"1": "Name"}),
-)
+        body="- *mareas* _pronóstico de mareas INA_ ⛵\n"
+            "- *hidrografia* _mareas hidrografia_\n"
+            "- *windguru* _pronóstico del clima de windgurú_\n"
+            "- *colectivas* _horarios lanchas colectivas_ 🕖\n"
+            "- *almaceneras* _lanchas almaceneras_ 🚤\n"
+            "- *memes* _los memes más divertidos de la isla_ 😂\n"
+            "- *mensajear* _mandarle un mensajito al equipo Deltix_\n\n"
+            "*Agenda isleña*\n\n"
+            "- *amanita* _paseos en canoa isleña_\n"
+            "- *alfareria* _encuentros con el barro_\n"
+            "- *labusqueda* _espacio para ceremonias, hostal y mas_\n"
+            "- *canaveralkayaks* _excursiones en kayak_",
+        from_=twilio_phone_number,
+        to=sender_number)
     time.sleep(2)
 
 def send_mareas(sender_number):
