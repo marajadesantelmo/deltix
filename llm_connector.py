@@ -59,7 +59,8 @@ KEYWORDS = {
     "jilguero": ['jilguero', 'carapachay', 'angostura'],
     "interislena": ['interisleña', 'interislena', 'sarmiento', 'san antonio', 'capitan', 'capitán'],
     "lineasdelta": ['lineasdelta', 'caraguatá', 'caraguata', 'canal arias', 'paraná miní', 'parana mini', 'lineas delta'],
-    "activities": ['actividades', 'emprendimientos', 'hacer', 'visitar', 'conocer', 'experiencias', 'atracciones', 'paseos', 'canoa', 'kayak', 'arcilla', 'barro', 'alfareria', 'hospedaje']
+    "activities": ['actividades', 'emprendimientos', 'hacer', 'visitar', 'conocer', 'experiencias', 'atracciones', 'paseos', 'canoa', 'kayak', 'arcilla', 'barro', 'alfareria', 'hospedaje'],
+    "tides": ['mareas', 'marea', 'pleamar', 'bajamar', 'altura', 'agua', 'alta', 'baja', 'subir'],
 }
 
 class ContextManager:
@@ -93,6 +94,33 @@ class ContextManager:
             print(f"Error loading weather data: {e}")
             return None
 
+    def load_tides_data(self):
+        """Load and format tide data from table_data.txt for context."""
+        try:
+            tides_file = os.path.join(self.base_dir, "table_data.txt")
+            with open(tides_file, 'r', encoding='utf-8') as file:
+                lines = file.readlines()
+            if not lines:
+                return "No hay datos de mareas de hidrografía en este momento."
+            formatted_message = "📊 PRONÓSTICO DE MAREAS - HIDROGRAFÍA NAVAL\n\n"
+            if len(lines) > 0:
+                port_name = lines[0].strip()
+                formatted_message += f"🚢 {port_name}\n\n"
+            if len(lines) > 2:
+                for line in lines[2:]:
+                    data = line.strip().split('\t')
+                    if len(data) >= 4:
+                        tide_type = data[0]
+                        time_ = data[1]
+                        height = data[2]
+                        date = data[3]
+                        emoji = "🌊" if tide_type.upper() == "PLEAMAR" else "⬇️"
+                        formatted_message += f"{emoji} {tide_type}: {time_} hs - {height} m ({date})\n"
+            return formatted_message
+        except Exception as e:
+            print(f"Error loading tides data: {e}")
+            return "No se pudo cargar la información de mareas en este momento."
+
     def generate_context(self, user_input):
         """Generate context based on user input."""
         context = []
@@ -104,6 +132,10 @@ class ContextManager:
                 context.append(self.format_weather_data(weather_data))
             else:
                 context.append("No se pudo cargar la información del clima en este momento.")
+
+        # Add tides/mareas context if applicable
+        if any(keyword in user_input.lower() for keyword in KEYWORDS.get("tides", [])):
+            context.append(self.load_tides_data())
 
         # Add other context files based on keywords
         if any(keyword in user_input.lower() for keyword in KEYWORDS["almacen"]):
