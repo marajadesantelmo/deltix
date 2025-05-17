@@ -83,24 +83,58 @@ async def track_bot_response(user_id, message_text):
     except Exception as e:
         print(f"Failed to store bot message: {e}")
 
-# Add a monkey patch for update.message.reply_text to track bot responses
-original_reply_text = Update.message.reply_text
-
-async def tracked_reply_text(self, text, *args, **kwargs):
-    """Wrapper for reply_text that tracks the bot's message"""
-    # First call the original method to send the message
-    result = await original_reply_text(self, text, *args, **kwargs)
+# Instead, modify the wrap_handler_with_tracking function to track responses
+def wrap_handler_with_tracking(handler):
+    """Wrap a handler with message tracking functionality"""
+    if isinstance(handler, (CommandHandler, MessageHandler)):
+        original_callback = handler.callback
+        
+        async def wrapped_callback(update, context):
+            # Track user message
+            if update.message and update.message.text:
+                user_id = update.effective_user.id
+                try:
+                    store_chat_message(user_id, "user", update.message.text)
+                except Exception as e:
+                    print(f"Failed to store user message: {e}")
+            
+            # Store original reply_text method
+            original_reply_text = update.message.reply_text
+            
+            # Create a wrapped reply_text method that tracks responses
+            async def tracked_reply_text(text, *args, **kwargs):
+                result = await original_reply_text(text, *args, **kwargs)
+                try:
+                    await track_bot_response(update.effective_user.id, text)
+                except Exception as e:
+                    print(f"Failed to track bot response: {e}")
+                return result
+            
+            # Replace the method for this instance only
+            update.message.reply_text = tracked_reply_text
+            
+            # Call original handler
+            return await original_callback(update, context)
+        
+        handler.callback = wrapped_callback
     
-    # Then store the message in chat history
-    user_id = self.effective_user.id
-    await track_bot_response(user_id, text)
+    elif isinstance(handler, ConversationHandler):
+        # Wrap entry points
+        for entry_point in handler.entry_points:
+            wrap_handler_with_tracking(entry_point)
+        
+        # Wrap state handlers
+        for state, state_handlers in handler.states.items():
+            for state_handler in state_handlers:
+                wrap_handler_with_tracking(state_handler)
+        
+        # Wrap fallbacks
+        for fallback in handler.fallbacks:
+            wrap_handler_with_tracking(fallback)
     
-    return result
+    return handler
 
-# Apply the monkey patch
-Update.message.reply_text = tracked_reply_text
-
-# Add a new fallback handler function that uses the LLM
+# Update the llm_fallback handler since we're not using monkey patching anymore
 async def llm_fallback(update, context):
     user_id = update.effective_user.id
     user_input = update.message.text
@@ -111,14 +145,15 @@ async def llm_fallback(update, context):
     )
     
     try:
-        # Note: get_llm_response already tracks both user input and its response
+        # Get response from LLM (ensure this is awaited)
         llm_response = await asyncio.to_thread(get_llm_response, user_input, user_id)
         
         # Cancel the thinking message task if it hasn't been sent yet
         thinking_message_task.cancel()
         
-        # Send response (no need to track as llm_connector already does it)
-        await update.message.reply_text(llm_response, track=False)
+        # Send the response back to the user
+        # Note: reply_text is already wrapped, so this will be tracked
+        await update.message.reply_text(llm_response)
     except Exception as e:
         # Log the error and notify the user
         print(f"Error in LLM fallback: {e}")
@@ -174,6 +209,21 @@ def wrap_handler_with_tracking(handler):
                     store_chat_message(user_id, "user", update.message.text)
                 except Exception as e:
                     print(f"Failed to store user message: {e}")
+            
+            # Store original reply_text method
+            original_reply_text = update.message.reply_text
+            
+            # Create a wrapped reply_text method that tracks responses
+            async def tracked_reply_text(text, *args, **kwargs):
+                result = await original_reply_text(text, *args, **kwargs)
+                try:
+                    await track_bot_response(update.effective_user.id, text)
+                except Exception as e:
+                    print(f"Failed to track bot response: {e}")
+                return result
+            
+            # Replace the method for this instance only
+            update.message.reply_text = tracked_reply_text
             
             # Call original handler
             return await original_callback(update, context)
