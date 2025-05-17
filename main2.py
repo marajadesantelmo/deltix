@@ -128,145 +128,122 @@ async def send_thinking_message_after_delay(update, delay_seconds):
         # Task was cancelled because response arrived before timeout
         pass
 
-# Add a function to track message history for all message handlers
-async def track_message_middleware(update, context, next_handler):
-    """Middleware to track all messages in the chat history"""
-    if update.message and update.message.text:
-        user_id = update.effective_user.id
-        # Store user message in chat history using our local function
-        try:
-            store_chat_message(user_id, "user", update.message.text)
-        except Exception as e:
-            print(f"Failed to store user message: {e}")
-    
-    # Call the original handler and get its result
-    result = await next_handler(update, context)
-    
-    return result
+# Remove these lines that cause the error
+# original_add_handler = ApplicationBuilder.add_handler
+# def add_handler_with_middleware(self, handler):
+# ApplicationBuilder.add_handler = add_handler_with_middleware
 
-# Override the ApplicationBuilder.add_handler method to add the middleware
-original_add_handler = ApplicationBuilder.add_handler
-
-def add_handler_with_middleware(self, handler):
-    """Add the handler with middleware that tracks messages"""
-    # For CommandHandlers and MessageHandlers
+# Instead, create a function to wrap handlers with message tracking
+def wrap_handler_with_tracking(handler):
+    """Wrap a handler with message tracking functionality"""
     if isinstance(handler, (CommandHandler, MessageHandler)):
         original_callback = handler.callback
         
         async def wrapped_callback(update, context):
-            return await track_message_middleware(update, context, original_callback)
+            if update.message and update.message.text:
+                user_id = update.effective_user.id
+                try:
+                    store_chat_message(user_id, "user", update.message.text)
+                except Exception as e:
+                    print(f"Failed to store user message: {e}")
+            return await original_callback(update, context)
         
         handler.callback = wrapped_callback
     
-    # For ConversationHandler, wrap all callbacks in all states
     elif isinstance(handler, ConversationHandler):
         # Wrap entry points
         for entry_point in handler.entry_points:
-            original_callback = entry_point.callback
-            async def wrapped_entry(update, context):
-                return await track_message_middleware(update, context, original_callback)
-            entry_point.callback = wrapped_entry
+            wrap_handler_with_tracking(entry_point)
         
         # Wrap state handlers
         for state, state_handlers in handler.states.items():
             for state_handler in state_handlers:
-                original_callback = state_handler.callback
-                async def wrapped_state(update, context):
-                    return await track_message_middleware(update, context, original_callback)
-                state_handler.callback = wrapped_state
+                wrap_handler_with_tracking(state_handler)
         
         # Wrap fallbacks
         for fallback in handler.fallbacks:
-            original_callback = fallback.callback
-            async def wrapped_fallback(update, context):
-                return await track_message_middleware(update, context, original_callback)
-            fallback.callback = wrapped_fallback
+            wrap_handler_with_tracking(fallback)
     
-    # Call the original add_handler method
-    return original_add_handler(self, handler)
-
-# Replace the original add_handler method with our version
-ApplicationBuilder.add_handler = add_handler_with_middleware
+    return handler
 
 nest_asyncio.apply()
 
 if __name__ == '__main__':
     application = ApplicationBuilder().token(telegram_token).build()
-    start_handler = CommandHandler('start', start)
     
-    # Define command handlers first to ensure they take priority
+    # Define command handlers and wrap them with tracking
     command_handlers = [
-        CommandHandler("start", start),
-        CommandHandler("menu", menu),
-        CommandHandler("cancel", cancel),
-        CommandHandler('charlar', charlar),
-        CommandHandler('mareas', mareas),
-        CommandHandler('mareaa', mareas),
-        CommandHandler('windguru', windguru),
-        CommandHandler('memes', memes),
-        CommandHandler('colaborar', colaborar),
-        CommandHandler('informacion', informacion),
-        CommandHandler('mensajear', mensaje_trigger),
-        CommandHandler('colectivas', colectivas),
-        CommandHandler('almaceneras', almaceneras),
-        CommandHandler('hidrografia', hidrografia),
-        CommandHandler('suscribirme', suscribirme),
-        CommandHandler('desuscribirme', desuscribirme),
-        CommandHandler('amanita', amanita),
-        CommandHandler('alfareria', alfareria),
-        CommandHandler('labusqueda', labusqueda),
-        CommandHandler('canaveralkayaks', canaveralkayaks),
+        wrap_handler_with_tracking(CommandHandler("start", start)),
+        wrap_handler_with_tracking(CommandHandler("menu", menu)),
+        wrap_handler_with_tracking(CommandHandler("cancel", cancel)),
+        wrap_handler_with_tracking(CommandHandler('charlar', charlar)),
+        wrap_handler_with_tracking(CommandHandler('mareas', mareas)),
+        wrap_handler_with_tracking(CommandHandler('mareaa', mareas)),
+        wrap_handler_with_tracking(CommandHandler('windguru', windguru)),
+        wrap_handler_with_tracking(CommandHandler('memes', memes)),
+        wrap_handler_with_tracking(CommandHandler('colaborar', colaborar)),
+        wrap_handler_with_tracking(CommandHandler('informacion', informacion)),
+        wrap_handler_with_tracking(CommandHandler('mensajear', mensaje_trigger)),
+        wrap_handler_with_tracking(CommandHandler('colectivas', colectivas)),
+        wrap_handler_with_tracking(CommandHandler('almaceneras', almaceneras)),
+        wrap_handler_with_tracking(CommandHandler('hidrografia', hidrografia)),
+        wrap_handler_with_tracking(CommandHandler('suscribirme', suscribirme)),
+        wrap_handler_with_tracking(CommandHandler('desuscribirme', desuscribirme)),
+        wrap_handler_with_tracking(CommandHandler('amanita', amanita)),
+        wrap_handler_with_tracking(CommandHandler('alfareria', alfareria)),
+        wrap_handler_with_tracking(CommandHandler('labusqueda', labusqueda)),
+        wrap_handler_with_tracking(CommandHandler('canaveralkayaks', canaveralkayaks)),
     ]
     
-    # Other handlers for message text
+    # Other handlers for message text with tracking
     message_handlers = [
-        MessageHandler(filters.Regex(r'^(Windguru|windguru|WINDGURU)$'), windguru),
-        MessageHandler(filters.Regex(r'^(Desuscribirme|desuscribirme|DESUSCRIBIRME)$'), desuscribirme),
-        MessageHandler(filters.Regex(r'^(Memes|memes|MEMES|Meme|meme|MEME)$'), memes),
-        MessageHandler(filters.Regex(r'^(Colaborar|colaborar|COLABORAR)$'), colaborar),
-        MessageHandler(filters.Regex(r'^(Informacion|informacion|INFORMACION)$'), informacion),
-        MessageHandler(filters.Regex(r'^(Mensajear|mensajear|MENSAJEAR)$'), mensaje_trigger),
-        MessageHandler(filters.Regex(r'^(Hola|hola|HOLA)$'), start),
-        MessageHandler(filters.Regex(r'^(Colectivas|colectivas|COLECTIVAS|horarios)$'), colectivas),
-        MessageHandler(filters.Regex(r'^(Gracias|gracias|GRACIAS)$'), de_nada),
-        MessageHandler(filters.Regex(r'^(Interislena|interislena|INTERISLENA)$'), Interislena),
-        MessageHandler(filters.Regex(r'^(Jilguero|jilguero|JILGUERO)$'), Jilguero),
-        MessageHandler(filters.Regex(r'^(LineasDelta|lineasdelta|LINEASDELTA)$'), LineasDelta),
-        MessageHandler(filters.Regex(r'^(Almaceneras|almaceneras|ALMACENERAS)$'), almaceneras),
-        MessageHandler(filters.Regex(r'^(Hidrografia|hidrografia|HIDROGRAFIA)$'), hidrografia),
-        MessageHandler(filters.Regex(r'^(Suscribirme|suscribirme|SUSCRIBIRME)$'), suscribirme),
-        MessageHandler(filters.Regex(r'^(Amanita|amanita|AMANITA)$'), amanita),
-        MessageHandler(filters.Regex(r'^(Alfareria|alfareria|ALFARERIA)$'), alfareria),
-        MessageHandler(filters.Regex(r'^(Labusqueda|labusqueda|LABUSQUEDA)$'), labusqueda),
-        MessageHandler(filters.Regex(r'^(Canaveralkayaks|canaveralkayaks|CANAVERALKAYAKS)$'), canaveralkayaks),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Windguru|windguru|WINDGURU)$'), windguru)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Desuscribirme|desuscribirme|DESUSCRIBIRME)$'), desuscribirme)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Memes|memes|MEMES|Meme|meme|MEME)$'), memes)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Colaborar|colaborar|COLABORAR)$'), colaborar)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Informacion|informacion|INFORMACION)$'), informacion)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Mensajear|mensajear|MENSAJEAR)$'), mensaje_trigger)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Hola|hola|HOLA)$'), start)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Colectivas|colectivas|COLECTIVAS|horarios)$'), colectivas)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Gracias|gracias|GRACIAS)$'), de_nada)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Interislena|interislena|INTERISLENA)$'), Interislena)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Jilguero|jilguero|JILGUERO)$'), Jilguero)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(LineasDelta|lineasdelta|LINEASDELTA)$'), LineasDelta)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Almaceneras|almaceneras|ALMACENERAS)$'), almaceneras)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Hidrografia|hidrografia|HIDROGRAFIA)$'), hidrografia)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Suscribirme|suscribirme|SUSCRIBIRME)$'), suscribirme)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Amanita|amanita|AMANITA)$'), amanita)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Alfareria|alfareria|ALFARERIA)$'), alfareria)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Labusqueda|labusqueda|LABUSQUEDA)$'), labusqueda)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Canaveralkayaks|canaveralkayaks|CANAVERALKAYAKS)$'), canaveralkayaks)),
         
         # Handlers for words contained in messages
-        MessageHandler(filters.Regex(r'(?i)(.*\bcharlar\b.*)'), charlar),
-        MessageHandler(filters.Regex(r'(?i)(.*\bmareas\b.*)'), mareas),
-        MessageHandler(filters.Regex(r'(?i)(.*\bmarea\b.*)'), mareas),
-        MessageHandler(filters.Regex(r'(?i)(.*\bhidrografia\b.*)'), hidrografia),
-        MessageHandler(filters.Regex(r'(?i)(.*\bwindguru\b.*)'), windguru),
-        MessageHandler(filters.Regex(r'(?i)(.*\bdesuscribirme\b.*)'), desuscribirme),
-        MessageHandler(filters.Regex(r'(?i)(.*\bmemes\b.*)'), memes),
-        MessageHandler(filters.Regex(r'(?i)(.*\bmeme\b.*)'), memes),
-        MessageHandler(filters.Regex(r'(?i)(.*\bcolaborar\b.*)'), colaborar),
-        MessageHandler(filters.Regex(r'(?i)(.*\binformacion\b.*)'), informacion),
-        MessageHandler(filters.Regex(r'(?i)(.*\bmensajear\b.*)'), mensaje_trigger),
-        MessageHandler(filters.Regex(r'(?i)(.*\bhola\b.*)'), start),
-        MessageHandler(filters.Regex(r'(?i)(.*\bcolectivas\b.*)'), colectivas),
-        MessageHandler(filters.Regex(r'(?i)(.*\bgracias\b.*)'), de_nada),
-        MessageHandler(filters.Regex(r'(?i)(.*\bJilguero\b.*)'), Jilguero),
-        MessageHandler(filters.Regex(r'(?i)(.*\bInterislena\b.*)'), Interislena),
-        MessageHandler(filters.Regex(r'(?i)(.*\bLineasDelta\b.*)'), LineasDelta),
-        MessageHandler(filters.Regex(r'(?i)(.*\balmaceneras\b.*)'), almaceneras),
-        MessageHandler(filters.Regex(r'(?i)(.*\balmacenera\b.*)'), almaceneras),
-        MessageHandler(filters.Regex(r'(?i)(.*\balmacén\b.*)'), almaceneras),
-        MessageHandler(filters.Regex(r'(?i)(.*\balmacen\b.*)'), almaceneras),
-        MessageHandler(filters.Regex(r'(?i)(.*\bhidrografia\b.*)'), hidrografia),
-        MessageHandler(filters.Regex(r'(?i)(.*\bamanita\b.*)'), amanita),
-        MessageHandler(filters.Regex(r'(?i)(.*\balfareria\b.*)'), alfareria),
-        MessageHandler(filters.Regex(r'(?i)(.*\blabusqueda\b.*)'), labusqueda),
-        MessageHandler(filters.Regex(r'(?i)(.*\bcanaveralkayaks\b.*)'), canaveralkayaks),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bcharlar\b.*)'), charlar)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bmareas\b.*)'), mareas)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bmarea\b.*)'), mareas)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bhidrografia\b.*)'), hidrografia)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bwindguru\b.*)'), windguru)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bdesuscribirme\b.*)'), desuscribirme)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bmemes\b.*)'), memes)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bmeme\b.*)'), memes)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bcolaborar\b.*)'), colaborar)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\binformacion\b.*)'), informacion)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bmensajear\b.*)'), mensaje_trigger)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bhola\b.*)'), start)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bcolectivas\b.*)'), colectivas)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bgracias\b.*)'), de_nada)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bJilguero\b.*)'), Jilguero)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bInterislena\b.*)'), Interislena)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bLineasDelta\b.*)'), LineasDelta)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\balmaceneras\b.*)'), almaceneras)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\balmacenera\b.*)'), almaceneras)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\balmacén\b.*)'), almaceneras)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\balmacen\b.*)'), almaceneras)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bhidrografia\b.*)'), hidrografia)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bamanita\b.*)'), amanita)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\balfareria\b.*)'), alfareria)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\blabusqueda\b.*)'), labusqueda)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bcanaveralkayaks\b.*)'), canaveralkayaks)),
         # LLM como fallback
         MessageHandler(filters.TEXT, llm_fallback)
     ]
@@ -274,7 +251,8 @@ if __name__ == '__main__':
     # Combine all handlers, with command handlers first to ensure they take priority
     handlers = command_handlers + message_handlers
 
-    conv_handler = ConversationHandler(
+    # Wrap the conversation handler with tracking
+    conv_handler = wrap_handler_with_tracking(ConversationHandler(
         entry_points=handlers,
         states={
             ANSWER_charlar: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), answer_charlar)],
@@ -298,7 +276,7 @@ if __name__ == '__main__':
         },
         # LLM fallback handler
         fallbacks=[MessageHandler(filters.TEXT, llm_fallback)] + handlers,
-    )
+    ))
 
     application.add_handler(conv_handler)
     application.run_polling()
