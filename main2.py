@@ -100,6 +100,7 @@ if __name__ == '__main__':
         CommandHandler("cancel", cancel),
         CommandHandler('charlar', charlar),
         CommandHandler('mareas', mareas),
+        CommandHandler('mareaa', mareas),
         CommandHandler('windguru', windguru),
         CommandHandler('memes', memes),
         CommandHandler('colaborar', colaborar),
@@ -141,6 +142,7 @@ if __name__ == '__main__':
         # Handlers for words contained in messages
         MessageHandler(filters.Regex(r'(?i)(.*\bcharlar\b.*)'), charlar),
         MessageHandler(filters.Regex(r'(?i)(.*\bmareas\b.*)'), mareas),
+        MessageHandler(filters.Regex(r'(?i)(.*\bmarea\b.*)'), mareas),
         MessageHandler(filters.Regex(r'(?i)(.*\bhidrografia\b.*)'), hidrografia),
         MessageHandler(filters.Regex(r'(?i)(.*\bwindguru\b.*)'), windguru),
         MessageHandler(filters.Regex(r'(?i)(.*\bdesuscribirme\b.*)'), desuscribirme),
