@@ -5,17 +5,6 @@ from openai import OpenAI
 import mysql.connector
 from mysql.connector import Error
 
-# Import store_chat_message from main2.py to avoid duplication
-try:
-    from main2 import store_chat_message
-except ImportError:
-    # This fallback is just for when main2 hasn't been loaded yet
-    # or during initial imports - the main application should use 
-    # the version from main2.py
-    def store_chat_message(phone_number, role, content):
-        print("Warning: Using placeholder store_chat_message function. Main application will use the version from main2.py")
-        return False
-
 
 # Load environment variables or tokens
 try:
@@ -284,16 +273,9 @@ def get_llm_response(user_input, phone_number=None):
     try:               
         context_manager = ContextManager()
         llm_client = LLMClient(openai_client)
-        # Generate context
         context = context_manager.generate_context(user_input)
-        # Get response from LLM
         response = llm_client.get_response(user_input, context, phone_number)
-        # Store messages in MySQL using the function from main2.py
-        user_stored = store_chat_message(phone_number, "user", user_input)
-        assistant_stored = store_chat_message(phone_number, "assistant", response)
         
-        if not user_stored or not assistant_stored:
-            print("Warning: Failed to store one or more chat messages")
 
         return response
     except Exception as e:

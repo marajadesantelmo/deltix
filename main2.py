@@ -75,6 +75,31 @@ except pd.errors.ParserError:
     user_experience.to_csv(user_experience_path, index=False)
     print("File cleaned and saved successfully.")
 
+# Create helper function to track bot responses
+async def track_bot_response(user_id, message_text):
+    """Store bot response in chat history"""
+    try:
+        store_chat_message(user_id, "assistant", message_text)
+    except Exception as e:
+        print(f"Failed to store bot message: {e}")
+
+# Add a monkey patch for update.message.reply_text to track bot responses
+original_reply_text = Update.message.reply_text
+
+async def tracked_reply_text(self, text, *args, **kwargs):
+    """Wrapper for reply_text that tracks the bot's message"""
+    # First call the original method to send the message
+    result = await original_reply_text(self, text, *args, **kwargs)
+    
+    # Then store the message in chat history
+    user_id = self.effective_user.id
+    await track_bot_response(user_id, text)
+    
+    return result
+
+# Apply the monkey patch
+Update.message.reply_text = tracked_reply_text
+
 # Add a new fallback handler function that uses the LLM
 async def llm_fallback(update, context):
     user_id = update.effective_user.id
@@ -86,15 +111,14 @@ async def llm_fallback(update, context):
     )
     
     try:
-        # Get response from LLM (ensure this is awaited)
-        # Note: get_llm_response already tracks the message, so we don't double-track it
+        # Note: get_llm_response already tracks both user input and its response
         llm_response = await asyncio.to_thread(get_llm_response, user_input, user_id)
         
         # Cancel the thinking message task if it hasn't been sent yet
         thinking_message_task.cancel()
         
-        # Send the response back to the user (no need to track again)
-        await update.message.reply_text(llm_response)
+        # Send response (no need to track as llm_connector already does it)
+        await update.message.reply_text(llm_response, track=False)
     except Exception as e:
         # Log the error and notify the user
         print(f"Error in LLM fallback: {e}")
@@ -121,9 +145,12 @@ async def send_thinking_message_after_delay(update, delay_seconds):
     
     try:
         await asyncio.sleep(delay_seconds)
-        # Choose a random message from the list
         thinking_message = random.choice(thinking_messages)
+        
+        # Send and track the thinking message
         await update.message.reply_text(thinking_message)
+        
+        # No need to explicitly track due to monkey patched reply_text
     except asyncio.CancelledError:
         # Task was cancelled because response arrived before timeout
         pass
@@ -140,12 +167,15 @@ def wrap_handler_with_tracking(handler):
         original_callback = handler.callback
         
         async def wrapped_callback(update, context):
+            # Track user message
             if update.message and update.message.text:
                 user_id = update.effective_user.id
                 try:
                     store_chat_message(user_id, "user", update.message.text)
                 except Exception as e:
                     print(f"Failed to store user message: {e}")
+            
+            # Call original handler
             return await original_callback(update, context)
         
         handler.callback = wrapped_callback
