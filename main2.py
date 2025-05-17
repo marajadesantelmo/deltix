@@ -95,45 +95,6 @@ async def tracked_reply(update, text, *args, **kwargs):
     except Exception as e:
         print(f"Failed to track bot response: {e}")
 
-# Modify the wrap_handler_with_tracking function to use our tracked_reply helper
-def wrap_handler_with_tracking(handler):
-    """Wrap a handler with message tracking functionality"""
-    if isinstance(handler, (CommandHandler, MessageHandler)):
-        original_callback = handler.callback
-        
-        async def wrapped_callback(update, context):
-            # Track user message
-            if update.message and update.message.text:
-                user_id = update.effective_user.id
-                try:
-                    store_chat_message(user_id, "user", update.message.text)
-                except Exception as e:
-                    print(f"Failed to store user message: {e}")
-            
-            # Add tracked_reply to context for handlers to use
-            context.tracked_reply = lambda text, *args, **kwargs: tracked_reply(update, text, *args, **kwargs)
-            
-            # Call original handler
-            return await original_callback(update, context)
-        
-        handler.callback = wrapped_callback
-    
-    elif isinstance(handler, ConversationHandler):
-        # Wrap entry points
-        for entry_point in handler.entry_points:
-            wrap_handler_with_tracking(entry_point)
-        
-        # Wrap state handlers
-        for state, state_handlers in handler.states.items():
-            for state_handler in state_handlers:
-                wrap_handler_with_tracking(state_handler)
-        
-        # Wrap fallbacks
-        for fallback in handler.fallbacks:
-            wrap_handler_with_tracking(fallback)
-    
-    return handler
-
 # Update the llm_fallback handler to use tracked_reply
 async def llm_fallback(update, context):
     user_id = update.effective_user.id
@@ -146,6 +107,7 @@ async def llm_fallback(update, context):
     
     try:
         # Get response from LLM (ensure this is awaited)
+        # Don't track the message here since it's already tracked by the handler wrapper
         llm_response = await asyncio.to_thread(get_llm_response, user_input, user_id)
         
         # Cancel the thinking message task if it hasn't been sent yet
@@ -187,22 +149,18 @@ async def send_thinking_message_after_delay(update, context, delay_seconds):
         # Task was cancelled because response arrived before timeout
         pass
 
-# Remove these lines that cause the error
-# original_add_handler = ApplicationBuilder.add_handler
-# def add_handler_with_middleware(self, handler):
-# ApplicationBuilder.add_handler = add_handler_with_middleware
-
-# Instead, create a function to wrap handlers with message tracking
+# Define the wrap_handler_with_tracking function (keep only one version)
 def wrap_handler_with_tracking(handler):
     """Wrap a handler with message tracking functionality"""
     if isinstance(handler, (CommandHandler, MessageHandler)):
         original_callback = handler.callback
         
         async def wrapped_callback(update, context):
-            # Track user message
+            # Track user message exactly once
             if update.message and update.message.text:
                 user_id = update.effective_user.id
                 try:
+                    # Only track messages here, remove tracking from llm_connector.py
                     store_chat_message(user_id, "user", update.message.text)
                 except Exception as e:
                     print(f"Failed to store user message: {e}")
@@ -247,7 +205,6 @@ if __name__ == '__main__':
         wrap_handler_with_tracking(CommandHandler('windguru', windguru)),
         wrap_handler_with_tracking(CommandHandler('memes', memes)),
         wrap_handler_with_tracking(CommandHandler('colaborar', colaborar)),
-        wrap_handler_with_tracking(CommandHandler('informacion', informacion)),
         wrap_handler_with_tracking(CommandHandler('mensajear', mensaje_trigger)),
         wrap_handler_with_tracking(CommandHandler('colectivas', colectivas)),
         wrap_handler_with_tracking(CommandHandler('almaceneras', almaceneras)),
@@ -266,7 +223,6 @@ if __name__ == '__main__':
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Desuscribirme|desuscribirme|DESUSCRIBIRME)$'), desuscribirme)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Memes|memes|MEMES|Meme|meme|MEME)$'), memes)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Colaborar|colaborar|COLABORAR)$'), colaborar)),
-        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Informacion|informacion|INFORMACION)$'), informacion)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Mensajear|mensajear|MENSAJEAR)$'), mensaje_trigger)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Hola|hola|HOLA)$'), start)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Colectivas|colectivas|COLECTIVAS|horarios)$'), colectivas)),
@@ -292,7 +248,6 @@ if __name__ == '__main__':
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bmemes\b.*)'), memes)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bmeme\b.*)'), memes)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bcolaborar\b.*)'), colaborar)),
-        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\binformacion\b.*)'), informacion)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bmensajear\b.*)'), mensaje_trigger)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bhola\b.*)'), start)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bcolectivas\b.*)'), colectivas)),
@@ -323,7 +278,6 @@ if __name__ == '__main__':
             ANSWER_charlar: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), answer_charlar)],
             ANSWER_meme: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), answer_meme)],
             ANSWER_meme2: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), answer_meme2)],
-            ANSWER_informacion: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), answer_informacion)],
             ANSWER_colaborar: [MessageHandler(filters.Regex(r'^(Mensajear|mensajear|MENSAJEAR|Aportar|aportar|APORTAR)$'), answer_colaborar)],
             ANSWER_mareas_suscribir: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), mareas_suscribir)],
             ANSWER_windguru_suscribir: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), windguru_suscribir)],

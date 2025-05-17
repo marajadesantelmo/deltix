@@ -275,8 +275,6 @@ def get_llm_response(user_input, phone_number=None):
         llm_client = LLMClient(openai_client)
         context = context_manager.generate_context(user_input)
         response = llm_client.get_response(user_input, context, phone_number)
-        
-
         return response
     except Exception as e:
         print(f"Error in get_llm_response: {e}")
