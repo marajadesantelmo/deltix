@@ -19,7 +19,6 @@ else:
         base_path = ''
 user_experience_path = base_path + 'user_experience.csv'
 
-# Define store_chat_message function directly in main2.py
 def store_chat_message(phone_number, role, content):
     """Store a chat message in MySQL."""
     try:

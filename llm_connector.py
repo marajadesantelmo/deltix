@@ -204,7 +204,7 @@ class LLMClient:
         )
         messages = [
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": f"Mensaje: {user_input}\n\nContexto:\n{context}\n\nHistorial de chat con el usuario:\n{chat_history}"},
+            {"role": "user", "content": f"Ultimo mensaje del usuario: {user_input}\n\nContexto:\n{context}\n\nHistorial de chat con el usuario:\n{chat_history}"},
         ]
 
         for attempt in range(self.retries):
