@@ -6,7 +6,9 @@ import asyncio
 import random
 from tokens import telegram_token
 from deltix_funciones import *
-from llm_connector import get_llm_response, create_conversation
+from llm_connector import get_llm_response, create_conversation, get_db_connection
+import mysql.connector
+from mysql.connector import Error
 
 # Initialize a dictionary to store project IDs for each user
 user_projects = {}
@@ -16,6 +18,44 @@ if os.path.exists('/home/facundol/deltix/'):
 else:
         base_path = ''
 user_experience_path = base_path + 'user_experience.csv'
+
+# Define store_chat_message function directly in main2.py
+def store_chat_message(phone_number, role, content):
+    """Store a chat message in MySQL."""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # get conversation ID from the database by phone number
+        cursor.execute("SELECT id FROM conversations WHERE name = %s", (phone_number,))
+        conversation_id = cursor.fetchone()
+        
+        if conversation_id is None:
+            print(f"No conversation found for phone: {phone_number}. Creating a new one.")
+            conversation_id = create_conversation(phone_number)
+            # Get the conversation ID in the correct format
+            if not isinstance(conversation_id, (tuple, list)):
+                conversation_id = (conversation_id,)
+
+        conn = get_db_connection()
+        cursor = conn.cursor()    
+        cursor.execute(
+            "INSERT INTO chat_history (conversation_id, role, content) VALUES (%s, %s, %s)",
+            (conversation_id[0], role, content)
+        )
+        conn.commit()
+        
+        # Verify insertion
+        message_id = cursor.lastrowid
+        print(f"Message stored with ID: {message_id}")
+        
+        cursor.close()
+        return True
+    except Error as err:
+        print(f"Error storing chat message: {err}")
+        if 'conn' in locals() and conn:
+            conn.rollback()
+        return False
 
 try:
     user_experience = pd.read_csv(user_experience_path)
@@ -47,12 +87,13 @@ async def llm_fallback(update, context):
     
     try:
         # Get response from LLM (ensure this is awaited)
+        # Note: get_llm_response already tracks the message, so we don't double-track it
         llm_response = await asyncio.to_thread(get_llm_response, user_input, user_id)
         
         # Cancel the thinking message task if it hasn't been sent yet
         thinking_message_task.cancel()
         
-        # Send the response back to the user
+        # Send the response back to the user (no need to track again)
         await update.message.reply_text(llm_response)
     except Exception as e:
         # Log the error and notify the user
@@ -86,6 +127,66 @@ async def send_thinking_message_after_delay(update, delay_seconds):
     except asyncio.CancelledError:
         # Task was cancelled because response arrived before timeout
         pass
+
+# Add a function to track message history for all message handlers
+async def track_message_middleware(update, context, next_handler):
+    """Middleware to track all messages in the chat history"""
+    if update.message and update.message.text:
+        user_id = update.effective_user.id
+        # Store user message in chat history using our local function
+        try:
+            store_chat_message(user_id, "user", update.message.text)
+        except Exception as e:
+            print(f"Failed to store user message: {e}")
+    
+    # Call the original handler and get its result
+    result = await next_handler(update, context)
+    
+    return result
+
+# Override the ApplicationBuilder.add_handler method to add the middleware
+original_add_handler = ApplicationBuilder.add_handler
+
+def add_handler_with_middleware(self, handler):
+    """Add the handler with middleware that tracks messages"""
+    # For CommandHandlers and MessageHandlers
+    if isinstance(handler, (CommandHandler, MessageHandler)):
+        original_callback = handler.callback
+        
+        async def wrapped_callback(update, context):
+            return await track_message_middleware(update, context, original_callback)
+        
+        handler.callback = wrapped_callback
+    
+    # For ConversationHandler, wrap all callbacks in all states
+    elif isinstance(handler, ConversationHandler):
+        # Wrap entry points
+        for entry_point in handler.entry_points:
+            original_callback = entry_point.callback
+            async def wrapped_entry(update, context):
+                return await track_message_middleware(update, context, original_callback)
+            entry_point.callback = wrapped_entry
+        
+        # Wrap state handlers
+        for state, state_handlers in handler.states.items():
+            for state_handler in state_handlers:
+                original_callback = state_handler.callback
+                async def wrapped_state(update, context):
+                    return await track_message_middleware(update, context, original_callback)
+                state_handler.callback = wrapped_state
+        
+        # Wrap fallbacks
+        for fallback in handler.fallbacks:
+            original_callback = fallback.callback
+            async def wrapped_fallback(update, context):
+                return await track_message_middleware(update, context, original_callback)
+            fallback.callback = wrapped_fallback
+    
+    # Call the original add_handler method
+    return original_add_handler(self, handler)
+
+# Replace the original add_handler method with our version
+ApplicationBuilder.add_handler = add_handler_with_middleware
 
 nest_asyncio.apply()
 

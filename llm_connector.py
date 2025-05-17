@@ -5,6 +5,17 @@ from openai import OpenAI
 import mysql.connector
 from mysql.connector import Error
 
+# Import store_chat_message from main2.py to avoid duplication
+try:
+    from main2 import store_chat_message
+except ImportError:
+    # This fallback is just for when main2 hasn't been loaded yet
+    # or during initial imports - the main application should use 
+    # the version from main2.py
+    def store_chat_message(phone_number, role, content):
+        print("Warning: Using placeholder store_chat_message function. Main application will use the version from main2.py")
+        return False
+
 
 # Load environment variables or tokens
 try:
@@ -268,36 +279,6 @@ def get_or_create_conversation(phone_number=None):
         print(f"Error getting or creating conversation: {err}")
         return None
         
-def store_chat_message(phone_number, role, content):
-    """Store a chat message in MySQL."""
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
-        # get conversation ID from the database by phone number
-        cursor.execute("SELECT id FROM conversations WHERE name = %s", (phone_number,))
-        conversation_id = cursor.fetchone()   
-
-        conn = get_db_connection()
-        cursor = conn.cursor()    
-        cursor.execute(
-            "INSERT INTO chat_history (conversation_id, role, content) VALUES (%s, %s, %s)",
-            (conversation_id[0], role, content)
-        )
-        conn.commit()
-        
-        # Verify insertion
-        message_id = cursor.lastrowid
-        print(f"Message stored with ID: {message_id}")
-        
-        cursor.close()
-        return True
-    except Error as err:
-        print(f"Error storing chat message: {err}")
-        if 'conn' in locals() and conn:
-            conn.rollback()
-        return False
-
 def get_llm_response(user_input, phone_number=None):
     """Main function to get a response from the LLM."""
     try:               
@@ -307,7 +288,7 @@ def get_llm_response(user_input, phone_number=None):
         context = context_manager.generate_context(user_input)
         # Get response from LLM
         response = llm_client.get_response(user_input, context, phone_number)
-        # Store messages in MySQL
+        # Store messages in MySQL using the function from main2.py
         user_stored = store_chat_message(phone_number, "user", user_input)
         assistant_stored = store_chat_message(phone_number, "assistant", response)
         
