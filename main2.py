@@ -83,7 +83,19 @@ async def track_bot_response(user_id, message_text):
     except Exception as e:
         print(f"Failed to store bot message: {e}")
 
-# Instead, modify the wrap_handler_with_tracking function to track responses
+# Create a function to track the reply
+async def tracked_reply(update, text, *args, **kwargs):
+    """Helper function to send a reply and track it in history"""
+    # First send the reply
+    await update.message.reply_text(text, *args, **kwargs)
+    
+    # Then store it in chat history
+    try:
+        await track_bot_response(update.effective_user.id, text)
+    except Exception as e:
+        print(f"Failed to track bot response: {e}")
+
+# Modify the wrap_handler_with_tracking function to use our tracked_reply helper
 def wrap_handler_with_tracking(handler):
     """Wrap a handler with message tracking functionality"""
     if isinstance(handler, (CommandHandler, MessageHandler)):
@@ -98,20 +110,8 @@ def wrap_handler_with_tracking(handler):
                 except Exception as e:
                     print(f"Failed to store user message: {e}")
             
-            # Store original reply_text method
-            original_reply_text = update.message.reply_text
-            
-            # Create a wrapped reply_text method that tracks responses
-            async def tracked_reply_text(text, *args, **kwargs):
-                result = await original_reply_text(text, *args, **kwargs)
-                try:
-                    await track_bot_response(update.effective_user.id, text)
-                except Exception as e:
-                    print(f"Failed to track bot response: {e}")
-                return result
-            
-            # Replace the method for this instance only
-            update.message.reply_text = tracked_reply_text
+            # Add tracked_reply to context for handlers to use
+            context.tracked_reply = lambda text, *args, **kwargs: tracked_reply(update, text, *args, **kwargs)
             
             # Call original handler
             return await original_callback(update, context)
@@ -134,14 +134,14 @@ def wrap_handler_with_tracking(handler):
     
     return handler
 
-# Update the llm_fallback handler since we're not using monkey patching anymore
+# Update the llm_fallback handler to use tracked_reply
 async def llm_fallback(update, context):
     user_id = update.effective_user.id
     user_input = update.message.text
     
     # Create a task to send "Dejame pensar..." after 3 seconds
     thinking_message_task = asyncio.create_task(
-        send_thinking_message_after_delay(update, 3)
+        send_thinking_message_after_delay(update, context, 3)
     )
     
     try:
@@ -151,19 +151,18 @@ async def llm_fallback(update, context):
         # Cancel the thinking message task if it hasn't been sent yet
         thinking_message_task.cancel()
         
-        # Send the response back to the user
-        # Note: reply_text is already wrapped, so this will be tracked
-        await update.message.reply_text(llm_response)
+        # Send the response back to the user and track it
+        await tracked_reply(update, llm_response)
     except Exception as e:
         # Log the error and notify the user
         print(f"Error in LLM fallback: {e}")
-        await update.message.reply_text("Lo siento, ocurrió un error al procesar tu consulta. Por favor, intentá más tarde.")
+        await tracked_reply(update, "Lo siento, ocurrió un error al procesar tu consulta. Por favor, intentá más tarde.")
     
     # Return to the conversation handler state
     return ConversationHandler.END
 
 # Helper function to send "Dejame pensar..." after a delay
-async def send_thinking_message_after_delay(update, delay_seconds):
+async def send_thinking_message_after_delay(update, context, delay_seconds):
     # List of possible thinking messages
     thinking_messages = [
         "Dejame pensar...",
@@ -183,9 +182,7 @@ async def send_thinking_message_after_delay(update, delay_seconds):
         thinking_message = random.choice(thinking_messages)
         
         # Send and track the thinking message
-        await update.message.reply_text(thinking_message)
-        
-        # No need to explicitly track due to monkey patched reply_text
+        await tracked_reply(update, thinking_message)
     except asyncio.CancelledError:
         # Task was cancelled because response arrived before timeout
         pass
@@ -210,20 +207,8 @@ def wrap_handler_with_tracking(handler):
                 except Exception as e:
                     print(f"Failed to store user message: {e}")
             
-            # Store original reply_text method
-            original_reply_text = update.message.reply_text
-            
-            # Create a wrapped reply_text method that tracks responses
-            async def tracked_reply_text(text, *args, **kwargs):
-                result = await original_reply_text(text, *args, **kwargs)
-                try:
-                    await track_bot_response(update.effective_user.id, text)
-                except Exception as e:
-                    print(f"Failed to track bot response: {e}")
-                return result
-            
-            # Replace the method for this instance only
-            update.message.reply_text = tracked_reply_text
+            # Add tracked_reply to context for handlers to use
+            context.tracked_reply = lambda text, *args, **kwargs: tracked_reply(update, text, *args, **kwargs)
             
             # Call original handler
             return await original_callback(update, context)
