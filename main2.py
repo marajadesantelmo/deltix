@@ -214,6 +214,7 @@ if __name__ == '__main__':
         wrap_handler_with_tracking(CommandHandler('alfareria', alfareria)),
         wrap_handler_with_tracking(CommandHandler('labusqueda', labusqueda)),
         wrap_handler_with_tracking(CommandHandler('canaveralkayaks', canaveralkayaks)),
+        wrap_handler_with_tracking(CommandHandler('charco_masajes', charco_masajes)),
     ]
     
     # Other handlers for message text with tracking
@@ -236,6 +237,7 @@ if __name__ == '__main__':
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Alfareria|alfareria|ALFARERIA)$'), alfareria)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Labusqueda|labusqueda|LABUSQUEDA)$'), labusqueda)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Canaveralkayaks|canaveralkayaks|CANAVERALKAYAKS)$'), canaveralkayaks)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(masajes|charco|MASAJES)$'), charco_masajes)),
         
         # Handlers for words contained in messages
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bcharlar\b.*)'), charlar)),
@@ -263,6 +265,7 @@ if __name__ == '__main__':
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\balfareria\b.*)'), alfareria)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\blabusqueda\b.*)'), labusqueda)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bcanaveralkayaks\b.*)'), canaveralkayaks)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bmasajes\b.*)'), charco_masajes)),
         # LLM como fallback
         MessageHandler(filters.TEXT, llm_fallback)
     ]

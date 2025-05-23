@@ -43,6 +43,7 @@ amanita_path = base_path + 'actividades_productos/amanita.png'
 alfareria_path = base_path + 'actividades_productos/alfareria.png'
 labusqueda_path = base_path + 'actividades_productos/labusqueda.png'    
 canaveral_path = base_path + 'actividades_productos/canaveralkayaks.png'
+charco_masajes_path = base_path + 'actividades_productos/charco_masajes.png'
 
 user_experience = pd.read_csv(user_experience_path)
 
@@ -84,7 +85,8 @@ def generate_main_menu():
             "- <b>/amanita </b>   <i> paseos en canoa isleña</i>\n"
             "- <b>/alfareria</b>   <i> encuentros con el barro</i>\n"
             "- <b>/labusqueda</b>   <i> espacio para ceremonias, hostal y mas</i>\n"
-            "- <b>/canaveralkayaks</b>   <i> excursiones en kayak</i>\n")
+            "- <b>/canaveralkayaks</b>   <i> excursiones en kayak</i>\n"
+            "- <b>/masajes</b>   <i> Masaje Thai</i>\n")
 
 main_menu_keyboard = ReplyKeyboardMarkup([["/windguru", "/mareas", "/hidrografia"],
                                           ["/colectivas", "/almaceneras", "/memes"],
@@ -263,6 +265,24 @@ async def canaveralkayaks(update: Update, context: ContextTypes.DEFAULT_TYPE)-> 
             "<i>Remadas nocturnas</i>\n\n"
             "linktr.ee/canaveralkayaks\n"
             "Contacto: 1126961274"
+        ),
+        parse_mode='HTML')
+    return ConversationHandler.END
+
+async def charco_masajes(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
+    '''
+    Respuesta cuando el usuario pide información de Charco Masajes
+    '''
+    chat_id = update.effective_chat.id
+    user = update.effective_user
+    await context.bot.send_photo(chat_id, open(charco_masajes_path, "rb"))
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=(
+            "<b>Masaje Thai</b>\n\n"
+            "<i>en el Tres Bocas</i>\n"
+            "@estecharco\n"
+            "Contacto: 1122541171"
         ),
         parse_mode='HTML')
     return ConversationHandler.END
