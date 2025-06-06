@@ -83,7 +83,7 @@ def generate_main_menu():
             "- <b>/mensajear </b>   <i> mandarle un mensajito al equipo Deltix</i>"
             "\n"
             "\n"
-            "<b>Actividades y emprendimientos isleños</b>\n"
+            "<b>Agenda del río</b>\n"
             "\n"
             "- <b>/amanita </b>   <i> paseos en canoa isleña</i>\n"
             "- <b>/alfareria</b>   <i> encuentros con el barro</i>\n"

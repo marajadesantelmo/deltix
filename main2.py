@@ -239,7 +239,7 @@ if __name__ == '__main__':
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Labusqueda|labusqueda|LABUSQUEDA)$'), labusqueda)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Canaveralkayaks|canaveralkayaks|CANAVERALKAYAKS)$'), canaveralkayaks)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(masajes|charco|MASAJES)$'), charco_masajes)),
-        
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(familia islena|familia_islena|FAMILIA ISLENA)$'), familia_islena)),
         # Handlers for words contained in messages
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bcharlar\b.*)'), charlar)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bmareas\b.*)'), mareas)),
@@ -267,6 +267,7 @@ if __name__ == '__main__':
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\blabusqueda\b.*)'), labusqueda)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bcanaveralkayaks\b.*)'), canaveralkayaks)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bmasajes\b.*)'), charco_masajes)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bfamilia islena\b.*)'), familia_islena)),
         # LLM como fallback
         MessageHandler(filters.TEXT, llm_fallback)
     ]
