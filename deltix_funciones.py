@@ -45,7 +45,7 @@ labusqueda_path = base_path + 'actividades_productos/labusqueda.png'
 canaveral_path = base_path + 'actividades_productos/canaveralkayaks.png'
 charco_masajes_path = base_path + 'actividades_productos/charco_masajes.png'
 familia_islena_path = base_path + 'actividades_productos/familia_islena_flyer.jpg'
-familia_islena_path1 = base_path + 'actividades_productos/familia_islena1.jpg'
+familia_islena_path1 = base_path + 'actividades_productos/familia_islena.jpg'
 familia_islena_path2 = base_path + 'actividades_productos/familia_islena2.jpg'
 
 user_experience = pd.read_csv(user_experience_path)
