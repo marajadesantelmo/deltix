@@ -215,6 +215,7 @@ if __name__ == '__main__':
         wrap_handler_with_tracking(CommandHandler('labusqueda', labusqueda)),
         wrap_handler_with_tracking(CommandHandler('canaveralkayaks', canaveralkayaks)),
         wrap_handler_with_tracking(CommandHandler('charco_masajes', charco_masajes)),
+        wrap_handler_with_tracking(CommandHandler('familia_islena', familia_islena)),
     ]
     
     # Other handlers for message text with tracking
@@ -224,7 +225,7 @@ if __name__ == '__main__':
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Memes|memes|MEMES|Meme|meme|MEME)$'), memes)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Colaborar|colaborar|COLABORAR)$'), colaborar)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Mensajear|mensajear|MENSAJEAR)$'), mensaje_trigger)),
-        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Hola|hola|HOLA)$'), start)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Hola|hola|HOLA)[\s!,.¿?]*'), start)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Colectivas|colectivas|COLECTIVAS|horarios)$'), colectivas)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Gracias|gracias|GRACIAS)$'), de_nada)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Interislena|interislena|INTERISLENA)$'), Interislena)),

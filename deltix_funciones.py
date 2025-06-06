@@ -44,6 +44,9 @@ alfareria_path = base_path + 'actividades_productos/alfareria.png'
 labusqueda_path = base_path + 'actividades_productos/labusqueda.png'    
 canaveral_path = base_path + 'actividades_productos/canaveralkayaks.png'
 charco_masajes_path = base_path + 'actividades_productos/charco_masajes.png'
+familia_islena_path = base_path + 'actividades_productos/familia_islena_flyer.png'
+familia_islena_path1 = base_path + 'actividades_productos/familia_islena1.png'
+familia_islena_path2 = base_path + 'actividades_productos/familia_islena2.png'
 
 user_experience = pd.read_csv(user_experience_path)
 
@@ -86,7 +89,8 @@ def generate_main_menu():
             "- <b>/alfareria</b>   <i> encuentros con el barro</i>\n"
             "- <b>/labusqueda</b>   <i> espacio para ceremonias, hostal y mas</i>\n"
             "- <b>/canaveralkayaks</b>   <i> excursiones en kayak</i>\n"
-            "- <b>/masajes</b>   <i> Masaje Thai</i>\n")
+            "- <b>/masajes</b>   <i> masaje thai</i>\n"
+            "- <b>/familia_islena</b>   <i> alimentos, dietetica, natural</i>\n")
 
 main_menu_keyboard = ReplyKeyboardMarkup([["/windguru", "/mareas", "/hidrografia"],
                                           ["/colectivas", "/almaceneras", "/memes"],
@@ -285,6 +289,28 @@ async def charco_masajes(update: Update, context: ContextTypes.DEFAULT_TYPE)-> N
             "Contacto: 1122541171"
         ),
         parse_mode='HTML')
+    return ConversationHandler.END
+
+async def familia_islena(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
+    '''
+    Respuesta cuando el usuario pide información de Familia Isleña
+    '''
+    chat_id = update.effective_chat.id
+    user = update.effective_user
+    await context.bot.send_photo(chat_id, open(familia_islena_path, "rb"))
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=(
+            "<b>La Familia Isleña</b>\n\n"
+            "<i>Alimentos dietética, nutritivos y a buen precio</i>\n"
+            "Harinas, arroces, lentejas, porotos, frutos secos y más!\n"
+            "Repartos a tu muelle con envíos gratis todas las semanas\n"
+            "Pedidos al WhatsApp de Jorge (Piojo): 11 3046-6301"
+        ),
+        parse_mode='HTML')
+    time.sleep(3)
+    await context.bot.send_photo(chat_id, open(familia_islena_path1, "rb"))
+    await context.bot.send_photo(chat_id, open(familia_islena_path2, "rb"))
     return ConversationHandler.END
 
 async def charlar(update: Update, context: ContextTypes.DEFAULT_TYPE):
