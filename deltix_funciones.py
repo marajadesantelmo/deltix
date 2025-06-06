@@ -90,7 +90,7 @@ def generate_main_menu():
             "- <b>/labusqueda</b>   <i> espacio para ceremonias, hostal y mas</i>\n"
             "- <b>/canaveralkayaks</b>   <i> excursiones en kayak</i>\n"
             "- <b>/masajes</b>   <i> masaje thai</i>\n"
-            "- <b>/familia_islena</b>   <i> alimentos, dietetica, natural</i>\n")
+            "- <b>/familia_islena</b>   <i> alimentos y dietetica natural</i>\n")
 
 main_menu_keyboard = ReplyKeyboardMarkup([["/windguru", "/mareas", "/hidrografia"],
                                           ["/colectivas", "/almaceneras", "/memes"],
