@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-08-06 07:02:15",
+  "timestamp": "2025-08-07 07:02:18",
   "type": "current",
   "data": {
     "coord": {
@@ -16,30 +16,30 @@
     ],
     "base": "stations",
     "main": {
-      "temp": 7.82,
-      "feels_like": 6.19,
-      "temp_min": 6.78,
-      "temp_max": 9.05,
-      "pressure": 1026,
-      "humidity": 85,
-      "sea_level": 1026,
-      "grnd_level": 1025
+      "temp": 10.47,
+      "feels_like": 9.69,
+      "temp_min": 9.06,
+      "temp_max": 10.97,
+      "pressure": 1023,
+      "humidity": 81,
+      "sea_level": 1023,
+      "grnd_level": 1021
     },
     "visibility": 10000,
     "wind": {
-      "speed": 2.57,
-      "deg": 80
+      "speed": 2.06,
+      "deg": 210
     },
     "clouds": {
       "all": 0
     },
-    "dt": 1754463735,
+    "dt": 1754550137,
     "sys": {
       "type": 1,
       "id": 8232,
       "country": "AR",
-      "sunrise": 1754476985,
-      "sunset": 1754515038
+      "sunrise": 1754563328,
+      "sunset": 1754601482
     },
     "timezone": -10800,
     "id": 3427761,
