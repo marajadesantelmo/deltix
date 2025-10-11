@@ -220,6 +220,7 @@ if __name__ == '__main__':
     
     # Other handlers for message text with tracking
     message_handlers = [
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Mareas|mareas|MAREAS|Marea|marea|MAREA)$'), mareas)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Windguru|windguru|WINDGURU)$'), windguru)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Desuscribirme|desuscribirme|DESUSCRIBIRME)$'), desuscribirme)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Memes|memes|MEMES|Meme|meme|MEME)$'), memes)),
