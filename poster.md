@@ -66,7 +66,7 @@ Jornadas UNDelta Investiga
 - ⏰ **Horarios actualizados** de lanchas colectivas
 
 ### Servicios Locales
-- 🛒 **Directorio de almaceneras** (delivery fluvial)
+- 🛒 **Directorio de almaceneras**
 - 🎯 **Agenda del río** (actividades y emprendimientos)
 - 📞 **Contactos de emergencia** y servicios públicos
 
