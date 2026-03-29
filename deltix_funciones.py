@@ -82,7 +82,7 @@ def generate_main_menu():
             "- <b>/informacion </b>   <i> saber más sobre Deltix &#128057</i>\n"
             "- <b>/colaborar </b>   <i> hacer sugerencias o aportar</i>\n"
             "- <b>/desuscribirme </b>   <i> darte de baja de mis envíos &#x1F989</i>\n"
-            "- <b>/mensajear </b>   <i> mandarle un mensajito al equipo Deltix</i>"
+            #"- <b>/mensajear </b>   <i> mandarle un mensajito al equipo Deltix</i>"
             "\n"
             "\n"
             "<b>Agenda del río</b>\n"
@@ -96,7 +96,7 @@ def generate_main_menu():
 
 main_menu_keyboard = ReplyKeyboardMarkup([["/windguru", "/mareas", "/hidrografia"],
                                           ["/colectivas", "/almaceneras", "/memes"],
-                                          ["/mensajear", "/suscribirme", "/desuscribirme"]])
+                                          ["/colaborar", "/suscribirme", "/desuscribirme"]])
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
     '''
@@ -755,7 +755,7 @@ async def mensajear(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         print(f"Error en mensajear(): {e}")
         await update.message.reply_text(
             'Ups, hubo un problema al enviar tu mensaje. '
-            'Por favor intentá de nuevo más tarde o contactá a @marajadesantelmo directamente.'
+            'Por favor intentá de nuevo más tarde o contactanos por instagram.com/deltix_bot'
         )
     return ConversationHandler.END
 
