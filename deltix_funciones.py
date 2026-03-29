@@ -58,7 +58,8 @@ def update_user_experience(user_id, option):
 
     if user_id in user_experience['User ID'].values:
         user_experience.loc[user_experience['User ID'] == user_id, timestamp_col] = datetime.now().strftime('%d-%m-%Y %H:%M')
-        user_experience.loc[user_experience['User ID'] == user_id, q_col] += 1
+        current = user_experience.loc[user_experience['User ID'] == user_id, q_col].values[0]
+        user_experience.loc[user_experience['User ID'] == user_id, q_col] = int(current) + 1
         user_experience.to_csv(user_experience_path, index=False)
 
 def generate_main_menu():
@@ -745,13 +746,13 @@ async def mensajear(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     '''
     user = update.message.from_user
     message_text = update.message.text
-    update_user_experience(user.id, 'mensajear')
     body = f'Mensaje de {user.first_name}: {message_text}'
     try:
+        update_user_experience(user.id, 'mensajear')
         await asyncio.to_thread(_send_email_sync, body)
         await update.message.reply_text('Mensaje enviado con éxito. ¡Gracias!')
     except Exception as e:
-        print(f"Error al enviar email en mensajear(): {e}")
+        print(f"Error en mensajear(): {e}")
         await update.message.reply_text(
             'Ups, hubo un problema al enviar tu mensaje. '
             'Por favor intentá de nuevo más tarde o contactá a @marajadesantelmo directamente.'
