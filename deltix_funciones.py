@@ -59,7 +59,8 @@ def update_user_experience(user_id, option):
     if user_id in user_experience['User ID'].values:
         user_experience.loc[user_experience['User ID'] == user_id, timestamp_col] = datetime.now().strftime('%d-%m-%Y %H:%M')
         current = user_experience.loc[user_experience['User ID'] == user_id, q_col].values[0]
-        user_experience.loc[user_experience['User ID'] == user_id, q_col] = int(current) + 1
+        current = 0 if pd.isna(current) else int(current)
+        user_experience.loc[user_experience['User ID'] == user_id, q_col] = current + 1
         user_experience.to_csv(user_experience_path, index=False)
 
 def generate_main_menu():
