@@ -297,9 +297,13 @@ if __name__ == '__main__':
             ANSWER_almacenera_select: [MessageHandler(filters.TEXT, almacenera_selected)],
             ANSWER_colectivas: [MessageHandler(filters.TEXT, answer_colectivas)],
             ANSWER_suscribirme: [MessageHandler(filters.Regex(r'^(Mareas|mareas|Hidrografia|hidrografia|Windguru|windguru)$'), answer_suscribirme)],
+            ConversationHandler.TIMEOUT: [MessageHandler(filters.TEXT, timeout_handler),
+                                          CommandHandler('start', timeout_handler),
+                                          CommandHandler('menu', timeout_handler)],
         },
         # LLM fallback handler
         fallbacks=[MessageHandler(filters.TEXT, llm_fallback)] + handlers,
+        conversation_timeout=600,
     ))
 
     application.add_handler(conv_handler)

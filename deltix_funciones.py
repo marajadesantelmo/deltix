@@ -1,6 +1,7 @@
 import pandas as pd
 import random
 import time
+import asyncio
 from datetime import datetime
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import ContextTypes, ConversationHandler
@@ -719,9 +720,24 @@ async def mensaje_trigger(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     Respuesta cuando el usuario quiere mandar un mensaje al desarrollador
     Luego hay que dirigirlo a la funcion mensajear para que el mensaje se mande
     '''
-    await update.message.reply_text("Escribí el mensaje y yo se lo reenvío al equipo Deltix",
-                                    parse_mode='HTML')
+    await update.message.reply_text(
+        "Escribí el mensaje y yo se lo reenvío al equipo Deltix\n"
+        "(escribí /cancel para cancelar)",
+        parse_mode='HTML')
     return ANSWER_mensajear
+
+def _send_email_sync(body):
+    """Synchronous helper to send email — called via asyncio.to_thread."""
+    message = EmailMessage()
+    message['From'] = "marajadesantelmo@gmail.com"
+    message['To'] = "marajadesantelmo@gmail.com"
+    message['Subject'] = "Mensaje de deltix"
+    message.set_content(body)
+    server = smtplib.SMTP("smtp.gmail.com", 587)
+    server.starttls()
+    server.login("marajadesantelmo@gmail.com", gmail_token)
+    server.send_message(message)
+    server.quit()
 
 async def mensajear(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     '''
@@ -731,20 +747,15 @@ async def mensajear(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     message_text = update.message.text
     update_user_experience(user.id, 'mensajear')
     body = f'Mensaje de {user.first_name}: {message_text}'
-    message = EmailMessage()
-
-    message['From'] = "marajadesantelmo@gmail.com"
-    message['To'] = "marajadesantelmo@gmail.com"
-    message['Subject'] = "Mensaje de deltix"
-    message.set_content(body)
-
-    server = smtplib.SMTP("smtp.gmail.com", 587)
-    server.starttls()
-    server.login("marajadesantelmo@gmail.com", gmail_token)
-    server.send_message(message)
-
-    # context.bot.send_message(chat_id=672134330, text=f'Mensaje de {user.first_name}: {message_text}')
-    await update.message.reply_text('Mensaje enviado con éxito. ¡Gracias!')
+    try:
+        await asyncio.to_thread(_send_email_sync, body)
+        await update.message.reply_text('Mensaje enviado con éxito. ¡Gracias!')
+    except Exception as e:
+        print(f"Error al enviar email en mensajear(): {e}")
+        await update.message.reply_text(
+            'Ups, hubo un problema al enviar tu mensaje. '
+            'Por favor intentá de nuevo más tarde o contactá a @marajadesantelmo directamente.'
+        )
     return ConversationHandler.END
 
 async def answer_colaborar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -803,6 +814,18 @@ async def answer_informacion(update: Update, context: ContextTypes.DEFAULT_TYPE)
                                         )
         return ConversationHandler.END
 
+
+async def timeout_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    '''
+    Se ejecuta cuando una conversación expira por inactividad (10 minutos).
+    Resetea el estado del usuario al menú principal.
+    '''
+    if update.message:
+        await update.message.reply_text(
+            "La conversación expiró por inactividad. Escribí /menu para continuar.",
+            reply_markup=main_menu_keyboard
+        )
+    return ConversationHandler.END
 
 async def de_nada(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     '''
