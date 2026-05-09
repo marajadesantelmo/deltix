@@ -120,6 +120,123 @@ def build_llm_context(user_input):
     return "\n\n".join(c for c in context if c)
 
 
+def handle_colectivas_flow(user_input):
+    """
+    Maneja el flujo conversacional de colectivas paso a paso.
+    Guarda el estado en session['col']. Retorna dict o None.
+    """
+    text = user_input.lower().strip()
+    col = session.get('col')
+
+    # ── Estamos dentro de un flujo activo ──
+    if col:
+        step = col.get('step')
+
+        if step == 'linea':
+            if any(k in text for k in KEYWORDS["jilguero"]):
+                session['col'] = {'step': 'direccion', 'linea': 'jilguero'}
+                session.modified = True
+                return {"reply": "Jilguero 🚢 ¿Ida o vuelta?", "images": [],
+                        "quick_replies": ["Ida", "Vuelta"]}
+            if any(k in text for k in KEYWORDS["interislena"]):
+                session['col'] = {'step': 'temporada', 'linea': 'interislena'}
+                session.modified = True
+                return {"reply": "Interisleña ⛵ ¿Qué temporada?", "images": [],
+                        "quick_replies": ["Invierno", "Verano"]}
+            if any(k in text for k in KEYWORDS["lineasdelta"]):
+                session['col'] = {'step': 'periodo', 'linea': 'lineasdelta'}
+                session.modified = True
+                return {"reply": "Líneas Delta 🛥️ ¿Período escolar o no escolar?", "images": [],
+                        "quick_replies": ["Escolar", "No escolar"]}
+
+        elif step == 'temporada':
+            if 'invierno' in text:
+                session['col'] = {**col, 'step': 'direccion', 'temporada': 'invierno'}
+                session.modified = True
+                return {"reply": "Temporada invierno ❄️ ¿Ida o vuelta?", "images": [],
+                        "quick_replies": ["Ida", "Vuelta"]}
+            if 'verano' in text:
+                session['col'] = {**col, 'step': 'direccion', 'temporada': 'verano'}
+                session.modified = True
+                return {"reply": "Temporada verano ☀️ ¿Ida o vuelta?", "images": [],
+                        "quick_replies": ["Ida", "Vuelta"]}
+
+        elif step == 'periodo':
+            if 'no' in text:
+                session['col'] = {**col, 'step': 'direccion', 'periodo': 'no_escolar'}
+                session.modified = True
+                return {"reply": "Período no escolar 🏖️ ¿Ida o vuelta?", "images": [],
+                        "quick_replies": ["Ida", "Vuelta"]}
+            if 'escolar' in text:
+                session['col'] = {**col, 'step': 'direccion', 'periodo': 'escolar'}
+                session.modified = True
+                return {"reply": "Período escolar 📚 ¿Ida o vuelta?", "images": [],
+                        "quick_replies": ["Ida", "Vuelta"]}
+
+        elif step == 'direccion':
+            if 'ida' in text:
+                direccion = 'ida'
+            elif 'vuelta' in text:
+                direccion = 'vuelta'
+            else:
+                # Respuesta inválida — recordamos las opciones
+                return {"reply": "Por favor elegí una opción:", "images": [],
+                        "quick_replies": ["Ida", "Vuelta"]}
+
+            linea = col.get('linea')
+            session.pop('col', None)
+            session.modified = True
+
+            if linea == 'jilguero':
+                return {
+                    "reply": f"Jilguero — {direccion.capitalize()} 🚢",
+                    "images": [f"/img/colectivas/jilguero_{direccion}.png"],
+                    "quick_replies": []
+                }
+            if linea == 'interislena':
+                temporada = col.get('temporada', 'invierno')
+                return {
+                    "reply": f"Interisleña — {direccion.capitalize()} — {temporada.capitalize()} ⛵",
+                    "images": [f"/img/colectivas/interislena_{direccion}_{temporada}.png"],
+                    "quick_replies": []
+                }
+            if linea == 'lineasdelta':
+                periodo = col.get('periodo', 'escolar')
+                label = periodo.replace('_', ' ')
+                return {
+                    "reply": f"Líneas Delta — {direccion.capitalize()} — {label.capitalize()} 🛥️",
+                    "images": [f"/img/colectivas/lineas_delta_{direccion}_{periodo}.png"],
+                    "quick_replies": []
+                }
+
+    # ── Inicio del flujo desde cero ──
+    if any(k in text for k in KEYWORDS["colectivas"]):
+        session['col'] = {'step': 'linea'}
+        session.modified = True
+        return {"reply": "¿Qué línea de colectiva querés consultar? 🚢", "images": [],
+                "quick_replies": ["Jilguero", "Interisleña", "Líneas Delta"]}
+
+    if any(k in text for k in KEYWORDS["jilguero"]):
+        session['col'] = {'step': 'direccion', 'linea': 'jilguero'}
+        session.modified = True
+        return {"reply": "Jilguero 🚢 ¿Ida o vuelta?", "images": [],
+                "quick_replies": ["Ida", "Vuelta"]}
+
+    if any(k in text for k in KEYWORDS["interislena"]):
+        session['col'] = {'step': 'temporada', 'linea': 'interislena'}
+        session.modified = True
+        return {"reply": "Interisleña ⛵ ¿Qué temporada?", "images": [],
+                "quick_replies": ["Invierno", "Verano"]}
+
+    if any(k in text for k in KEYWORDS["lineasdelta"]):
+        session['col'] = {'step': 'periodo', 'linea': 'lineasdelta'}
+        session.modified = True
+        return {"reply": "Líneas Delta 🛥️ ¿Período escolar o no escolar?", "images": [],
+                "quick_replies": ["Escolar", "No escolar"]}
+
+    return None
+
+
 def detect_quick_response(user_input):
     """
     Detecta si el mensaje coincide con un comando específico y devuelve
@@ -129,55 +246,15 @@ def detect_quick_response(user_input):
     text = user_input.lower()
 
     if any(k in text for k in KEYWORDS["hidrografia"]):
-        return {
-            "reply": format_hidrografia(),
-            "images": []
-        }
+        return {"reply": format_hidrografia(), "images": [], "quick_replies": []}
 
     if any(k in text for k in KEYWORDS["tides"]):
-        return {
-            "reply": "Acá tenés el pronóstico de mareas del INA 🌊",
-            "images": ["/img/marea.png"]
-        }
+        return {"reply": "Acá tenés el pronóstico de mareas del INA 🌊",
+                "images": ["/img/marea.png"], "quick_replies": []}
 
     if any(k in text for k in KEYWORDS["windguru"]):
-        return {
-            "reply": "Pronóstico de WindGurú para las islas ☁️",
-            "images": ["/img/windguru.png"]
-        }
-
-    if any(k in text for k in KEYWORDS["jilguero"]):
-        return {
-            "reply": "Horarios del Jilguero 🚢",
-            "images": ["/img/colectivas/jilguero_ida.png", "/img/colectivas/jilguero_vuelta.png"]
-        }
-
-    if any(k in text for k in KEYWORDS["interislena"]):
-        season = "invierno" if is_winter() else "verano"
-        return {
-            "reply": f"Horarios de Interisleña — temporada {season} ⛵",
-            "images": [
-                f"/img/colectivas/interislena_ida_{season}.png",
-                f"/img/colectivas/interislena_vuelta_{season}.png"
-            ]
-        }
-
-    if any(k in text for k in KEYWORDS["lineasdelta"]):
-        return {
-            "reply": "Horarios de Líneas Delta 🛥️",
-            "images": [
-                "/img/colectivas/lineas_delta_ida_escolar.png",
-                "/img/colectivas/lineas_delta_ida_no_escolar.png",
-                "/img/colectivas/lineas_delta_vuelta_escolar.png",
-                "/img/colectivas/lineas_delta_vuelta_no_escolar.png"
-            ]
-        }
-
-    if any(k in text for k in KEYWORDS["colectivas"]):
-        return {
-            "reply": "¿Qué colectiva querés consultar? 🚢\n\nElegí una:\n• Jilguero\n• Interisleña\n• Líneas Delta",
-            "images": []
-        }
+        return {"reply": "Pronóstico de WindGurú para las islas ☁️",
+                "images": ["/img/windguru.png"], "quick_replies": []}
 
     if any(k in text for k in KEYWORDS["amanita"]):
         return {
@@ -240,7 +317,15 @@ def chat():
     if 'history' not in session:
         session['history'] = []
 
-    # Try keyword-based quick response first
+    # Colectivas flow takes priority (multi-step dialog)
+    col_resp = handle_colectivas_flow(user_message)
+    if col_resp:
+        session['history'].append({"role": "user", "content": user_message})
+        session['history'].append({"role": "assistant", "content": col_resp["reply"]})
+        session.modified = True
+        return jsonify(col_resp)
+
+    # Keyword-based quick responses (single-step)
     quick = detect_quick_response(user_message)
     if quick:
         session['history'].append({"role": "user", "content": user_message})

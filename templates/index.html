@@ -82,6 +82,7 @@
       padding: 14px 10px;
       overflow-y: auto;
     }
+    /* ── Sidebar sections ── */
     .section-label {
       font-size: 9px;
       font-weight: 600;
@@ -91,6 +92,42 @@
       font-family: 'JetBrains Mono', monospace;
       padding: 10px 8px 4px;
     }
+    /* Collapsible section header */
+    .section-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 8px 5px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background 0.15s;
+      user-select: none;
+      margin-top: 6px;
+    }
+    .section-toggle:hover { background: rgba(0,255,65,0.05); }
+    .section-toggle-label {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: rgba(0,255,65,0.45);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .section-toggle-label.open { color: rgba(0,255,65,0.7); }
+    .chevron {
+      font-size: 10px;
+      color: rgba(0,255,65,0.3);
+      transition: transform 0.2s;
+      line-height: 1;
+    }
+    .chevron.open { transform: rotate(180deg); color: rgba(0,255,65,0.6); }
+    .section-body {
+      display: none;
+      flex-direction: column;
+      gap: 2px;
+      overflow: hidden;
+    }
+    .section-body.open { display: flex; }
     .quick-btn {
       display: flex;
       align-items: center;
@@ -189,6 +226,31 @@
     }
     .chat-image:hover { transform: scale(1.02); box-shadow: 0 6px 30px rgba(0,255,65,0.15); }
 
+    /* ── Quick replies ── */
+    .quick-replies {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 4px;
+    }
+    .qr-btn {
+      padding: 7px 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(0,255,65,0.3);
+      background: rgba(0,255,65,0.07);
+      color: rgba(212,237,218,0.85);
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .qr-btn:hover {
+      background: rgba(0,255,65,0.16);
+      border-color: rgba(0,255,65,0.5);
+      color: #d4edda;
+    }
+
     /* ── Typing indicator ── */
     #typing-row { display: flex; align-items: flex-end; gap: 8px; }
     .typing-bubble {
@@ -283,34 +345,147 @@
     </div>
     <div class="status-dot"></div>
     <span class="status-label">online</span>
+    <button onclick="document.getElementById('modal-aporte').classList.remove('hidden')" style="
+      margin-left: 12px;
+      padding: 7px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(0,255,65,0.35);
+      background: rgba(0,255,65,0.08);
+      color: #00ff41;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.15s, box-shadow 0.15s;
+      white-space: nowrap;
+    " onmouseover="this.style.background='rgba(0,255,65,0.16)';this.style.boxShadow='0 0 14px rgba(0,255,65,0.2)'"
+       onmouseout="this.style.background='rgba(0,255,65,0.08)';this.style.boxShadow='none'">
+      ☕ Aportá
+    </button>
   </header>
+
+  <!-- Modal aporte -->
+  <div id="modal-aporte" class="hidden" style="
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+  " onclick="if(event.target===this) this.classList.add('hidden')">
+    <div style="
+      background: rgba(6,18,6,0.97);
+      border: 1px solid rgba(0,255,65,0.2);
+      border-radius: 20px;
+      padding: 32px 28px;
+      max-width: 360px;
+      width: 90%;
+      box-shadow: 0 0 60px rgba(0,255,65,0.1);
+      text-align: center;
+      position: relative;
+    ">
+      <button onclick="document.getElementById('modal-aporte').classList.add('hidden')" style="
+        position: absolute; top: 14px; right: 16px;
+        background: none; border: none; color: rgba(0,255,65,0.4);
+        font-size: 20px; cursor: pointer; line-height: 1;
+      ">×</button>
+
+      <img src="/img/bot_icon.png" alt="Deltix" style="width:72px;height:72px;border-radius:14px;border:1.5px solid rgba(0,255,65,0.3);box-shadow:0 0 20px rgba(0,255,65,0.15);margin:0 auto 14px;display:block;">
+      <h2 style="color: #fff; font-size: 18px; font-weight: 700; margin-bottom: 8px;">Bancá a Deltix</h2>
+      <p style="color: rgba(212,237,218,0.6); font-size: 13px; line-height: 1.6; margin-bottom: 24px;">
+        Deltix es un proyecto independiente y comunitario del Delta del Paraná. Tu aporte ayuda a mantenerlo vivo.
+      </p>
+
+      <!-- Cafecito -->
+      <a href="https://cafecito.app/deltix" target="_blank" rel="noopener" style="
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+        padding: 13px 20px;
+        background: rgba(0,255,65,0.1);
+        border: 1px solid rgba(0,255,65,0.25);
+        border-radius: 12px;
+        color: #d4edda;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        margin-bottom: 14px;
+        transition: background 0.15s;
+      " onmouseover="this.style.background='rgba(0,255,65,0.18)'"
+         onmouseout="this.style.background='rgba(0,255,65,0.1)'">
+        ☕ Ir a Cafecito
+        <span style="font-size: 11px; font-weight: 400; color: rgba(212,237,218,0.5);">cafecito.app/deltix</span>
+      </a>
+
+      <!-- Alias -->
+      <div style="
+        background: rgba(0,0,0,0.3);
+        border: 1px solid rgba(0,255,65,0.12);
+        border-radius: 12px;
+        padding: 14px 16px;
+        text-align: left;
+      ">
+        <p style="font-size: 11px; color: rgba(212,237,218,0.45); margin-bottom: 6px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.5px;">TRANSFERENCIA BANCARIA</p>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 15px; color: #00ff41; font-weight: 500;">deltix.bot</span>
+          <button onclick="navigator.clipboard.writeText('deltix.bot').then(() => { this.textContent='¡Copiado!'; setTimeout(()=>this.textContent='Copiar',1800) })" style="
+            background: rgba(0,255,65,0.1); border: 1px solid rgba(0,255,65,0.2);
+            color: rgba(0,255,65,0.7); font-size: 11px; border-radius: 7px;
+            padding: 4px 10px; cursor: pointer; font-family: inherit;
+            transition: background 0.15s;
+          ">Copiar</button>
+        </div>
+        <p style="font-size: 11px; color: rgba(212,237,218,0.35); margin-top: 5px;">Cuenta de Facu · CVU/Alias</p>
+      </div>
+    </div>
+  </div>
 
   <div class="layout">
 
     <!-- Sidebar -->
     <aside>
+      <!-- Clima y agua — siempre visible -->
       <span class="section-label">// clima y agua</span>
       <button class="quick-btn" onclick="sendQuick('¿Cómo está el clima?')"><span class="icon">☁️</span> Clima</button>
       <button class="quick-btn" onclick="sendQuick('mareas')"><span class="icon">🌊</span> Mareas INA</button>
       <button class="quick-btn" onclick="sendQuick('hidrografia')"><span class="icon">📊</span> Hidrografía Naval</button>
       <button class="quick-btn" onclick="sendQuick('windguru')"><span class="icon">💨</span> WindGurú</button>
 
+      <!-- Colectivas — siempre visible -->
       <span class="section-label">// colectivas</span>
       <button class="quick-btn" onclick="sendQuick('jilguero')"><span class="icon">🚢</span> Jilguero</button>
       <button class="quick-btn" onclick="sendQuick('interislena')"><span class="icon">⛵</span> Interisleña</button>
       <button class="quick-btn" onclick="sendQuick('lineas delta')"><span class="icon">🛥️</span> Líneas Delta</button>
-      <button class="quick-btn" onclick="sendQuick('almaceneras')"><span class="icon">🛒</span> Almaceneras</button>
 
-      <span class="section-label">// agenda del río</span>
-      <button class="quick-btn" onclick="sendQuick('amanita canoa')"><span class="icon">🛶</span> Amanita Canoa</button>
-      <button class="quick-btn" onclick="sendQuick('alfareria kutral')"><span class="icon">🏺</span> Kutral Alfarería</button>
-      <button class="quick-btn" onclick="sendQuick('labusqueda')"><span class="icon">🌿</span> La Búsqueda</button>
-      <button class="quick-btn" onclick="sendQuick('canaveral kayaks')"><span class="icon">🚣</span> Cañaveral Kayaks</button>
-      <button class="quick-btn" onclick="sendQuick('charco masajes')"><span class="icon">💆</span> Masaje Thai</button>
-      <button class="quick-btn" onclick="sendQuick('familia islena')"><span class="icon">🌾</span> Familia Isleña</button>
+      <!-- Almaceneras — colapsable -->
+      <div class="section-toggle" onclick="toggleSection('almaceneras')">
+        <span class="section-toggle-label" id="label-almaceneras">// almaceneras</span>
+        <span class="chevron" id="chevron-almaceneras">▼</span>
+      </div>
+      <div class="section-body" id="body-almaceneras">
+        <button class="quick-btn" onclick="sendQuick('almaceneras')"><span class="icon">🛒</span> Ver almaceneras</button>
+      </div>
+
+      <!-- Agenda del río — colapsable -->
+      <div class="section-toggle" onclick="toggleSection('agenda')">
+        <span class="section-toggle-label" id="label-agenda">// agenda del río</span>
+        <span class="chevron" id="chevron-agenda">▼</span>
+      </div>
+      <div class="section-body" id="body-agenda">
+        <button class="quick-btn" onclick="sendQuick('amanita canoa')"><span class="icon">🛶</span> Amanita Canoa</button>
+        <button class="quick-btn" onclick="sendQuick('alfareria kutral')"><span class="icon">🏺</span> Kutral Alfarería</button>
+        <button class="quick-btn" onclick="sendQuick('labusqueda')"><span class="icon">🌿</span> La Búsqueda</button>
+        <button class="quick-btn" onclick="sendQuick('canaveral kayaks')"><span class="icon">🚣</span> Cañaveral Kayaks</button>
+        <button class="quick-btn" onclick="sendQuick('charco masajes')"><span class="icon">💆</span> Masaje Thai</button>
+        <button class="quick-btn" onclick="sendQuick('familia islena')"><span class="icon">🌾</span> Familia Isleña</button>
+      </div>
 
       <div class="sidebar-footer">
         <p>También en Telegram<br><span>@deltixbot</span></p>
+        <a href="mailto:facundo@pymetech.com.ar" style="
+          display:inline-block; margin-top:10px;
+          font-size:11px; color:rgba(0,255,65,0.35);
+          text-decoration:none; transition:color 0.15s;
+        " onmouseover="this.style.color='rgba(0,255,65,0.7)'"
+           onmouseout="this.style.color='rgba(0,255,65,0.35)'">
+          Contactá a los desarrolladores ↗
+        </a>
       </div>
     </aside>
 
@@ -383,10 +558,15 @@
         .replace(/\n/g,'<br>');
     }
 
-    function addMessage(role, text, images = []) {
+    function clearQuickReplies() {
+      document.querySelectorAll('.quick-replies').forEach(el => el.remove());
+    }
+
+    function addMessage(role, text, images = [], quickReplies = []) {
+      clearQuickReplies();
+
       const row = document.createElement('div');
       row.className = 'msg-row' + (role === 'user' ? ' user' : '');
-      row.style.animation = 'msgIn 0.2s ease-out';
 
       if (role === 'bot') {
         const av = document.createElement('img');
@@ -413,6 +593,23 @@
 
       row.appendChild(col);
       messages.appendChild(row);
+
+      // Quick reply buttons — aparecen debajo del mensaje del bot
+      if (quickReplies.length > 0) {
+        const qrRow = document.createElement('div');
+        qrRow.className = 'quick-replies';
+        // Indentamos al mismo nivel que el bubble (dejando espacio del avatar)
+        qrRow.style.paddingLeft = '40px';
+        quickReplies.forEach(label => {
+          const btn = document.createElement('button');
+          btn.className = 'qr-btn';
+          btn.textContent = label;
+          btn.onclick = () => sendQuick(label);
+          qrRow.appendChild(btn);
+        });
+        messages.appendChild(qrRow);
+      }
+
       scrollBottom();
     }
 
@@ -446,7 +643,7 @@
         });
         const data = await res.json();
         removeTyping();
-        addMessage('bot', data.reply || '', data.images || []);
+        addMessage('bot', data.reply || '', data.images || [], data.quick_replies || []);
       } catch {
         removeTyping();
         addMessage('bot', 'Error de conexión. Intentá de nuevo.');
@@ -460,6 +657,36 @@
       input.value = text;
       submit();
     }
+
+    function toggleSection(id) {
+      const body = document.getElementById('body-' + id);
+      const chevron = document.getElementById('chevron-' + id);
+      const label = document.getElementById('label-' + id);
+      const isOpen = body.classList.contains('open');
+      body.classList.toggle('open', !isOpen);
+      chevron.classList.toggle('open', !isOpen);
+      label.classList.toggle('open', !isOpen);
+    }
   </script>
+
+  <!-- Footer contacto — solo visible en mobile (el sidebar ya lo tiene en desktop) -->
+  <div style="
+    background: rgba(3,12,3,0.9);
+    border-top: 1px solid rgba(0,255,65,0.06);
+    text-align: center;
+    padding: 5px;
+    display: none;
+  " id="footer-contacto">
+    <a href="mailto:facundo@pymetech.com.ar" style="
+      font-size: 11px; color: rgba(0,255,65,0.3);
+      text-decoration: none; font-family: 'JetBrains Mono', monospace;
+    " onmouseover="this.style.color='rgba(0,255,65,0.6)'"
+       onmouseout="this.style.color='rgba(0,255,65,0.3)'">
+      Contactá a los desarrolladores ↗
+    </a>
+  </div>
+  <style>
+    @media (max-width: 767px) { #footer-contacto { display: block !important; } }
+  </style>
 </body>
 </html>
