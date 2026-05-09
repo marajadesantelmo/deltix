@@ -569,7 +569,7 @@
       document.querySelectorAll('.quick-replies').forEach(el => el.remove());
     }
 
-    function addMessage(role, text, images = [], quickReplies = []) {
+    function addMessage(role, text, images = [], quickReplies = [], footerText = '') {
       clearQuickReplies();
 
       const row = document.createElement('div');
@@ -597,6 +597,13 @@
         img.onclick = () => window.open(src, '_blank');
         col.appendChild(img);
       });
+
+      if (footerText) {
+        const ftBub = document.createElement('div');
+        ftBub.className = 'bubble bot';
+        ftBub.innerHTML = fmt(footerText);
+        col.appendChild(ftBub);
+      }
 
       row.appendChild(col);
       messages.appendChild(row);
@@ -650,7 +657,7 @@
         });
         const data = await res.json();
         removeTyping();
-        addMessage('bot', data.reply || '', data.images || [], data.quick_replies || []);
+        addMessage('bot', data.reply || '', data.images || [], data.quick_replies || [], data.footer_text || '');
       } catch {
         removeTyping();
         addMessage('bot', 'Error de conexión. Intentá de nuevo.');

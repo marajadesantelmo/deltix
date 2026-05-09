@@ -234,26 +234,51 @@ def handle_memes_flow(user_input):
     text = user_input.lower().strip()
     meme = session.get('meme_flow')
 
-    if meme and meme.get('step') == 'more':
-        if any(s in text for s in ['si', 'sí', 'dale', 'otro', 'mas', 'más']):
-            n = random.randint(1, 56)
-            return {"reply": "😄 de la página Memes Islenials 🏝️",
-                    "images": [f"/img/memes/{n}.png"],
-                    "quick_replies": ["Otro meme 😄", "No gracias"]}
-        if any(s in text for s in ['no', 'gracias', 'listo']):
-            session.pop('meme_flow', None)
-            session.modified = True
-            return {"reply": "¡Hasta la próxima! 🦫 Seguí a Memes Islenials en las redes.",
-                    "images": [], "quick_replies": []}
+    if meme:
+        step = meme.get('step')
+
+        if step == 'more':
+            if any(s in text for s in ['si', 'sí', 'dale', 'otro', 'mas', 'más', 'meme']):
+                session['meme_flow'] = {'step': 'more2'}
+                session.modified = True
+                n = random.randint(1, 56)
+                return {"reply": None,
+                        "images": [f"/img/memes/{n}.png"],
+                        "footer_text": "Uno más? 😄",
+                        "quick_replies": ["Sí, otro 😄", "No gracias"]}
+            if any(s in text for s in ['no', 'gracias', 'listo']):
+                session.pop('meme_flow', None)
+                session.modified = True
+                return {"reply": "Bueno... si querés podés seguir explorando el delta con Deltix 🦫",
+                        "images": [], "quick_replies": []}
+
+        if step == 'more2':
+            if any(s in text for s in ['si', 'sí', 'dale', 'otro', 'mas', 'más', 'meme']):
+                session['meme_flow'] = {'step': 'more'}
+                session.modified = True
+                n = random.randint(1, 56)
+                return {"reply": None,
+                        "images": [f"/img/memes/{n}.png"],
+                        "footer_text": "Te mando otro? 😄",
+                        "quick_replies": ["Sí, otro 😄", "No gracias"]}
+            if any(s in text for s in ['no', 'gracias', 'listo']):
+                session.pop('meme_flow', None)
+                session.modified = True
+                return {"reply": "Bueno... si querés podés seguir explorando el delta con Deltix 🦫",
+                        "images": [], "quick_replies": []}
+
         return None
 
     if any(k in text for k in KEYWORDS["memes"]):
         session['meme_flow'] = {'step': 'more'}
         session.modified = True
         n = random.randint(1, 56)
-        return {"reply": "...me encantan los memes islenials 😄 Acá va uno:",
-                "images": [f"/img/memes/{n}.png"],
-                "quick_replies": ["Otro meme 😄", "No gracias"]}
+        return {
+            "reply": "...me encantan los memes islenials 😄 Te mando uno:",
+            "images": [f"/img/memes/{n}.png"],
+            "footer_text": "Buenísimo, no? Son de la página **Memes Islenials**. Te recomiendo que la sigas en las redes 🏝️",
+            "quick_replies": ["Otro meme 😄", "No gracias"]
+        }
 
     return None
 
