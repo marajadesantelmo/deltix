@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deltix — Bot del Humedal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            delta: {
+              50:  '#f0f9f0',
+              100: '#dcf0dc',
+              200: '#b8e0b8',
+              300: '#86c986',
+              400: '#52ad52',
+              500: '#2e8b2e',
+              600: '#1f6e1f',
+              700: '#175417',
+              800: '#133d13',
+              900: '#0d2a0d',
+            },
+            water: {
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+            },
+            earth: {
+              100: '#fdf6e3',
+              200: '#f5e6c8',
+              700: '#7c5c2e',
+              800: '#5c3d1a',
+            }
+          },
+          fontFamily: {
+            sans: ['"Inter"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    html, body { height: 100%; margin: 0; }
+    #chat-messages { scroll-behavior: smooth; }
+    .message-bubble { animation: fadeSlideIn 0.25s ease-out; }
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .typing-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #52ad52; display: inline-block;
+      animation: typingBounce 1.2s infinite ease-in-out;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typingBounce {
+      0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+      40%           { transform: translateY(-6px); opacity: 1; }
+    }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #2e8b2e55; border-radius: 10px; }
+    textarea:focus { outline: none; }
+  </style>
+</head>
+
+<body class="bg-delta-900 font-sans flex flex-col h-full">
+
+  <!-- Header -->
+  <header class="bg-delta-800 border-b border-delta-700 px-4 py-3 flex items-center gap-3 shrink-0 shadow-lg">
+    <div class="text-3xl select-none">🦫</div>
+    <div>
+      <h1 class="text-white font-bold text-lg leading-tight">Deltix</h1>
+      <p class="text-delta-300 text-xs">Bot del humedal · Delta del Paraná</p>
+    </div>
+    <div class="ml-auto flex items-center gap-2">
+      <span class="inline-block w-2 h-2 rounded-full bg-delta-400 animate-pulse"></span>
+      <span class="text-delta-300 text-xs">en línea</span>
+    </div>
+  </header>
+
+  <!-- Main layout -->
+  <div class="flex flex-1 overflow-hidden">
+
+    <!-- Sidebar (hidden on mobile) -->
+    <aside class="hidden md:flex flex-col w-56 bg-delta-800 border-r border-delta-700 p-4 gap-3 shrink-0">
+      <p class="text-delta-400 text-xs font-semibold uppercase tracking-widest mb-1">Accesos rápidos</p>
+
+      <button onclick="sendQuick('¿Cómo está el clima?')"
+        class="quick-btn flex items-center gap-2 text-left text-sm text-delta-100 bg-delta-700 hover:bg-delta-600 rounded-xl px-3 py-2 transition">
+        <span class="text-lg">☁️</span> Clima
+      </button>
+      <button onclick="sendQuick('¿Cuándo son las mareas hoy?')"
+        class="quick-btn flex items-center gap-2 text-left text-sm text-delta-100 bg-delta-700 hover:bg-delta-600 rounded-xl px-3 py-2 transition">
+        <span class="text-lg">🌊</span> Mareas
+      </button>
+      <button onclick="sendQuick('Horarios del Jilguero')"
+        class="quick-btn flex items-center gap-2 text-left text-sm text-delta-100 bg-delta-700 hover:bg-delta-600 rounded-xl px-3 py-2 transition">
+        <span class="text-lg">🚢</span> Jilguero
+      </button>
+      <button onclick="sendQuick('Horarios Interisleña')"
+        class="quick-btn flex items-center gap-2 text-left text-sm text-delta-100 bg-delta-700 hover:bg-delta-600 rounded-xl px-3 py-2 transition">
+        <span class="text-lg">⛵</span> Interisleña
+      </button>
+      <button onclick="sendQuick('Horarios Líneas Delta')"
+        class="quick-btn flex items-center gap-2 text-left text-sm text-delta-100 bg-delta-700 hover:bg-delta-600 rounded-xl px-3 py-2 transition">
+        <span class="text-lg">🛥️</span> Líneas Delta
+      </button>
+      <button onclick="sendQuick('¿Qué almaceneras pasan hoy?')"
+        class="quick-btn flex items-center gap-2 text-left text-sm text-delta-100 bg-delta-700 hover:bg-delta-600 rounded-xl px-3 py-2 transition">
+        <span class="text-lg">🛒</span> Almaceneras
+      </button>
+      <button onclick="sendQuick('¿Qué actividades hay para hacer en el delta?')"
+        class="quick-btn flex items-center gap-2 text-left text-sm text-delta-100 bg-delta-700 hover:bg-delta-600 rounded-xl px-3 py-2 transition">
+        <span class="text-lg">🌿</span> Actividades
+      </button>
+
+      <div class="mt-auto pt-4 border-t border-delta-700">
+        <p class="text-delta-500 text-xs text-center leading-snug">
+          También en Telegram<br>
+          <span class="text-delta-400">@deltixbot</span>
+        </p>
+      </div>
+    </aside>
+
+    <!-- Chat area -->
+    <main class="flex flex-col flex-1 overflow-hidden">
+
+      <!-- Messages -->
+      <div id="chat-messages" class="flex-1 overflow-y-auto px-4 py-5 space-y-4">
+
+        <!-- Welcome message -->
+        <div class="message-bubble flex items-end gap-2 max-w-xl">
+          <div class="text-2xl shrink-0 mb-1">🦫</div>
+          <div class="bg-delta-700 text-delta-50 rounded-2xl rounded-bl-sm px-4 py-3 text-sm leading-relaxed shadow">
+            <p>¡Hola! Soy <strong>Deltix</strong>, el carpincho digital del Delta del Paraná. 🌿</p>
+            <p class="mt-1 text-delta-200">Puedo ayudarte con clima, mareas, horarios de colectivas, almaceneras y actividades en el delta.</p>
+          </div>
+        </div>
+
+        <!-- Mobile quick actions -->
+        <div class="flex md:hidden flex-wrap gap-2 px-1">
+          <button onclick="sendQuick('¿Cómo está el clima?')" class="mobile-chip">☁️ Clima</button>
+          <button onclick="sendQuick('¿Cuándo son las mareas hoy?')" class="mobile-chip">🌊 Mareas</button>
+          <button onclick="sendQuick('Horarios del Jilguero')" class="mobile-chip">🚢 Jilguero</button>
+          <button onclick="sendQuick('¿Qué almaceneras pasan hoy?')" class="mobile-chip">🛒 Almaceneras</button>
+          <button onclick="sendQuick('¿Qué actividades hay para hacer?')" class="mobile-chip">🌿 Actividades</button>
+        </div>
+
+      </div>
+
+      <!-- Input bar -->
+      <div class="shrink-0 bg-delta-800 border-t border-delta-700 px-4 py-3">
+        <form id="chat-form" class="flex items-end gap-2">
+          <textarea
+            id="message-input"
+            rows="1"
+            placeholder="Escribí tu consulta..."
+            class="flex-1 bg-delta-700 text-delta-50 placeholder-delta-400 rounded-2xl px-4 py-3 text-sm resize-none leading-relaxed max-h-32 border border-delta-600 focus:border-delta-400 transition"
+            style="overflow-y: auto;"
+          ></textarea>
+          <button
+            type="submit"
+            id="send-btn"
+            class="shrink-0 bg-delta-500 hover:bg-delta-400 active:bg-delta-600 text-white rounded-2xl w-11 h-11 flex items-center justify-center transition shadow disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 rotate-90">
+              <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
+            </svg>
+          </button>
+        </form>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Mobile chip style injected via Tailwind apply workaround -->
+  <style>
+    .mobile-chip {
+      @apply bg-delta-700 hover:bg-delta-600 text-delta-100 text-xs rounded-full px-3 py-1.5 transition border border-delta-600;
+    }
+  </style>
+
+  <script>
+    const form = document.getElementById('chat-form');
+    const input = document.getElementById('message-input');
+    const messagesEl = document.getElementById('chat-messages');
+    const sendBtn = document.getElementById('send-btn');
+
+    // Auto-grow textarea
+    input.addEventListener('input', () => {
+      input.style.height = 'auto';
+      input.style.height = Math.min(input.scrollHeight, 128) + 'px';
+    });
+
+    // Submit on Enter (Shift+Enter = newline)
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        form.dispatchEvent(new Event('submit'));
+      }
+    });
+
+    function scrollToBottom() {
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function addMessage(role, text) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'message-bubble flex items-end gap-2 max-w-xl ' + (role === 'user' ? 'ml-auto flex-row-reverse' : '');
+
+      if (role === 'assistant') {
+        const avatar = document.createElement('div');
+        avatar.className = 'text-2xl shrink-0 mb-1';
+        avatar.textContent = '🦫';
+        wrapper.appendChild(avatar);
+      }
+
+      const bubble = document.createElement('div');
+      bubble.className = role === 'user'
+        ? 'bg-water-600 text-white rounded-2xl rounded-br-sm px-4 py-3 text-sm leading-relaxed shadow'
+        : 'bg-delta-700 text-delta-50 rounded-2xl rounded-bl-sm px-4 py-3 text-sm leading-relaxed shadow';
+      bubble.innerHTML = formatText(text);
+      wrapper.appendChild(bubble);
+
+      messagesEl.appendChild(wrapper);
+      scrollToBottom();
+      return bubble;
+    }
+
+    function addTypingIndicator() {
+      const wrapper = document.createElement('div');
+      wrapper.id = 'typing-indicator';
+      wrapper.className = 'message-bubble flex items-end gap-2 max-w-xl';
+      wrapper.innerHTML = `
+        <div class="text-2xl shrink-0 mb-1">🦫</div>
+        <div class="bg-delta-700 rounded-2xl rounded-bl-sm px-4 py-3 shadow flex items-center gap-1">
+          <span class="typing-dot"></span>
+          <span class="typing-dot"></span>
+          <span class="typing-dot"></span>
+        </div>`;
+      messagesEl.appendChild(wrapper);
+      scrollToBottom();
+    }
+
+    function removeTypingIndicator() {
+      const el = document.getElementById('typing-indicator');
+      if (el) el.remove();
+    }
+
+    function formatText(text) {
+      return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\n/g, '<br>');
+    }
+
+    async function sendMessage(text) {
+      if (!text.trim()) return;
+      input.value = '';
+      input.style.height = 'auto';
+      sendBtn.disabled = true;
+
+      addMessage('user', text);
+      addTypingIndicator();
+
+      try {
+        const res = await fetch('/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text }),
+        });
+        const data = await res.json();
+        removeTypingIndicator();
+        addMessage('assistant', data.reply || 'Sin respuesta.');
+      } catch (err) {
+        removeTypingIndicator();
+        addMessage('assistant', 'Error de conexión. Intentá de nuevo.');
+      } finally {
+        sendBtn.disabled = false;
+        input.focus();
+      }
+    }
+
+    function sendQuick(text) {
+      sendMessage(text);
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      sendMessage(input.value);
+    });
+  </script>
+
+</body>
+</html>

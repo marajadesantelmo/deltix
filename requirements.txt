@@ -1,4 +1,3 @@
-telegram
 python-telegram-bot==20.3
 pandas
 urllib3
@@ -6,6 +5,8 @@ nest_asyncio
 openai
 typing_extensions
 requests
-supabase<2.0
-gotrue<2.0
 asyncio
+mysql-connector-python
+selenium
+beautifulsoup4
+flask
