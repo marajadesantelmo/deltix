@@ -476,8 +476,12 @@
         <button class="quick-btn" onclick="sendQuick('familia islena')"><span class="icon">🌾</span> Familia Isleña</button>
       </div>
 
+      <!-- Memes — último -->
+      <span class="section-label">// memes islenials</span>
+      <button class="quick-btn" onclick="sendQuick('memes')"><span class="icon">😄</span> Memes Islenials</button>
+
       <div class="sidebar-footer">
-        <p>También en Telegram<br><span>@deltixbot</span></p>
+        <p>También en Telegram</p>
         <a href="mailto:facundo@pymetech.com.ar" style="
           display:inline-block; margin-top:10px;
           font-size:11px; color:rgba(0,255,65,0.35);
@@ -498,8 +502,8 @@
           <img src="/img/bot_icon.png" alt="Deltix" class="bot-avatar">
           <div class="msg-col">
             <div class="bubble bot">
-              Hola! Soy <strong>Deltix</strong>, el carpincho digital del Delta del Paraná 🌿<br>
-              <span style="font-size:12px;color:rgba(212,237,218,0.55);">Preguntame sobre clima, mareas, hidrografía, colectivas, almaceneras o actividades.</span>
+              Hola! Soy <strong>Deltix</strong>, el bot del humedal 🌿<br>
+              <span style="font-size:12px;color:rgba(212,237,218,0.55);">Preguntame sobre clima, mareas, hidrografía, colectivas, almaceneras o actividades del Delta del Paraná.</span>
             </div>
           </div>
         </div>
@@ -511,7 +515,10 @@
           <button class="chip" onclick="sendQuick('windguru')">💨 Windgurú</button>
           <button class="chip" onclick="sendQuick('jilguero')">🚢 Jilguero</button>
           <button class="chip" onclick="sendQuick('interislena')">⛵ Interisleña</button>
+          <button class="chip" onclick="sendQuick('lineas delta')">🛥️ Líneas Delta</button>
           <button class="chip" onclick="sendQuick('almaceneras')">🛒 Almaceneras</button>
+          <button class="chip" onclick="sendQuick('agenda del rio')">🌿 Agenda del Río</button>
+          <button class="chip" onclick="sendQuick('memes')">😄 Memes</button>
         </div>
 
       </div>
@@ -696,14 +703,16 @@
     @deltix_del_humedal_bot
   </a>
 
-  <!-- Footer contacto — solo visible en mobile (el sidebar ya lo tiene en desktop) -->
-  <div style="
+  <!-- Footer mobile — contacto + telegram -->
+  <div id="footer-contacto" style="
     background: rgba(3,12,3,0.9);
     border-top: 1px solid rgba(0,255,65,0.06);
-    text-align: center;
-    padding: 5px;
+    padding: 6px 12px;
     display: none;
-  " id="footer-contacto">
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+  ">
     <a href="mailto:facundo@pymetech.com.ar" style="
       font-size: 11px; color: rgba(0,255,65,0.3);
       text-decoration: none; font-family: 'JetBrains Mono', monospace;
@@ -711,9 +720,19 @@
        onmouseout="this.style.color='rgba(0,255,65,0.3)'">
       Contactá a los desarrolladores ↗
     </a>
+    <span style="color: rgba(0,255,65,0.15); font-size: 11px;">|</span>
+    <a href="https://t.me/deltix_del_humedal_bot" target="_blank" rel="noopener" style="
+      display: flex; align-items: center; gap: 5px;
+      font-size: 11px; color: rgba(0,255,65,0.3);
+      text-decoration: none; font-family: 'JetBrains Mono', monospace;
+    " onmouseover="this.style.color='rgba(0,255,65,0.6)'"
+       onmouseout="this.style.color='rgba(0,255,65,0.3)'">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.88 13.47l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.834.95z"/></svg>
+      Telegram ↗
+    </a>
   </div>
   <style>
-    @media (max-width: 767px) { #footer-contacto { display: block !important; } }
+    @media (max-width: 767px) { #footer-contacto { display: flex !important; } }
     .hidden { display: none !important; }
   </style>
 </body>

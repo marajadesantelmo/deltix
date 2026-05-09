@@ -2,6 +2,7 @@ import os
 import csv
 import json
 import uuid
+import random
 from datetime import datetime
 from flask import Flask, request, jsonify, render_template, session, send_from_directory
 from openai import OpenAI
@@ -57,6 +58,7 @@ KEYWORDS = {
     "weather":     ['clima', 'temperatura', 'pronostico', 'tiempo', 'lluvia', 'viento', 'tormenta', 'calor', 'frio', 'nublado'],
     "tides":       ['mareas', 'marea', 'pleamar', 'bajamar'],
     "hidrografia": ['hidrografia', 'hidrografía', 'naval'],
+    "agenda":      ['agenda', 'actividades', 'emprendimientos', 'agenda del rio', 'agenda del río'],
     "windguru":    ['windguru', 'viento', 'wind'],
     "jilguero":    ['jilguero', 'carapachay', 'angostura'],
     "interislena": ['interisleña', 'interislena', 'sarmiento', 'san antonio'],
@@ -147,6 +149,113 @@ def build_llm_context(user_input):
     if any(k in text for k in KEYWORDS["activities"]):
         context.append(load_rag_file("actividades.txt"))
     return "\n\n".join(c for c in context if c)
+
+
+# ── Almaceneras data ──────────────────────────────────────────────────────────
+
+ALMACENERAS = {
+    "Nilda Alicia":    "🛒 *Nilda Alicia* (Anita) — Miguel Machado\nMARTES, VIERNES: Río Sarmiento / Río San Antonio\nMIÉRCOLES, SÁBADO: Río Capitán / Rama Negra / Arroyo Toro\n📞 1557490961",
+    "Cachito":         "🛒 *Cachito* — Aníbal Isea\nLUN, MIÉ, VIE, SÁB: Río Carapachay hasta el 500\nDOMINGO: Río Carapachay hasta Angostura\n📞 11 6572-1030",
+    "Elsa María":      "🛒 *Elsa María* — Mayorista\n📞 1565548280",
+    "Sta. Teresita A": "🛒 *Santa Teresita* (ex Negrita) — Ángel Ojeda\nMARTES y SÁBADO: Río Carapachay hasta Río Paraná\nMIÉRCOLES y VIERNES: Arroyo Espera hasta Cruz Colorada\n📞 1532661770",
+    "Juan y Juan":     "🛒 *Juan y Juan* — Tito Hendenreich — Mayorista\n📞 15 5095771 / 15 31905299",
+    "Sta. Teresita R": "🛒 *Santa Teresita* — Ricardo Ojeda\nMARTES, JUEVES, SÁBADO y DOMINGO\nRío Luján / Canal Arias hasta el Paraná",
+    "Adriana":         "🛒 *Adriana* — Leo Rinaldi\nMIÉRCOLES, DOMINGO: Arroyo Abra Vieja\nJUEVES, SÁBADO: Toro / Antequera / Arroyo Banco / Andresito\n📞 1569789983",
+    "Buena Vida":      "🛒 *Buena Vida* — Cristian Lara\nLUNES: Arroyo Dorado / Sábalos / Arroyon / Boraso\nVIERNES: Arroyo Tiburón / Canal del Este y Aguajes\n📞 1553395931",
+    "Esperanza R":     "🛒 *Esperanza R* — Oscar Suárez\nMARTES, JUEVES y SÁBADO\nRío Carapachay hasta Sienará / Río Luján / Arroyo Caraguatá hasta el 400\n📞 1565098174",
+    "Gardenia":        "🛒 *Gardenia* — Mayorista\n📞 1540554422 / 1531882922",
+    "Gloria I":        "🛒 *Gloria I* — Jorge Rinaldi\nMIÉRCOLES: Río San Antonio / Canal Honda / Aguaje del Durazno\nJUEVES: Chaná / Paraná Mini / Tuyú Paré\nVIERNES: Arroyo Correntoso / La Barca / La Barquita\n📞 1531298913",
+    "Ignacio Franco":  "🛒 *Ignacio Franco* — Familia Bettiga\nMIÉRCOLES: Río Sarmiento / Capitán hasta Club Imos / Fredes\nJUEVES: Río Capitán / Arroyo Fredes\nVIERNES: Arroyo Estudiante / Felicaria / Paraná Mini\nSÁBADO: Arroyo Fredes / Paraná Miní / Tuyú Paré / Chaná\n📞 1562828206",
+    "Madreselva":      "🛒 *Madreselva* — Familia Bettiga\nMIÉRCOLES: Capitán arriba / Estudiante / Paicarabí\nJUEVES: Río Sarmiento / Espera / Cruz Colorada\nVIERNES: Paicarabí / Canal La Serna / Canal 4\n📞 1554709382",
+    "Nélida G":        "🛒 *Nélida G* — José Olivera\nLUN, MIÉ, VIE, SÁB: Arroyo Caraguatá / Cruz Colorada / Canal Arias / Río Luján\n📞 155644466",
+    "Raquel N":        "🛒 *Raquel N* — Roberto Baraldo\nLUNES y SÁBADO: Río Sarmiento / Capitán / Arroyo La Horca\nMARTES y MIÉRCOLES: Río Paraná hasta Carabelas / Canal 5\n📞 1544981064",
+    "Stella Maris":    "🛒 *Stella Maris* — Manuel Compagnucci\nVIERNES: Escobar / Paraná / Paycaraby / Estudiantes / Las Cañas\nSÁBADOS: Puerto Escobar / La Serna / Arroyo Chana / Felicaria\n📞 1562771474",
+}
+
+AGENDA_OPTIONS = {
+    "Amanita Canoa":   "amanita canoa",
+    "Kutral Alfarería":"alfareria kutral",
+    "La Búsqueda":     "labusqueda",
+    "Cañaveral Kayaks":"canaveral kayaks",
+    "Masaje Thai":     "charco masajes",
+    "Familia Isleña":  "familia islena",
+}
+
+
+def handle_almaceneras_flow(user_input):
+    text = user_input.strip()
+    text_lower = text.lower()
+    alm = session.get('alm_flow')
+
+    if alm and alm.get('step') == 'select':
+        # Buscar coincidencia con nombre de almacenera
+        for name, info in ALMACENERAS.items():
+            if name.lower() in text_lower or text_lower in name.lower():
+                session.pop('alm_flow', None)
+                session.modified = True
+                return {"reply": info, "images": [], "quick_replies": []}
+        # Sin coincidencia — repetir menú
+        return {"reply": "Elegí una almacenera de la lista 👇",
+                "images": [], "quick_replies": list(ALMACENERAS.keys())}
+
+    if any(k in text_lower for k in KEYWORDS["almacen"]):
+        session['alm_flow'] = {'step': 'select'}
+        session.modified = True
+        return {"reply": "¿Cuál almacenera querés consultar? 🛒",
+                "images": [], "quick_replies": list(ALMACENERAS.keys())}
+
+    return None
+
+
+def handle_agenda_flow(user_input):
+    text = user_input.strip()
+    text_lower = text.lower()
+    agenda = session.get('agenda_flow')
+
+    if agenda and agenda.get('step') == 'select':
+        for label, query in AGENDA_OPTIONS.items():
+            if any(w in text_lower for w in query.split()):
+                session.pop('agenda_flow', None)
+                session.modified = True
+                return detect_quick_response(query)
+        return {"reply": "Elegí una actividad 👇",
+                "images": [], "quick_replies": list(AGENDA_OPTIONS.keys())}
+
+    if any(k in text_lower for k in KEYWORDS["agenda"]):
+        session['agenda_flow'] = {'step': 'select'}
+        session.modified = True
+        return {"reply": "¿Qué actividad te interesa? 🌿",
+                "images": [], "quick_replies": list(AGENDA_OPTIONS.keys())}
+
+    return None
+
+
+def handle_memes_flow(user_input):
+    text = user_input.lower().strip()
+    meme = session.get('meme_flow')
+
+    if meme and meme.get('step') == 'more':
+        if any(s in text for s in ['si', 'sí', 'dale', 'otro', 'mas', 'más']):
+            n = random.randint(1, 56)
+            return {"reply": "😄 de la página Memes Islenials 🏝️",
+                    "images": [f"/img/memes/{n}.png"],
+                    "quick_replies": ["Otro meme 😄", "No gracias"]}
+        if any(s in text for s in ['no', 'gracias', 'listo']):
+            session.pop('meme_flow', None)
+            session.modified = True
+            return {"reply": "¡Hasta la próxima! 🦫 Seguí a Memes Islenials en las redes.",
+                    "images": [], "quick_replies": []}
+        return None
+
+    if any(k in text for k in KEYWORDS["memes"]):
+        session['meme_flow'] = {'step': 'more'}
+        session.modified = True
+        n = random.randint(1, 56)
+        return {"reply": "...me encantan los memes islenials 😄 Acá va uno:",
+                "images": [f"/img/memes/{n}.png"],
+                "quick_replies": ["Otro meme 😄", "No gracias"]}
+
+    return None
 
 
 def handle_colectivas_flow(user_input):
@@ -346,15 +455,21 @@ def chat():
     if 'history' not in session:
         session['history'] = []
 
-    # Colectivas flow takes priority (multi-step dialog)
-    col_resp = handle_colectivas_flow(user_message)
-    if col_resp:
-        session['history'].append({"role": "user", "content": user_message})
-        session['history'].append({"role": "assistant", "content": col_resp["reply"]})
-        session.modified = True
-        log_interaction(user_message, col_resp["reply"], "colectivas",
-                        col_resp.get("images"), col_resp.get("quick_replies"))
-        return jsonify(col_resp)
+    # Multi-step flows (order matters)
+    for flow_fn, flow_type in [
+        (handle_memes_flow,       "memes"),
+        (handle_almaceneras_flow, "almaceneras"),
+        (handle_agenda_flow,      "agenda"),
+        (handle_colectivas_flow,  "colectivas"),
+    ]:
+        resp = flow_fn(user_message)
+        if resp:
+            session['history'].append({"role": "user", "content": user_message})
+            session['history'].append({"role": "assistant", "content": resp["reply"]})
+            session.modified = True
+            log_interaction(user_message, resp["reply"], flow_type,
+                            resp.get("images"), resp.get("quick_replies"))
+            return jsonify(resp)
 
     # Keyword-based quick responses (single-step)
     quick = detect_quick_response(user_message)
