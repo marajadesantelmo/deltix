@@ -1,5 +1,7 @@
 import os
+import csv
 import json
+import uuid
 from datetime import datetime
 from flask import Flask, request, jsonify, render_template, session, send_from_directory
 from openai import OpenAI
@@ -15,6 +17,33 @@ app.secret_key = telegram_token[:32]
 
 openai_client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=openrouter_key)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+WEB_LOG_PATH = os.path.join(BASE_DIR, "web_interactions.csv")
+WEB_LOG_HEADERS = ["timestamp", "session_id", "user_message", "bot_reply", "response_type", "images", "quick_replies"]
+
+def _ensure_log():
+    if not os.path.exists(WEB_LOG_PATH):
+        with open(WEB_LOG_PATH, "w", newline="", encoding="utf-8") as f:
+            csv.writer(f).writerow(WEB_LOG_HEADERS)
+
+def log_interaction(user_message, bot_reply, response_type, images=None, quick_replies=None):
+    try:
+        _ensure_log()
+        if 'session_id' not in session:
+            session['session_id'] = str(uuid.uuid4())[:8]
+            session.modified = True
+        with open(WEB_LOG_PATH, "a", newline="", encoding="utf-8") as f:
+            csv.writer(f).writerow([
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                session.get('session_id', '?'),
+                user_message[:300],
+                (bot_reply or '')[:300],
+                response_type,
+                ",".join(images) if images else "",
+                ",".join(quick_replies) if quick_replies else "",
+            ])
+    except Exception as e:
+        print(f"Log error: {e}")
 
 SYSTEM_PROMPT = (
     "Vos sos Deltix, el bot del humedal. Sos un carpincho digital que ayuda a habitantes y visitantes "
@@ -323,6 +352,8 @@ def chat():
         session['history'].append({"role": "user", "content": user_message})
         session['history'].append({"role": "assistant", "content": col_resp["reply"]})
         session.modified = True
+        log_interaction(user_message, col_resp["reply"], "colectivas",
+                        col_resp.get("images"), col_resp.get("quick_replies"))
         return jsonify(col_resp)
 
     # Keyword-based quick responses (single-step)
@@ -331,6 +362,8 @@ def chat():
         session['history'].append({"role": "user", "content": user_message})
         session['history'].append({"role": "assistant", "content": quick["reply"]})
         session.modified = True
+        log_interaction(user_message, quick["reply"], "quick",
+                        quick.get("images"), quick.get("quick_replies"))
         return jsonify(quick)
 
     # Fall back to LLM
@@ -354,10 +387,12 @@ def chat():
         session['history'].append({"role": "user", "content": user_message})
         session['history'].append({"role": "assistant", "content": reply})
         session.modified = True
-        return jsonify({'reply': reply, 'images': []})
+        log_interaction(user_message, reply, "llm")
+        return jsonify({'reply': reply, 'images': [], 'quick_replies': []})
     except Exception as e:
         print(f"LLM error: {e}")
-        return jsonify({'reply': 'Tuve un problema técnico. Intentá de nuevo en un momento.', 'images': []})
+        log_interaction(user_message, "ERROR", "llm_error")
+        return jsonify({'reply': 'Tuve un problema técnico. Intentá de nuevo en un momento.', 'images': [], 'quick_replies': []})
 
 
 @app.route('/api/clima')
