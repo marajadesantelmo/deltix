@@ -279,7 +279,11 @@
 
     /* ── Mobile chips ── */
     .chips { display: none; flex-wrap: wrap; gap: 6px; }
-    @media (max-width: 767px) { aside { display: none; } .chips { display: flex; } }
+    @media (max-width: 767px) {
+      aside { display: none; }
+      .chips { display: flex; }
+      .header-mobile-hide { display: none !important; }
+    }
     .chip {
       background: rgba(0,255,65,0.06);
       border: 1px solid rgba(0,255,65,0.15);
@@ -351,7 +355,7 @@
     </div>
     <div class="status-dot"></div>
     <span class="status-label">online</span>
-    <button onclick="document.getElementById('modal-aporte').classList.remove('hidden')" style="
+    <button class="header-mobile-hide" onclick="document.getElementById('modal-aporte').classList.remove('hidden')" style="
       margin-left: 12px;
       padding: 7px 14px;
       border-radius: 10px;
@@ -368,7 +372,7 @@
        onmouseout="this.style.background='rgba(0,255,65,0.08)';this.style.boxShadow='none'">
       ☕ Aportá
     </button>
-    <button onclick="document.getElementById('modal-sugerencia').classList.remove('hidden')" style="
+    <button class="header-mobile-hide" onclick="document.getElementById('modal-sugerencia').classList.remove('hidden')" style="
       margin-left: 8px;
       padding: 7px 14px;
       border-radius: 10px;
@@ -456,6 +460,134 @@
         </div>
         <p style="font-size: 11px; color: rgba(212,237,218,0.35); margin-top: 5px;">Cuenta de Facu · CVU/Alias</p>
       </div>
+    </div>
+  </div>
+
+  <!-- Modal emprendimiento -->
+  <div id="modal-join" class="hidden" style="
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  ">
+    <div style="
+      background: rgba(5,20,5,0.97);
+      border: 1px solid rgba(0,255,65,0.2);
+      border-radius: 20px;
+      padding: 28px 24px;
+      max-width: 460px; width: 100%;
+      box-shadow: 0 0 60px rgba(0,255,65,0.1);
+      max-height: 90vh; overflow-y: auto;
+    ">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+        <span style="font-size:18px; font-weight:700; color:#fff;">🌿 Sumá tu emprendimiento</span>
+        <button onclick="document.getElementById('modal-join').classList.add('hidden')"
+          style="background:none;border:none;color:rgba(212,237,218,0.4);font-size:20px;cursor:pointer;line-height:1;">✕</button>
+      </div>
+      <p style="font-size:12px; color:rgba(212,237,218,0.5); margin-bottom:18px; line-height:1.5;">
+        Completá el formulario y el equipo Deltix se va a comunicar con vos para agregarte a la agenda del río.
+      </p>
+
+      <label style="font-size:12px; color:rgba(0,255,65,0.7); font-family:'JetBrains Mono',monospace; display:block; margin-bottom:4px;">Nombre del emprendimiento *</label>
+      <input id="join-nombre" type="text" placeholder="Ej: Amanita Canoa" style="
+        width:100%; padding:10px 12px; margin-bottom:12px;
+        background:rgba(0,255,65,0.05); border:1px solid rgba(0,255,65,0.2);
+        border-radius:8px; color:#d4edda; font-family:inherit; font-size:13px; outline:none;
+      ">
+
+      <label style="font-size:12px; color:rgba(0,255,65,0.7); font-family:'JetBrains Mono',monospace; display:block; margin-bottom:4px;">Tipo de actividad</label>
+      <input id="join-tipo" type="text" placeholder="Ej: Gastronomía, Kayaks, Alojamiento..." style="
+        width:100%; padding:10px 12px; margin-bottom:12px;
+        background:rgba(0,255,65,0.05); border:1px solid rgba(0,255,65,0.2);
+        border-radius:8px; color:#d4edda; font-family:inherit; font-size:13px; outline:none;
+      ">
+
+      <label style="font-size:12px; color:rgba(0,255,65,0.7); font-family:'JetBrains Mono',monospace; display:block; margin-bottom:4px;">Descripción breve</label>
+      <textarea id="join-descripcion" rows="3" placeholder="Contanos qué ofrecés..." style="
+        width:100%; padding:10px 12px; margin-bottom:12px;
+        background:rgba(0,255,65,0.05); border:1px solid rgba(0,255,65,0.2);
+        border-radius:8px; color:#d4edda; font-family:inherit; font-size:13px; outline:none; resize:none;
+      "></textarea>
+
+      <label style="font-size:12px; color:rgba(0,255,65,0.7); font-family:'JetBrains Mono',monospace; display:block; margin-bottom:4px;">Instagram</label>
+      <input id="join-instagram" type="text" placeholder="@tu_cuenta o link completo" style="
+        width:100%; padding:10px 12px; margin-bottom:12px;
+        background:rgba(0,255,65,0.05); border:1px solid rgba(0,255,65,0.2);
+        border-radius:8px; color:#d4edda; font-family:inherit; font-size:13px; outline:none;
+      ">
+
+      <label style="font-size:12px; color:rgba(0,255,65,0.7); font-family:'JetBrains Mono',monospace; display:block; margin-bottom:4px;">Teléfono o email de contacto</label>
+      <input id="join-contacto" type="text" placeholder="Ej: 1155556666 o hola@ejemplo.com" style="
+        width:100%; padding:10px 12px; margin-bottom:6px;
+        background:rgba(0,255,65,0.05); border:1px solid rgba(0,255,65,0.2);
+        border-radius:8px; color:#d4edda; font-family:inherit; font-size:13px; outline:none;
+      ">
+
+      <div id="join-feedback" style="font-size:12px; min-height:18px; margin-bottom:8px; color:rgba(0,255,65,0.7);"></div>
+      <button onclick="submitJoin()" style="
+        width:100%; padding:12px;
+        border-radius:10px; border:1px solid rgba(0,255,65,0.4);
+        background:rgba(0,255,65,0.1); color:#00ff41;
+        font-size:14px; font-weight:600; font-family:inherit; cursor:pointer;
+        transition:background 0.15s;
+      " onmouseover="this.style.background='rgba(0,255,65,0.2)'"
+         onmouseout="this.style.background='rgba(0,255,65,0.1)'">
+        Enviar solicitud
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal solicitud de datos -->
+  <div id="modal-data-request" class="hidden" style="
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  ">
+    <div style="
+      background: rgba(5,20,5,0.97);
+      border: 1px solid rgba(0,255,65,0.2);
+      border-radius: 20px;
+      padding: 28px 24px;
+      max-width: 420px; width: 100%;
+      box-shadow: 0 0 60px rgba(0,255,65,0.1);
+    ">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+        <span style="font-size:18px; font-weight:700; color:#fff;">✏️ Cambiar o dar de baja</span>
+        <button onclick="document.getElementById('modal-data-request').classList.add('hidden')"
+          style="background:none;border:none;color:rgba(212,237,218,0.4);font-size:20px;cursor:pointer;line-height:1;">✕</button>
+      </div>
+      <p style="font-size:12px; color:rgba(212,237,218,0.5); margin-bottom:18px; line-height:1.5;">
+        Si querés modificar o eliminar la información de tu emprendimiento de la agenda del río, completá este formulario y nos contactamos a la brevedad.
+      </p>
+
+      <label style="font-size:12px; color:rgba(0,255,65,0.7); font-family:'JetBrains Mono',monospace; display:block; margin-bottom:4px;">Nombre del emprendimiento *</label>
+      <input id="dr-nombre" type="text" placeholder="Nombre tal como figura en la agenda" style="
+        width:100%; padding:10px 12px; margin-bottom:12px;
+        background:rgba(0,255,65,0.05); border:1px solid rgba(0,255,65,0.2);
+        border-radius:8px; color:#d4edda; font-family:inherit; font-size:13px; outline:none;
+      ">
+
+      <label style="font-size:12px; color:rgba(0,255,65,0.7); font-family:'JetBrains Mono',monospace; display:block; margin-bottom:4px;">¿Qué necesitás?</label>
+      <textarea id="dr-solicitud" rows="3" placeholder="Ej: Quiero dar de baja mi emprendimiento / Quiero cambiar mi número de contacto a..." style="
+        width:100%; padding:10px 12px; margin-bottom:6px;
+        background:rgba(0,255,65,0.05); border:1px solid rgba(0,255,65,0.2);
+        border-radius:8px; color:#d4edda; font-family:inherit; font-size:13px; outline:none; resize:none;
+      "></textarea>
+
+      <div id="dr-feedback" style="font-size:12px; min-height:18px; margin-bottom:8px; color:rgba(0,255,65,0.7);"></div>
+      <button onclick="submitDataRequest()" style="
+        width:100%; padding:12px;
+        border-radius:10px; border:1px solid rgba(0,255,65,0.4);
+        background:rgba(0,255,65,0.1); color:#00ff41;
+        font-size:14px; font-weight:600; font-family:inherit; cursor:pointer;
+        transition:background 0.15s;
+      " onmouseover="this.style.background='rgba(0,255,65,0.2)'"
+         onmouseout="this.style.background='rgba(0,255,65,0.1)'">
+        Enviar solicitud
+      </button>
     </div>
   </div>
 
@@ -548,6 +680,18 @@
         <button class="quick-btn" onclick="sendQuick('canaveral kayaks')"><span class="icon">🚣</span> Cañaveral Kayaks</button>
         <button class="quick-btn" onclick="sendQuick('charco masajes')"><span class="icon">💆</span> Masaje Thai</button>
         <button class="quick-btn" onclick="sendQuick('familia islena')"><span class="icon">🌾</span> Familia Isleña</button>
+        <button class="quick-btn" onclick="sendQuick('planta frutales')"><span class="icon">🍋</span> Planta Frutales</button>
+        <button class="quick-btn" onclick="sendQuick('dulceras del rio')"><span class="icon">🍯</span> Dulceras del Río</button>
+        <button class="quick-btn" onclick="sendQuick('vivero isleno')"><span class="icon">🌱</span> Vivero Isleño</button>
+        <button class="quick-btn" onclick="sendQuick('nahuel servicios')"><span class="icon">🔨</span> Nahuel Servicios</button>
+        <button class="quick-btn" onclick="sendQuick('aguariba')"><span class="icon">🥬</span> Aguariba Anfibia</button>
+        <button class="quick-btn" onclick="sendQuick('leña muelle')"><span class="icon">🪵</span> Leña a tu Muelle</button>
+        <button class="quick-btn" onclick="document.getElementById('modal-join').classList.remove('hidden')" style="margin-top:6px; border-color:rgba(0,255,65,0.4); color:#00ff41; font-weight:600;">
+          <span class="icon">➕</span> Sumá tu emprendimiento
+        </button>
+        <button class="quick-btn" onclick="document.getElementById('modal-data-request').classList.remove('hidden')" style="margin-top:2px; opacity:0.6; font-size:11px;">
+          <span class="icon">✏️</span> Cambiar o dar de baja mis datos
+        </button>
       </div>
 
       <!-- Memes — último -->
@@ -593,6 +737,8 @@
           <button class="chip" onclick="sendQuick('almaceneras')">🛒 Almaceneras</button>
           <button class="chip" onclick="sendQuick('agenda del rio')">🌿 Agenda del Río</button>
           <button class="chip" onclick="sendQuick('memes')">😄 Memes</button>
+          <button class="chip" onclick="document.getElementById('modal-aporte').classList.remove('hidden')">☕ Aportá</button>
+          <button class="chip" onclick="document.getElementById('modal-sugerencia').classList.remove('hidden')">💡 Sugerí algo</button>
         </div>
 
       </div>
@@ -742,6 +888,16 @@
     }
 
     function sendQuick(text) {
+      if (text.includes('Sumá tu emprendimiento')) {
+        clearQuickReplies();
+        document.getElementById('modal-join').classList.remove('hidden');
+        return;
+      }
+      if (text.includes('Cambiar o dar de baja')) {
+        clearQuickReplies();
+        document.getElementById('modal-data-request').classList.remove('hidden');
+        return;
+      }
       input.value = text;
       submit();
     }
@@ -817,6 +973,52 @@
     .hidden { display: none !important; }
   </style>
   <script>
+    async function submitJoin() {
+      const nombre      = document.getElementById('join-nombre').value.trim();
+      const tipo        = document.getElementById('join-tipo').value.trim();
+      const descripcion = document.getElementById('join-descripcion').value.trim();
+      const instagram   = document.getElementById('join-instagram').value.trim();
+      const contacto    = document.getElementById('join-contacto').value.trim();
+      const feedback    = document.getElementById('join-feedback');
+      if (!nombre) { feedback.textContent = 'El nombre del emprendimiento es obligatorio.'; return; }
+      feedback.textContent = 'Enviando...';
+      try {
+        const res = await fetch('/join', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ nombre, tipo, descripcion, instagram, contacto })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          feedback.textContent = '✓ ¡Gracias! Te contactamos pronto.';
+          ['join-nombre','join-tipo','join-descripcion','join-instagram','join-contacto'].forEach(id => document.getElementById(id).value = '');
+          setTimeout(() => { document.getElementById('modal-join').classList.add('hidden'); feedback.textContent = ''; }, 2500);
+        } else { feedback.textContent = 'Error al enviar. Intentá de nuevo.'; }
+      } catch { feedback.textContent = 'Error de conexión. Intentá de nuevo.'; }
+    }
+
+    async function submitDataRequest() {
+      const nombre    = document.getElementById('dr-nombre').value.trim();
+      const solicitud = document.getElementById('dr-solicitud').value.trim();
+      const feedback  = document.getElementById('dr-feedback');
+      if (!nombre) { feedback.textContent = 'Ingresá el nombre del emprendimiento.'; return; }
+      feedback.textContent = 'Enviando...';
+      try {
+        const res = await fetch('/data-request', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ nombre, solicitud })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          feedback.textContent = '✓ Solicitud recibida. Te contactamos pronto.';
+          document.getElementById('dr-nombre').value = '';
+          document.getElementById('dr-solicitud').value = '';
+          setTimeout(() => { document.getElementById('modal-data-request').classList.add('hidden'); feedback.textContent = ''; }, 2500);
+        } else { feedback.textContent = 'Error al enviar. Intentá de nuevo.'; }
+      } catch { feedback.textContent = 'Error de conexión. Intentá de nuevo.'; }
+    }
+
     async function submitSugerencia() {
       const input = document.getElementById('sugerencia-input');
       const feedback = document.getElementById('sugerencia-feedback');

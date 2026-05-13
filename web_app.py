@@ -84,6 +84,12 @@ KEYWORDS = {
     "kayaks":      ['kayak', 'kayaks', 'canaveral', 'cañaveral'],
     "masajes":     ['masaje', 'masajes', 'charco', 'thai'],
     "familia":     ['familia islena', 'familia isleña', 'dietetica', 'alimentos'],
+    "frutales":    ['frutales', 'citricos', 'cítricos', 'limonero', 'naranjas', 'mandarina', 'planta frutal'],
+    "dulceras":    ['dulceras', 'dulcera', 'dulceras del rio', 'reposteria', 'repostería'],
+    "vivero":      ['vivero', 'tierra fertil', 'tierra fértil', 'compost', 'igarape', 'igarapé', 'huerta'],
+    "nahuel":      ['nahuel', 'poda', 'carpinteria', 'carpintería', 'zanja', 'mantenimiento isla'],
+    "aguariba":    ['aguariba', 'agroecologico', 'agroecológico', 'verduras', 'bolson', 'bolsón'],
+    "lena":        ['leña', 'lena', 'quebracho', 'salamandra', 'ligustro'],
     "memes":       ['meme', 'memes'],
 }
 
@@ -158,7 +164,11 @@ def build_llm_context(user_input):
         context.append(load_rag_file("interislena.txt"))
     if any(k in text for k in KEYWORDS["lineasdelta"]):
         context.append(load_rag_file("lineasdelta.txt"))
-    if any(k in text for k in KEYWORDS["activities"]):
+    if any(k in text for k in KEYWORDS["activities"] +
+           KEYWORDS["amanita"] + KEYWORDS["alfareria"] + KEYWORDS["labusqueda"] +
+           KEYWORDS["kayaks"] + KEYWORDS["masajes"] + KEYWORDS["familia"] +
+           KEYWORDS["frutales"] + KEYWORDS["dulceras"] + KEYWORDS["vivero"] +
+           KEYWORDS["nahuel"] + KEYWORDS["aguariba"] + KEYWORDS["lena"]):
         context.append(load_rag_file("actividades.txt"))
     return "\n\n".join(c for c in context if c)
 
@@ -185,12 +195,18 @@ ALMACENERAS = {
 }
 
 AGENDA_OPTIONS = {
-    "Amanita Canoa":   "amanita canoa",
-    "Kutral Alfarería":"alfareria kutral",
-    "La Búsqueda":     "labusqueda",
-    "Cañaveral Kayaks":"canaveral kayaks",
-    "Masaje Thai":     "charco masajes",
-    "Familia Isleña":  "familia islena",
+    "Amanita Canoa":       "amanita canoa",
+    "Kutral Alfarería":    "alfareria kutral",
+    "La Búsqueda":         "labusqueda",
+    "Cañaveral Kayaks":    "canaveral kayaks",
+    "Masaje Thai":         "charco masajes",
+    "Familia Isleña":      "familia islena",
+    "Planta Frutales":     "planta frutales",
+    "Dulceras del Río":    "dulceras del rio",
+    "Vivero Isleño":       "vivero isleno",
+    "Nahuel Servicios":    "nahuel servicios",
+    "Aguariba Anfibia":    "aguariba",
+    "Leña a tu Muelle":    "leña muelle",
 }
 
 
@@ -237,7 +253,7 @@ def handle_agenda_flow(user_input):
         session['agenda_flow'] = {'step': 'select'}
         session.modified = True
         return {"reply": "¿Qué actividad te interesa? 🌿",
-                "images": [], "quick_replies": list(AGENDA_OPTIONS.keys())}
+                "images": [], "quick_replies": list(AGENDA_OPTIONS.keys()) + ["➕ Sumá tu emprendimiento", "✏️ Cambiar o dar de baja mis datos"]}
 
     return None
 
@@ -467,6 +483,42 @@ def detect_quick_response(user_input):
             "images": ["/img/actividades_productos/familia_islena_flyer.jpg"]
         }
 
+    if any(k in text for k in KEYWORDS["frutales"]):
+        return {
+            "reply": "🍋 **Planta Frutales**\n\nVenta de plantas cítricas para islas y amarras\nLimoneros, Mandarinas, Naranjas, Kinotos, Pomelos y más\n\nPrecios (macetas 6 lts): $26.000 c/u · $25.000 x5 · $24.000 x10\nEntrega en CABA, Zona Norte, Islas y Amarras\n\nContacto: 116 369 0177",
+            "images": ["/img/actividades_productos/frutales.png"]
+        }
+
+    if any(k in text for k in KEYWORDS["dulceras"]):
+        return {
+            "reply": "🍯 **Dulceras del Río**\n\nProductos dulces y repostería artesanal\nEntregas los jueves en Amarras Hugo del Carril\nPuntos de entrega: Amarra Hugo Carril · Muelle La Anacahuita Río Carpachay\nReutilizamos frascos de vidrio 🫙\n\nInstagram: @dulcerasdelrio\nContacto: 11 5525 3829",
+            "images": ["/img/actividades_productos/dulceras1.jpeg", "/img/actividades_productos/dulceras2.jpeg"]
+        }
+
+    if any(k in text for k in KEYWORDS["vivero"]):
+        return {
+            "reply": "🌱 **Vivero Isleño — Cooperativa Igarapé Delta**\n\n\"Hacer huerta es terapia\"\n\nTierra Fértil: $9.200 (bolsas 40 lts)\nCompost Orgánico: $11.500\n10% descuento pidiendo 30 bolsas o más\n\nEntrega en tu muelle · Zona Correa y San Antonio\nContacto: 1159233663",
+            "images": ["/img/actividades_productos/vivero_isleno.jpeg"]
+        }
+
+    if any(k in text for k in KEYWORDS["nahuel"]):
+        return {
+            "reply": "🔨 **Nahuel Servicios**\n\nTrabajos para tu hogar y terreno en el Delta\n· Poda en altura (corte y mantenimiento de árboles)\n· Movimiento de tierra y zanjas\n· Carpintería: decks, torres de agua, estructuras en madera\n· Limpieza de terrenos y mantenimiento general\n\nContacto: Nahuel — 11 5349 2653",
+            "images": ["/img/actividades_productos/nahuel.jpeg"]
+        }
+
+    if any(k in text for k in KEYWORDS["aguariba"]):
+        return {
+            "reply": "🥬 **Aguariba Anfibia**\n\nProducción agroecológica del Delta\nPedidos para entrega el miércoles\n(cargar hasta el lunes a las 22hs)\n40% de reintegro con CUENTA DNI 💳\n\nWeb: aguaribayanfibia.com.ar\nInstagram: @aguaribayanfibia",
+            "images": ["/img/actividades_productos/aguariba.png"]
+        }
+
+    if any(k in text for k in KEYWORDS["lena"]):
+        return {
+            "reply": "🪵 **Leña a tu Muelle — Gabriel**\n\nBolsas tamaño salamandra (10-12 kg)\n· Quebracho Colorado: $8.500\n· Ligustro: $7.500\n· Sauce: $6.500\n· Maderitas para prender: $3.000\n\nCompra mínima: 5 bolsas\nContacto: Gabriel — 1564584445",
+            "images": ["/img/actividades_productos/gabi_lena.jpeg"]
+        }
+
     return None
 
 
@@ -578,6 +630,8 @@ def api_clima():
 
 
 SUGGESTIONS_LOG_PATH = os.path.join(BASE_DIR, "suggestions.csv")
+EMPRENDIMIENTOS_LOG_PATH = os.path.join(BASE_DIR, "emprendimientos.csv")
+DATA_REQUESTS_LOG_PATH = os.path.join(BASE_DIR, "data_requests.csv")
 
 def _save_suggestion(text):
     file_exists = os.path.isfile(SUGGESTIONS_LOG_PATH)
@@ -598,6 +652,88 @@ def _send_suggestion_email(text):
     server.login("marajadesantelmo@gmail.com", gmail_token)
     server.send_message(msg)
     server.quit()
+
+
+@app.route('/join', methods=['POST'])
+@limiter.limit("5 per hour")
+def join():
+    data = request.get_json()
+    nombre      = (data.get('nombre') or '').strip()
+    descripcion = (data.get('descripcion') or '').strip()
+    tipo        = (data.get('tipo') or '').strip()
+    instagram   = (data.get('instagram') or '').strip()
+    contacto    = (data.get('contacto') or '').strip()
+    if not nombre:
+        return jsonify({'ok': False, 'error': 'El nombre es obligatorio'}), 400
+
+    # Guardar en CSV
+    file_exists = os.path.isfile(EMPRENDIMIENTOS_LOG_PATH)
+    with open(EMPRENDIMIENTOS_LOG_PATH, 'a', newline='', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        if not file_exists:
+            writer.writerow(["timestamp", "nombre", "descripcion", "tipo", "instagram", "contacto"])
+        writer.writerow([datetime.now().isoformat(), nombre, descripcion, tipo, instagram, contacto])
+
+    # Enviar email
+    try:
+        body = (f"Nuevo emprendimiento en deltix.com.ar:\n\n"
+                f"Nombre: {nombre}\n"
+                f"Descripción: {descripcion}\n"
+                f"Tipo: {tipo}\n"
+                f"Instagram: {instagram}\n"
+                f"Contacto: {contacto}")
+        msg = EmailMessage()
+        msg['From'] = "marajadesantelmo@gmail.com"
+        msg['To'] = "marajadesantelmo@gmail.com"
+        msg['Subject'] = f"🌿 Nuevo emprendimiento: {nombre}"
+        msg.set_content(body)
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.starttls()
+        server.login("marajadesantelmo@gmail.com", gmail_token)
+        server.send_message(msg)
+        server.quit()
+    except Exception as e:
+        print(f"Email join error: {e}")
+
+    return jsonify({'ok': True})
+
+
+@app.route('/data-request', methods=['POST'])
+@limiter.limit("3 per hour")
+def data_request():
+    data = request.get_json()
+    nombre    = (data.get('nombre') or '').strip()
+    solicitud = (data.get('solicitud') or '').strip()
+    if not nombre:
+        return jsonify({'ok': False, 'error': 'El nombre es obligatorio'}), 400
+
+    # Guardar en CSV
+    file_exists = os.path.isfile(DATA_REQUESTS_LOG_PATH)
+    with open(DATA_REQUESTS_LOG_PATH, 'a', newline='', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        if not file_exists:
+            writer.writerow(["timestamp", "nombre", "solicitud"])
+        writer.writerow([datetime.now().isoformat(), nombre, solicitud])
+
+    # Enviar email
+    try:
+        body = (f"Solicitud de baja o cambio de datos en deltix.com.ar:\n\n"
+                f"Nombre del emprendimiento: {nombre}\n"
+                f"Solicitud: {solicitud}")
+        msg = EmailMessage()
+        msg['From'] = "marajadesantelmo@gmail.com"
+        msg['To'] = "marajadesantelmo@gmail.com"
+        msg['Subject'] = f"✏️ Solicitud de datos: {nombre}"
+        msg.set_content(body)
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.starttls()
+        server.login("marajadesantelmo@gmail.com", gmail_token)
+        server.send_message(msg)
+        server.quit()
+    except Exception as e:
+        print(f"Email data-request error: {e}")
+
+    return jsonify({'ok': True})
 
 
 @app.route('/suggest', methods=['POST'])
