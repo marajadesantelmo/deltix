@@ -4,6 +4,8 @@ import json
 import uuid
 import random
 import smtplib
+import time
+from collections import defaultdict
 from email.message import EmailMessage
 from datetime import datetime
 from flask import Flask, request, jsonify, render_template, session, send_from_directory
@@ -27,6 +29,23 @@ limiter = Limiter(
     default_limits=[],
     storage_uri="memory://"
 )
+
+# Manual rate limiter — only applied to LLM calls
+_llm_hits = defaultdict(list)
+
+def _llm_rate_ok(ip, per_minute=3, per_hour=10, per_day=15):
+    """Returns True if the IP is within LLM rate limits, False otherwise."""
+    now = time.time()
+    hits = [t for t in _llm_hits[ip] if now - t < 86400]
+    _llm_hits[ip] = hits
+    if sum(1 for t in hits if now - t < 60) >= per_minute:
+        return False
+    if sum(1 for t in hits if now - t < 3600) >= per_hour:
+        return False
+    if len(hits) >= per_day:
+        return False
+    _llm_hits[ip].append(now)
+    return True
 
 openai_client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=openrouter_key)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -547,7 +566,6 @@ def service_worker():
 
 
 @app.route('/chat', methods=['POST'])
-@limiter.limit("3 per minute; 10 per hour; 15 per day")
 def chat():
     data = request.get_json()
     user_message = (data.get('message') or '').strip()
@@ -583,7 +601,12 @@ def chat():
                         quick.get("images"), quick.get("quick_replies"))
         return jsonify(quick)
 
-    # Fall back to LLM
+    # Fall back to LLM — check rate limit first
+    ip = get_remote_address()
+    if not _llm_rate_ok(ip):
+        log_interaction(user_message, "RATE_LIMITED", "llm_blocked")
+        return jsonify({'reply': 'Enviaste demasiadas consultas seguidas. Esperá un momento y volvé a intentar 🌿', 'images': [], 'quick_replies': []})
+
     context = build_llm_context(user_message)
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     for msg in session['history'][-10:]:

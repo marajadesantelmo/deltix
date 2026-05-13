@@ -20,9 +20,9 @@ def get_db_connection():
     try:
         # Check if there's a global connection that's still active
         global db
-        if 'db' in globals() and db.is_connected():
+        if 'db' in globals() and db is not None and db.is_connected():
             return db
-        
+
         # Create a new connection
         db = mysql.connector.connect(
             host="facundol.mysql.pythonanywhere-services.com",
@@ -38,12 +38,12 @@ def get_db_connection():
         print(f"Error connecting to database: {err}")
         raise
 
-# Initial database connection
+# Initial database connection — optional, bot works without it
 try:
     db = get_db_connection()
-except Error as err:
-    print(f"Initial database connection failed: {err}")
-    # Continue execution as we'll try to reconnect when needed
+except Exception as err:
+    print(f"Initial database connection failed (non-fatal): {err}")
+    db = None
 
 # Validate environment variables
 if not openrouter_key:
@@ -172,39 +172,40 @@ class LLMClient:
 
     def get_response(self, user_input, context, phone_number):
         """Get a response from the LLM."""
-        conn = get_db_connection()
-        cursor = conn.cursor()    
-        cursor.execute("SELECT id FROM conversations WHERE name = %s", (phone_number,))
-        conversation_id = cursor.fetchone()   
+        # Try to load chat history from MySQL — optional, continues without it if it fails
+        chat_history = []
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT id FROM conversations WHERE name = %s", (phone_number,))
+            conversation_id = cursor.fetchone()
 
-        if conversation_id is None:
-            print(f"No conversation found for phone: {phone_number}. Creating a new one.")
-            conversation_id = create_conversation(phone_number)
-        
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
-        # Handle both cases where conversation_id might be subscriptable or an int
-        if isinstance(conversation_id, tuple) or isinstance(conversation_id, list):
-            conversation_id_value = conversation_id[0]
-        else:
-            conversation_id_value = conversation_id
+            if conversation_id is None:
+                print(f"No conversation found for phone: {phone_number}. Creating a new one.")
+                conversation_id = create_conversation(phone_number)
 
-        cursor.execute(
-            "SELECT content FROM chat_history WHERE conversation_id = %s ORDER BY created_at DESC LIMIT 5", (conversation_id_value,)
-        )
-        chat_history = cursor.fetchall()
-        chat_history = [message for message in chat_history]
-        
+            if isinstance(conversation_id, (tuple, list)):
+                conversation_id_value = conversation_id[0]
+            else:
+                conversation_id_value = conversation_id
+
+            cursor.execute(
+                "SELECT content FROM chat_history WHERE conversation_id = %s ORDER BY created_at DESC LIMIT 5",
+                (conversation_id_value,)
+            )
+            chat_history = [row for row in cursor.fetchall()]
+        except Exception as e:
+            print(f"MySQL unavailable, proceeding without chat history: {e}")
 
         system_prompt = (
             "Vos sos Deltix, el bot del humedal. Sos un carpincho digital que ayuda a habitantes y visitantes del Delta del Paraná en Tigre. "
             "Responde al último mensaje del usuario usando el contexto proporcionado. No saludes al usuario ni digas 'hola'. No inventes información ni alucines. Tu opinión es anticapitalista y ambientalista. "
             "Si no puedes responder, guía al usuario para que ingrese palabras clave como: clima, mareas, windguru, colectivas, almaceneras, hidrografia, actividades"
         )
+        history_text = str(chat_history) if chat_history else "Sin historial disponible."
         messages = [
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": f"Ultimo mensaje del usuario: {user_input}\n\nContexto:\n{context}\n\nHistorial de chat con el usuario:\n{chat_history}"},
+            {"role": "user", "content": f"Ultimo mensaje del usuario: {user_input}\n\nContexto:\n{context}\n\nHistorial de chat con el usuario:\n{history_text}"},
         ]
 
         for attempt in range(self.retries):
