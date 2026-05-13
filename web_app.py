@@ -3,18 +3,30 @@ import csv
 import json
 import uuid
 import random
+import smtplib
+from email.message import EmailMessage
 from datetime import datetime
 from flask import Flask, request, jsonify, render_template, session, send_from_directory
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from openai import OpenAI
 
 try:
-    from tokens import openrouter_key, telegram_token
+    from tokens import openrouter_key, telegram_token, gmail_token
 except ImportError:
     openrouter_key = os.getenv('OPENROUTER_API_KEY')
     telegram_token = os.getenv('TELEGRAM_TOKEN', 'fallback-secret')
+    gmail_token = os.getenv('GMAIL_TOKEN', '')
 
 app = Flask(__name__)
 app.secret_key = telegram_token[:32]
+
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=[],
+    storage_uri="memory://"
+)
 
 openai_client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=openrouter_key)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -470,7 +482,20 @@ def serve_image(filename):
     return send_from_directory(BASE_DIR, filename)
 
 
+@app.route('/manifest.json')
+def manifest():
+    return send_from_directory(os.path.join(BASE_DIR, 'static'), 'manifest.json')
+
+
+@app.route('/service-worker.js')
+def service_worker():
+    resp = send_from_directory(os.path.join(BASE_DIR, 'static'), 'service-worker.js')
+    resp.headers['Service-Worker-Allowed'] = '/'
+    return resp
+
+
 @app.route('/chat', methods=['POST'])
+@limiter.limit("3 per minute; 10 per hour; 15 per day")
 def chat():
     data = request.get_json()
     user_message = (data.get('message') or '').strip()
@@ -550,6 +575,44 @@ def api_clima():
         'description': current.get('weather', [{}])[0].get('description', ''),
         'wind_speed': current.get('wind', {}).get('speed'),
     })
+
+
+SUGGESTIONS_LOG_PATH = os.path.join(BASE_DIR, "suggestions.csv")
+
+def _save_suggestion(text):
+    file_exists = os.path.isfile(SUGGESTIONS_LOG_PATH)
+    with open(SUGGESTIONS_LOG_PATH, 'a', newline='', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        if not file_exists:
+            writer.writerow(["timestamp", "suggestion"])
+        writer.writerow([datetime.now().isoformat(), text])
+
+def _send_suggestion_email(text):
+    msg = EmailMessage()
+    msg['From'] = "marajadesantelmo@gmail.com"
+    msg['To'] = "marajadesantelmo@gmail.com"
+    msg['Subject'] = "💡 Nueva sugerencia en deltix.com.ar"
+    msg.set_content(f"Un usuario envió la siguiente sugerencia desde la web:\n\n{text}")
+    server = smtplib.SMTP("smtp.gmail.com", 587)
+    server.starttls()
+    server.login("marajadesantelmo@gmail.com", gmail_token)
+    server.send_message(msg)
+    server.quit()
+
+
+@app.route('/suggest', methods=['POST'])
+@limiter.limit("3 per hour")
+def suggest():
+    data = request.get_json()
+    text = (data.get('text') or '').strip()
+    if not text:
+        return jsonify({'ok': False, 'error': 'Mensaje vacío'}), 400
+    _save_suggestion(text)
+    try:
+        _send_suggestion_email(text)
+    except Exception as e:
+        print(f"Email error: {e}")
+    return jsonify({'ok': True})
 
 
 if __name__ == '__main__':

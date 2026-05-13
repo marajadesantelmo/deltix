@@ -4,6 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Deltix — Bot del Humedal</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#00ff41">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Deltix">
+  <link rel="apple-touch-icon" href="/img/bot_icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
@@ -341,7 +347,7 @@
     <img src="/img/bot_icon.png" alt="Deltix" class="header-avatar">
     <div>
       <div class="header-title">Deltix</div>
-      <div class="header-sub">bot_del_humedal · delta_del_paraná</div>
+      <div class="header-sub">bot_del_humedal delta_del_paraná</div>
     </div>
     <div class="status-dot"></div>
     <span class="status-label">online</span>
@@ -361,6 +367,23 @@
     " onmouseover="this.style.background='rgba(0,255,65,0.16)';this.style.boxShadow='0 0 14px rgba(0,255,65,0.2)'"
        onmouseout="this.style.background='rgba(0,255,65,0.08)';this.style.boxShadow='none'">
       ☕ Aportá
+    </button>
+    <button onclick="document.getElementById('modal-sugerencia').classList.remove('hidden')" style="
+      margin-left: 8px;
+      padding: 7px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(0,255,65,0.35);
+      background: rgba(0,255,65,0.08);
+      color: #00ff41;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.15s, box-shadow 0.15s;
+      white-space: nowrap;
+    " onmouseover="this.style.background='rgba(0,255,65,0.16)';this.style.boxShadow='0 0 14px rgba(0,255,65,0.2)'"
+       onmouseout="this.style.background='rgba(0,255,65,0.08)';this.style.boxShadow='none'">
+      💡 Sugerí algo
     </button>
   </header>
 
@@ -433,6 +456,57 @@
         </div>
         <p style="font-size: 11px; color: rgba(212,237,218,0.35); margin-top: 5px;">Cuenta de Facu · CVU/Alias</p>
       </div>
+    </div>
+  </div>
+
+  <!-- Modal sugerencia -->
+  <div id="modal-sugerencia" class="hidden" style="
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  ">
+    <div style="
+      background: rgba(5,20,5,0.97);
+      border: 1px solid rgba(0,255,65,0.2);
+      border-radius: 20px;
+      padding: 28px 24px;
+      max-width: 420px; width: 100%;
+      box-shadow: 0 0 60px rgba(0,255,65,0.1);
+    ">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+        <span style="font-size:18px; font-weight:700; color:#fff;">💡 Sugerí algo</span>
+        <button onclick="document.getElementById('modal-sugerencia').classList.add('hidden')"
+          style="background:none;border:none;color:rgba(212,237,218,0.4);font-size:20px;cursor:pointer;line-height:1;">✕</button>
+      </div>
+      <p style="font-size:13px; color:rgba(212,237,218,0.6); margin-bottom:16px; line-height:1.5;">
+        ¿Tenés una idea, corrección o dato útil para el Delta? Escribila acá y le llega directamente al equipo Deltix.
+      </p>
+      <textarea id="sugerencia-input" rows="4" placeholder="Escribí tu sugerencia..." style="
+        width: 100%; padding: 12px 14px;
+        background: rgba(0,255,65,0.05);
+        border: 1px solid rgba(0,255,65,0.2);
+        border-radius: 10px;
+        color: #d4edda; font-family: inherit; font-size: 14px;
+        resize: none; outline: none;
+        transition: border-color 0.2s;
+      " onfocus="this.style.borderColor='rgba(0,255,65,0.5)'"
+         onblur="this.style.borderColor='rgba(0,255,65,0.2)'"></textarea>
+      <div id="sugerencia-feedback" style="font-size:12px; min-height:18px; margin-top:6px; color:rgba(0,255,65,0.7);"></div>
+      <button onclick="submitSugerencia()" style="
+        margin-top: 14px; width: 100%;
+        padding: 12px;
+        border-radius: 10px;
+        border: 1px solid rgba(0,255,65,0.4);
+        background: rgba(0,255,65,0.1);
+        color: #00ff41; font-size: 14px; font-weight: 600;
+        font-family: inherit; cursor: pointer;
+        transition: background 0.15s;
+      " onmouseover="this.style.background='rgba(0,255,65,0.2)'"
+         onmouseout="this.style.background='rgba(0,255,65,0.1)'">
+        Enviar sugerencia
+      </button>
     </div>
   </div>
 
@@ -742,5 +816,41 @@
     @media (max-width: 767px) { #footer-contacto { display: flex !important; } }
     .hidden { display: none !important; }
   </style>
+  <script>
+    async function submitSugerencia() {
+      const input = document.getElementById('sugerencia-input');
+      const feedback = document.getElementById('sugerencia-feedback');
+      const text = input.value.trim();
+      if (!text) { feedback.textContent = 'Escribí algo antes de enviar.'; return; }
+      feedback.textContent = 'Enviando...';
+      try {
+        const res = await fetch('/suggest', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ text })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          feedback.textContent = '✓ ¡Gracias! Tu sugerencia fue enviada.';
+          input.value = '';
+          setTimeout(() => {
+            document.getElementById('modal-sugerencia').classList.add('hidden');
+            feedback.textContent = '';
+          }, 2000);
+        } else {
+          feedback.textContent = 'Error al enviar. Intentá de nuevo.';
+        }
+      } catch {
+        feedback.textContent = 'Error de conexión. Intentá de nuevo.';
+      }
+    }
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .catch(err => console.warn('SW error:', err));
+      });
+    }
+  </script>
 </body>
 </html>
