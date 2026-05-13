@@ -1,80 +1,147 @@
-INTERISLEÑA - SALIDA DESDE TIGRE hacia la isla
-Aclaracion: No hay información sobre horarios de llegada a tigre desde la isla
+INTERISLEÑA - HORARIOS COMPLETOS
+Estación Fluvial de Tigre, Muelle 2
+Contacto: 4749-0900
+Nota: Los horarios pueden sufrir modificaciones. Confirmar con la empresa.
 
--Horarios de Invierno
+==========================================================
+TEMPORADA INVIERNO (vigencia: fines de febrero a fines de diciembre, según calendario escolar)
+==========================================================
 
-Sarmiento, Capitán, Paraná hasta A. Felicaria  
-Lunes a Viernes: 7:00 / 19:00 (solo viernes) 
-Sábado: 7:00 /9:30 / 14:15 / 17:00  
-Domingo:  7:00 / 9:30 / 16:00 17:00 / 19:30
+----------------------------------------------------------
+IDA — SALIDAS DESDE TIGRE HACIA LAS ISLAS
+----------------------------------------------------------
 
-Sarmiento, Capitán, hasta Paraná 
-Lunes a Viernes : 7:00 / 8:30 / 14:15 /15:00 16:15 (solo vier)/ 17:30 / 21:00
-Sábado: 8:30 / 9:30 / 10:30/ 12:00 14:00/ 15:00/ 15:30/ 16:00 17:00/ 18:10
-Domingo: 8:30/ 9:30/ 10:30/ 12:00 14:00/ 15:00/ 16:00 
+RECORRIDO: Sarmiento → Capitán → Paraná de las Palmas
+Lunes a Viernes: 7:00 / 8:30 / 10:00 / 14:15 / 15:00 / 17:30 / 21:00
+Solo Viernes: 16:15
+Sábados: 7:00 / 8:30 / 9:30 / 10:30 / 12:00 / 14:00 / 14:15 / 15:00 / 15:30 / 17:00 / 18:10
+Domingos: 7:00 / 8:30 / 9:30 / 10:30 / 12:00 / 14:00 / 14:15 / 15:00 / 15:30 / 16:00 / 17:00 / 19:00 / 21:00
 
-Sarmiento, San Antonio, A. Dorado, Borasso, R. Unión, C. Honda del Este, Paraná 
-Lunes a Viernes:  8:00/ 11:30 (hasta I' Maragantú) 15:30
-Sábado y Domingo: 8:00/ 11:30 (hasta A. Dorado) 15:00 (solo sábado) 16:00 (hasta Fondeadero)
+RECORRIDO: Sarmiento → San Antonio → Arroyo Dorado → Borasso → Río Urión → Canal Honda → Canal del Este → Paraná de las Palmas
+Lunes a Viernes: 8:00 / 15:30
+Sábados: 8:00 / 11:30 / 16:00
+Domingos: 8:00 / 11:30 / 15:00 / 16:00
 
+RECORRIDO: Sarmiento → Espera → hasta Cruz Colorada (según estado del agua)
+Lunes a Viernes: 9:00 / 15:00 / 18:00 (solo lunes, hasta Aª Espera y Torito) / 18:30 / 21:00 (hasta Aª Espera y Torito L-J; hasta Aª Espera y Canal 8 viernes)
+Sábados: 9:00 / 13:00 / 16:30 / 18:30
+Domingos: 9:00 / 13:00 / 15:00 / 17:00
 
-Sarmiento, Capitán, Antequera, Paraná y continúa por Delta de S. Fernando
-Lunes a Viernes: 9:00/ 16: 15 (salvo viernes, salida 17 hs.)
-Sábado: 9:00/ 11:00 / 14:00/ 16:30
-Domingo: 9:00/ 11:00 / 17:00
+RECORRIDO: Sarmiento → Capitán → Paraná de las Palmas → Puy Carabí → Canal 5
+Lunes a Viernes: 16:15
+Domingos: 8:00 / 14:00
 
-Sarmiento, Espera, hasta Cruz Colorada 
-Lunes a Viernes: 9:00/ 15:30 /18:30 21:00 (hasta A. Torito, solo vier)
-Sábado: 9:00/ 11:00 / 13:00 14:30/ 16:30/ 18:30  
-Domingo  9:00/ 11:00 / 13:00/ 15:00/ 17:00
+RECORRIDO: Sarmiento → Capitán → Arroyo Antequera
+Lunes a Viernes: 9:00 / 16:15 (salvo viernes: 17:00)
+Sábados: 9:00 / 14:00 / 16:30
+Domingos: 9:00 / 17:00 / 21:00
 
-Sarmiento, Capitán, A. Rama Negra 
-Lunes a Viernes: 10:00 / 16.:15 (salvo vier., salida 17:00)
-Sábado y Domingo:  8:00/ 10:00/ 12:00/ 17:30 15:00 (solo sábado)
+RECORRIDO: Sarmiento → Capitán → Paraná de las Palmas → Estudiantes → Fredes
+Miércoles y Jueves: 14:15
+Sábados: 8:00
+Domingos: 8:00 / 10:30 / 14:00
 
-De Luján a Abra Vieja 
-Lunes a Viernes: 15:30/ 17:30 (solo vier)
-Sábado y Domingo: 9:00/ 11:00/ 15:00 17:00 (sábado)/ 18:00 (domingo)
+RECORRIDO: Sarmiento → Capitán → Paso del Toro
+Lunes a Viernes: 7:00 / 8:30 / 10:00 / 11:30 / 12:45 / 14:15 / 15:00 / 16:15 / 17:30 / 18:10 / 19:00 / 20:00 / 21:00
+Sábados: 7:00 / 8:00 / 9:30 / 11:00 / 12:00 / 13:30 / 14:00 / 15:00 / 16:00 / 17:00 / 19:00 / 20:00 / 21:00
+Domingos: 7:00 / 8:00 / 9:30 / 11:00 / 12:00 / 13:30 / 14:00 / 15:00 / 16:00 / 17:00 / 19:00 / 20:00 / 21:00
 
-Sarmiento/ Capitán 
-Lunes a Viernes: 11:30/ 18:10/ 20:00 (hasta Paso del Toro) 12:45 (Hasta Viejo Molino) 11:30/ 18:00 (por A. Toro)
-Sábado y Domingo:  11:00
+RECORRIDO: Sarmiento → Capitán → continúa por Arroyo Toro
+Lunes a Viernes: 11:30 / 19:00
+Sábados: 8:00 / 11:30 / 19:00
+Domingos: 8:00 / 11:30 / 15:00 / 19:00
 
--Horarios de Verano
+RECORRIDO: Sarmiento → Capitán → Arroyo Rama Negra
+Lunes a Viernes: 10:00 / 19:00
+Sábados: 8:00 / 10:00 (¿?) / 12:00 / 15:00 / 17:30
+Domingos: 8:00 / 12:00 / 15:00 / 17:30
 
-Sarmiento, Capitán, Paraná hasta A. Felicaria  
-Lunes a Viernes: 7:00/ 14:15  / 19:00 (solo viernes) 
-Sábado: 7:00 /9:30 / 14:15 / 17:00  
-Domingo:  7:00 / 9:30 / 16:00/   17:00 / 19:30
+RECORRIDO: Luján → Arroyo Abra Vieja (según estado del agua)
+Lunes a Viernes: 15:30 / 17:00 (solo viernes)
+Sábados: 9:00 / 11:00 / 15:00 / 17:00
+Domingos: 9:00 / 11:00 / 15:00 / 17:30 / 18:00
 
-Sarmiento, Capitán, hasta Paraná 
-Lunes a Viernes : 7:00 / 8:30 / 14:15 /15:00/ 16:15 (solo vier)/ 17:30 / 21:00
-Sábado: 8:30 / 9:30 / 10:30/ 12:00 14:00/ 15:00/ 15:30/ 16:00/ 17:00/ 18:10
-Domingo: 8:00/ 8:30/ 9:30/ 10:30/ 12:00 14:00/ 15:00/ 16:00 
+RECORRIDO: Sarmiento → Capitán → Paraná de las Palmas → Arroyo Felicaria
+Lunes a Viernes: 7:00 / 14:15 (L,Ma,V)
+Sábados: 7:00 / 9:30 / 14:15 / 19:30
+Domingos: 7:00 / 9:30 / 17:00 (hasta India Blanca) / 17:30 (hasta Club Felicaria) / 19:00 / 19:30
 
-Sarmiento, San Antonio, A. Dorado, Borasso, R. Unión, C. Honda del Este, Paraná 
-Lunes a Viernes:  8:00/ 11:30 y 13:30 (hasta I' Maragantú) 
-Sábado y Domingo: 8:00/ 11:30 (solo domingo)/ 15:00 (solo sábado)/ 16:00 (hasta Fondeadero)
+----------------------------------------------------------
+VUELTA — LLEGADAS A TIGRE DESDE LAS ISLAS
+----------------------------------------------------------
 
-Sarmiento, Capitán, Antequera, Paraná y continúa por Delta de S. Fernando
-Lunes a Viernes: 9:00/ 16:15 (salvo viernes, salida 17 hs.)
-Sábado: 8:30/ 11:00 / 14:00/ 16:30
-Domingo: 8:30/ 11:00 / 17:00
+RECORRIDO: Paraná de las Palmas → Capitán → Sarmiento → Tigre
+Lunes a Viernes: 6:30 / 8:30 / 10:30 / 12:30 / 15:00 / 16:50 / 18:00 / 20:00
+Sábados: 6:30 / 8:30 / 10:30 / 12:00 / 16:30 / 17:30 / 18:00 / 19:20 / 20:00
+Domingos: 10:30 / 12:00 / 15:00 / 16:30 / 17:30 / 19:20 / 20:00
+Nota: el servicio de las 10:30 parte a las 8:30 desde Capitán y Paraná de las Palmas.
 
-Sarmiento, Espera, hasta Cruz Colorada 
-Lunes a Viernes: 9:00/ 11:00/ 15:00 /19:00/ 21:00 (hasta A. Torito, solo vier)
-Sábado: 9:00/ 11:00 / 13:00/ 14:30/ 16:30/ 19:00
-Domingo  9:00/ 11:00 / 13:00/ 15:00/ 17:00
+RECORRIDO: Paraná de las Palmas → Canal del Este → Canal Honda → Río Urión → Borasso → Arroyo Dorado → San Antonio → Sarmiento → Tigre
+Lunes a Viernes: 11:30 / 19:00
+Sábados: 18:15 (Canal Honda, Urión, Canal del Este y Boraso) / 19:00 (Arroyón)
+Domingos: 11:15 / 18:15 / 19:00 (Arroyón)
 
-Sarmiento, Capitán, A. Rama Negra 
-Lunes a Viernes: 10:00 / 16.:15 (salvo vier., salida 17:00)
-Sábado y Domingo:  8:00/ 10:00/ 12:00/ 17:30/ 15:00 (solo sábado)
+RECORRIDO: Cruz Colorada → Espera → Sarmiento → Tigre
+Lunes a Viernes: 7:00 / 12:00 / 18:00
+Sábados: 7:00 / 12:00 / 18:00 / 19:30
+Domingos: 19:30
 
-De Luján a Abra Vieja 
-Lunes a Viernes: 15:30/ 17:30 (solo vier)
-Sábado y Domingo: 9:00/ 11:00/ 15:00/ 17:00 (sábado)/ 18:00 (domingo), 19:30 en temporada alta
+RECORRIDO: Canal 5 → Puy Carabí → Paraná de las Palmas → Capitán → Sarmiento → Tigre
+Lunes a Viernes: 8:00
+Sábados: 8:00 / 20:00
+Domingos: 18:00
 
-Sarmiento/ Capitán 
-Lunes a Viernes: 11:30/ 18:10/ 20:00 (hasta Paso del Toro) 12:45 (Hasta Viejo Molino) 15:00/ 19:00 (por A. Toro)
+RECORRIDO: Arroyo Antequera → Capitán → Sarmiento → Tigre
+Lunes a Viernes: 8:00 / 12:30 (regresa por río Capitán)
+Sábados: 8:00 / 11:30 / 18:30 (abordar de ida; regresa por río Capitán)
+Domingos: 18:00 / 19:30 / 20:00
 
+RECORRIDO: Fredes → Estudiantes → Paraná de las Palmas → Capitán → Sarmiento → Tigre
+Miércoles y Jueves: 6:30
+Sábados: 18:00
+Domingos: 18:00
 
+RECORRIDO: Paso del Toro → Capitán → Sarmiento → Tigre
+Lunes a Viernes: 6:30 / 7:30 / 8:30 / 10:30 / 12:30 / 14:50 / 16:10 / 16:50 / 18:00 / 20:10
+Sábados: 6:30 / 7:30 / 8:30 / 9:15 / 10:30 / 11:15 / 12:15 / 12:30 / 13:50 / 15:15 / 16:30 / 18:00 / 19:15 / 20:10
+Domingos: 7:30 / 9:15 / 10:30 / 11:15 / 12:15 / 12:30 / 13:50 / 15:15 / 16:30 / 18:00 / 19:15 / 20:10
+
+RECORRIDO: Arroyo Toro → Capitán → Sarmiento → Tigre
+Lunes a Viernes: 7:30 (parte desde Arroyo Toro a las 5:30hs) / 18:00
+Sábados: 7:30 / 11:15 / 18:50
+Domingos: 7:30 / 11:15
+
+RECORRIDO: Arroyo Rama Negra → Capitán → Sarmiento → Tigre
+Lunes a Viernes: 7:30 / 18:00
+Sábados: 7:30 / 12:15 / 18:00 / 19:30
+Domingos: 7:30 / 12:15 / 19:30
+
+RECORRIDO: Arroyo Abra Vieja → Luján → Tigre (según estado del agua)
+Sábados: 10:30 / 12:30 / 16:30 / 19:20
+Domingos: 10:30 / 12:30 / 16:30 / 19:20
+
+RECORRIDO: Arroyo Felicaria → Paraná de las Palmas → Capitán → Sarmiento → Tigre
+Lunes a Viernes: 6:30 (L,Ma,V) / 16:50
+Sábados: 6:30 / 12:00 / 16:30 / 19:30 (?) / 20:00
+Domingos: 12:00 / 16:30 / 20:00
+
+==========================================================
+TEMPORADA VERANO (diciembre a fines de febrero, período de vacaciones escolares)
+==========================================================
+Nota: En verano los horarios de fines de semana largos pueden sufrir modificaciones.
+Para horarios de verano consultar directamente con Interisleña: 4749-0900.
+Los horarios son similares a invierno con algunas salidas adicionales en fines de semana.
+
+----------------------------------------------------------
+IDA VERANO — SALIDAS DESDE TIGRE (principales diferencias respecto a invierno)
+----------------------------------------------------------
+
+RECORRIDO: Sarmiento → Capitán → Paraná de las Palmas
+Lunes a Viernes: 7:00 / 8:30 / 10:00 / 14:15 / 15:00 / 17:30 / 21:00
+Sábados: igual que invierno más servicio adicional
+Domingos: 8:00 / 8:30 / 9:30 / 10:30 / 12:00 / 14:00 / 15:00 / 16:00
+
+RECORRIDO: Sarmiento → Espera → Cruz Colorada
+Lunes a Viernes: 9:00 / 11:00 / 15:00 / 19:00 / 21:00 (hasta Aª Torito, solo viernes)
+Sábados: 9:00 / 11:00 / 13:00 / 14:30 / 16:30 / 19:00
+Domingos: 9:00 / 11:00 / 13:00 / 15:00 / 17:00
