@@ -333,20 +333,6 @@
     @media (min-width: 768px) {
       aside { display: none !important; }
 
-      /* Header branding fade in/out */
-      .header-avatar, .header-brand {
-        transition: opacity 0.3s ease;
-      }
-      .is-landing .header-avatar,
-      .is-landing .header-brand {
-        opacity: 0;
-        pointer-events: none;
-      }
-      .is-chat .header-avatar,
-      .is-chat .header-brand {
-        opacity: 1;
-      }
-
       /* Landing state */
       .is-landing main { align-items: center; justify-content: center; }
       .is-landing #chat-messages { display: none !important; }
@@ -799,6 +785,15 @@
 
     // Landing → Chat transition (desktop only)
     let _isLanding = window.innerWidth >= 768;
+    const _headerAvatar = document.querySelector('.header-avatar');
+    const _headerBrand  = document.querySelector('.header-brand');
+
+    // Hide header branding on desktop landing
+    if (_isLanding) {
+      if (_headerAvatar) { _headerAvatar.style.opacity = '0'; _headerAvatar.style.pointerEvents = 'none'; }
+      if (_headerBrand)  { _headerBrand.style.opacity  = '0'; _headerBrand.style.pointerEvents  = 'none'; }
+    }
+
     function transitionToChat() {
       if (!_isLanding) return;
       _isLanding = false;
@@ -811,6 +806,9 @@
         layout.classList.remove('is-landing');
         layout.classList.add('is-chat');
         input.placeholder = 'Escribí tu consulta...';
+        // Fade in header branding
+        if (_headerAvatar) { _headerAvatar.style.transition = 'opacity 0.3s ease'; _headerAvatar.style.opacity = '1'; _headerAvatar.style.pointerEvents = ''; }
+        if (_headerBrand)  { _headerBrand.style.transition  = 'opacity 0.3s ease'; _headerBrand.style.opacity  = '1'; _headerBrand.style.pointerEvents  = ''; }
       }, 180);
     }
 
