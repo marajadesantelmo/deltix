@@ -289,6 +289,17 @@ def handle_social_flow(user_input):
     return None
 
 
+def _is_different_topic(text):
+    """Devuelve True si el texto claramente corresponde a otro dominio."""
+    other_kws = (
+        KEYWORDS["weather"] + KEYWORDS["tides"] + KEYWORDS["hidrografia"] +
+        KEYWORDS["agenda"] + KEYWORDS["windguru"] + KEYWORDS["jilguero"] +
+        KEYWORDS["interislena"] + KEYWORDS["lineasdelta"] + KEYWORDS["colectivas"] +
+        KEYWORDS["memes"]
+    )
+    return any(k in text for k in other_kws)
+
+
 def handle_almaceneras_flow(user_input):
     text = user_input.strip()
     text_lower = text.lower()
@@ -301,7 +312,12 @@ def handle_almaceneras_flow(user_input):
                 session.pop('alm_flow', None)
                 session.modified = True
                 return {"reply": info, "images": [], "quick_replies": []}
-        # Sin coincidencia — repetir menú
+        # Sin coincidencia — si es otro tema, liberar el flow
+        if _is_different_topic(text_lower):
+            session.pop('alm_flow', None)
+            session.modified = True
+            return None
+        # Mismo tema pero input inválido — repetir menú
         return {"reply": "Elegí una almacenera de la lista 👇",
                 "images": [], "quick_replies": list(ALMACENERAS.keys())}
 
@@ -325,6 +341,11 @@ def handle_agenda_flow(user_input):
                 session.pop('agenda_flow', None)
                 session.modified = True
                 return detect_quick_response(query)
+        # Sin coincidencia — si es otro tema, liberar el flow
+        if _is_different_topic(text_lower):
+            session.pop('agenda_flow', None)
+            session.modified = True
+            return None
         return {"reply": "Elegí una actividad 👇",
                 "images": [], "quick_replies": list(AGENDA_OPTIONS.keys())}
 
