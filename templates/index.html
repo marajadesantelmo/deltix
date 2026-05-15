@@ -283,6 +283,7 @@
       aside { display: none; }
       .chips { display: flex; }
       .header-mobile-hide { display: none !important; }
+      .mobile-welcome { display: flex !important; }
     }
     .chip {
       background: rgba(0,255,65,0.06);
@@ -296,6 +297,66 @@
       font-family: inherit;
     }
     .chip:hover { background: rgba(0,255,65,0.12); border-color: rgba(0,255,65,0.3); color: #d4edda; }
+
+    /* ── Landing / Chat states ── */
+    #landing-hero {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 20px 20px 28px;
+    }
+    .landing-avatar {
+      width: 80px; height: 80px;
+      border-radius: 18px;
+      border: 2px solid rgba(0,255,65,0.3);
+      box-shadow: 0 0 36px rgba(0,255,65,0.2);
+      margin-bottom: 18px;
+    }
+    .landing-title {
+      font-size: 38px; font-weight: 700; color: #fff;
+      letter-spacing: -0.5px; margin-bottom: 8px;
+    }
+    .landing-sub {
+      font-size: 12px; color: rgba(0,255,65,0.5);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .mobile-welcome { display: none; }
+    #landing-chips {
+      display: none;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      padding: 20px 0 8px;
+    }
+
+    @media (min-width: 768px) {
+      aside { display: none !important; }
+
+      /* Landing state */
+      .is-landing main { align-items: center; justify-content: center; }
+      .is-landing #chat-messages { display: none !important; }
+      .is-landing #landing-hero { display: flex; }
+      .is-landing #landing-chips { display: flex; }
+      .is-landing .input-bar {
+        max-width: 720px; width: 100%;
+        background: transparent; border-top: none; padding: 0 16px;
+      }
+      .is-landing .input-form {
+        border: 1px solid rgba(0,255,65,0.22); border-radius: 16px;
+        padding: 6px 10px; background: rgba(5,20,5,0.88);
+        backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      }
+      .is-landing textarea {
+        border: none !important; background: transparent !important;
+        box-shadow: none !important; font-size: 15px !important;
+      }
+
+      /* Chat state */
+      .is-chat main { align-items: center; }
+      .is-chat #chat-messages { width: 100%; max-width: 820px; }
+      .is-chat .input-bar { width: 100%; max-width: 820px; }
+    }
 
     /* ── Input bar ── */
     .input-bar {
@@ -642,81 +703,23 @@
     </div>
   </div>
 
-  <div class="layout">
+  <div class="layout is-landing" id="app-layout">
 
-    <!-- Sidebar -->
-    <aside>
-      <!-- Clima y agua — siempre visible -->
-      <span class="section-label">// clima y agua</span>
-      <button class="quick-btn" onclick="sendQuick('¿Cómo está el clima?')"><span class="icon">☁️</span> Clima</button>
-      <button class="quick-btn" onclick="sendQuick('mareas')"><span class="icon">🌊</span> Mareas INA</button>
-      <button class="quick-btn" onclick="sendQuick('hidrografia')"><span class="icon">📊</span> Hidrografía Naval</button>
-      <button class="quick-btn" onclick="sendQuick('windguru')"><span class="icon">💨</span> WindGurú</button>
-
-      <!-- Colectivas — siempre visible -->
-      <span class="section-label">// colectivas</span>
-      <button class="quick-btn" onclick="sendQuick('jilguero')"><span class="icon">🚢</span> Jilguero</button>
-      <button class="quick-btn" onclick="sendQuick('interislena')"><span class="icon">⛵</span> Interisleña</button>
-      <button class="quick-btn" onclick="sendQuick('lineas delta')"><span class="icon">🛥️</span> Líneas Delta</button>
-
-      <!-- Almaceneras — colapsable -->
-      <div class="section-toggle" onclick="toggleSection('almaceneras')">
-        <span class="section-toggle-label" id="label-almaceneras">// almaceneras</span>
-        <span class="chevron" id="chevron-almaceneras">▼</span>
-      </div>
-      <div class="section-body" id="body-almaceneras">
-        <button class="quick-btn" onclick="sendQuick('almaceneras')"><span class="icon">🛒</span> Ver almaceneras</button>
-      </div>
-
-      <!-- Agenda del río — colapsable -->
-      <div class="section-toggle" onclick="toggleSection('agenda')">
-        <span class="section-toggle-label" id="label-agenda">// agenda del río</span>
-        <span class="chevron" id="chevron-agenda">▼</span>
-      </div>
-      <div class="section-body" id="body-agenda">
-        <button class="quick-btn" onclick="sendQuick('amanita canoa')"><span class="icon">🛶</span> Amanita Canoa</button>
-        <button class="quick-btn" onclick="sendQuick('alfareria kutral')"><span class="icon">🏺</span> Kutral Alfarería</button>
-        <button class="quick-btn" onclick="sendQuick('labusqueda')"><span class="icon">🌿</span> La Búsqueda</button>
-        <button class="quick-btn" onclick="sendQuick('canaveral kayaks')"><span class="icon">🚣</span> Cañaveral Kayaks</button>
-        <button class="quick-btn" onclick="sendQuick('charco masajes')"><span class="icon">💆</span> Masaje Thai</button>
-        <button class="quick-btn" onclick="sendQuick('familia islena')"><span class="icon">🌾</span> Familia Isleña</button>
-        <button class="quick-btn" onclick="sendQuick('planta frutales')"><span class="icon">🍋</span> Planta Frutales</button>
-        <button class="quick-btn" onclick="sendQuick('dulceras del rio')"><span class="icon">🍯</span> Dulceras del Río</button>
-        <button class="quick-btn" onclick="sendQuick('vivero isleno')"><span class="icon">🌱</span> Vivero Isleño</button>
-        <button class="quick-btn" onclick="sendQuick('nahuel servicios')"><span class="icon">🔨</span> Nahuel Servicios</button>
-        <button class="quick-btn" onclick="sendQuick('aguariba')"><span class="icon">🥬</span> Aguariba Anfibia</button>
-        <button class="quick-btn" onclick="sendQuick('leña muelle')"><span class="icon">🪵</span> Leña a tu Muelle</button>
-        <button class="quick-btn" onclick="document.getElementById('modal-join').classList.remove('hidden')" style="margin-top:6px; border-color:rgba(0,255,65,0.4); color:#00ff41; font-weight:600;">
-          <span class="icon">➕</span> Sumá tu emprendimiento
-        </button>
-        <button class="quick-btn" onclick="document.getElementById('modal-data-request').classList.remove('hidden')" style="margin-top:2px; opacity:0.6; font-size:11px;">
-          <span class="icon">✏️</span> Cambiar o dar de baja mis datos
-        </button>
-      </div>
-
-      <!-- Memes — último -->
-      <span class="section-label">// memes islenials</span>
-      <button class="quick-btn" onclick="sendQuick('memes')"><span class="icon">😄</span> Memes Islenials</button>
-
-      <div class="sidebar-footer">
-        <p>También en Telegram</p>
-        <a href="mailto:facundo@pymetech.com.ar" style="
-          display:inline-block; margin-top:10px;
-          font-size:11px; color:rgba(0,255,65,0.35);
-          text-decoration:none; transition:color 0.15s;
-        " onmouseover="this.style.color='rgba(0,255,65,0.7)'"
-           onmouseout="this.style.color='rgba(0,255,65,0.35)'">
-          Contactá a los desarrolladores ↗
-        </a>
-      </div>
-    </aside>
-
-    <!-- Chat -->
+    <!-- Chat + Input -->
     <main>
+
+      <!-- Landing hero (desktop, visible before first message) -->
+      <div id="landing-hero">
+        <img src="/img/bot_icon.png" alt="Deltix" class="landing-avatar">
+        <h1 class="landing-title">Deltix</h1>
+        <p class="landing-sub">bot_del_humedal · delta_del_paraná</p>
+      </div>
+
+      <!-- Chat messages -->
       <div id="chat-messages">
 
-        <!-- Welcome -->
-        <div class="msg-row">
+        <!-- Welcome (mobile only) -->
+        <div class="msg-row mobile-welcome">
           <img src="/img/bot_icon.png" alt="Deltix" class="bot-avatar">
           <div class="msg-col">
             <div class="bubble bot">
@@ -744,16 +747,31 @@
 
       </div>
 
-      <!-- Input -->
+      <!-- Input bar -->
       <div class="input-bar">
         <form class="input-form" id="chat-form">
-          <textarea id="message-input" rows="1" placeholder="Escribí tu consulta..."></textarea>
+          <textarea id="message-input" rows="1" placeholder="Preguntá sobre el Delta del Paraná..."></textarea>
           <button type="submit" class="send-btn" id="send-btn">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="transform:rotate(90deg)">
               <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z"/>
             </svg>
           </button>
         </form>
+        <!-- Desktop landing chips (hidden after first message) -->
+        <div id="landing-chips">
+          <button class="chip" onclick="sendQuick('clima')">🌤️ Clima</button>
+          <button class="chip" onclick="sendQuick('mareas')">🌊 Mareas</button>
+          <button class="chip" onclick="sendQuick('hidrografia')">📊 Hidrografía</button>
+          <button class="chip" onclick="sendQuick('windguru')">💨 Windgurú</button>
+          <button class="chip" onclick="sendQuick('jilguero')">🚢 Jilguero</button>
+          <button class="chip" onclick="sendQuick('interislena')">⛵ Interisleña</button>
+          <button class="chip" onclick="sendQuick('lineas delta')">🛥️ Líneas Delta</button>
+          <button class="chip" onclick="sendQuick('almaceneras')">🛒 Almaceneras</button>
+          <button class="chip" onclick="sendQuick('agenda del rio')">🌿 Agenda del Río</button>
+          <button class="chip" onclick="sendQuick('memes')">😄 Memes</button>
+          <button class="chip" onclick="document.getElementById('modal-aporte').classList.remove('hidden')">☕ Aportá</button>
+          <button class="chip" onclick="document.getElementById('modal-sugerencia').classList.remove('hidden')">💡 Sugerí algo</button>
+        </div>
       </div>
     </main>
   </div>
@@ -764,6 +782,23 @@
     const messages = document.getElementById('chat-messages');
     const sendBtn = document.getElementById('send-btn');
     const BOT_AVATAR = '/img/bot_icon.png';
+
+    // Landing → Chat transition (desktop only)
+    let _isLanding = window.innerWidth >= 768;
+    function transitionToChat() {
+      if (!_isLanding) return;
+      _isLanding = false;
+      const layout = document.getElementById('app-layout');
+      const hero = document.getElementById('landing-hero');
+      const chips = document.getElementById('landing-chips');
+      if (hero) { hero.style.transition = 'opacity 0.18s'; hero.style.opacity = '0'; }
+      if (chips) { chips.style.transition = 'opacity 0.18s'; chips.style.opacity = '0'; }
+      setTimeout(() => {
+        layout.classList.remove('is-landing');
+        layout.classList.add('is-chat');
+        input.placeholder = 'Escribí tu consulta...';
+      }, 180);
+    }
 
     input.addEventListener('input', () => {
       input.style.height = 'auto';
@@ -865,6 +900,7 @@
     async function submit() {
       const text = input.value.trim();
       if (!text) return;
+      transitionToChat();
       input.value = ''; input.style.height = 'auto';
       sendBtn.disabled = true;
       addMessage('user', text);
