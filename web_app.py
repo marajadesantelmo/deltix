@@ -336,9 +336,18 @@ def handle_colectivas_flow(user_input):
     """
     Maneja el flujo conversacional de colectivas paso a paso.
     Guarda el estado en session['col']. Retorna dict o None.
+    Preguntas específicas (con '?', 'cuándo', etc.) van al LLM con RAG.
     """
     text = user_input.lower().strip()
     col = session.get('col')
+
+    # Preguntas específicas de horario → LLM con RAG (no flujo guiado)
+    if not col:
+        specific_patterns = ['?', 'cuándo', 'cuando', 'a qué hora', 'que hora',
+                             'últim', 'primer', 'sale desde', 'llega a', 'demora',
+                             'tarda', 'horario de', 'cuántos', 'hay servicio']
+        if any(p in text for p in specific_patterns):
+            return None
 
     # ── Estamos dentro de un flujo activo ──
     if col:
@@ -407,11 +416,36 @@ def handle_colectivas_flow(user_input):
                 }
             if linea == 'interislena':
                 temporada = col.get('temporada', 'invierno')
-                return {
-                    "reply": f"Interisleña — {direccion.capitalize()} — {temporada.capitalize()} ⛵",
-                    "images": [f"/img/colectivas/interislena_{direccion}_{temporada}.png"],
-                    "quick_replies": []
-                }
+                temp_label = temporada.capitalize()
+                if direccion == 'ida':
+                    return {
+                        "reply": f"Interisleña — Ida — {temp_label} ⛵\nSalidas desde Tigre hacia las islas:",
+                        "images": [f"/img/colectivas/interislena_ida_{temporada}.png"],
+                        "quick_replies": [
+                            "¿Horarios de vuelta de Interisleña?",
+                            "¿Horarios de un recorrido específico de Interisleña?"
+                        ]
+                    }
+                else:  # vuelta — no hay imagen, respuesta textual con RAG
+                    return {
+                        "reply": (
+                            f"Interisleña — Vuelta — {temp_label} ⛵\n\n"
+                            "Principales salidas hacia Tigre:\n\n"
+                            "🚢 **Paso del Toro** (L-V): 6:30 / 7:30 / 8:30 / 10:30 / 12:30 / 14:50 / 16:10 / 16:50 / 18:00 / 20:10\n"
+                            "⛵ **Antequera** (L-V): 8:00 / 12:30 · Sáb: 8:00 / 11:30 / 18:30 · Dom: 18:00 / 19:30 / 20:00\n"
+                            "🌿 **Cruz Colorada** (L-V): 7:00 / 12:00 / 18:00 · Sáb: 7:00 / 12:00 / 18:00 / 19:30 · Dom: 19:30\n"
+                            "🛶 **Felicaria** (L-V): 6:30 / 16:50 · Sáb: 6:30 / 12:00 / 16:30 · Dom: 12:00 / 16:30 / 20:00\n"
+                            "🌊 **Arroyo Toro** (L-V): 7:30 / 18:00 · Sáb: 7:30 / 11:15 / 18:50 · Dom: 7:30 / 11:15\n"
+                            "⬆️ **Rama Negra** (L-V): 7:30 / 18:00 · Sáb: 7:30 / 12:15 / 18:00 / 19:30\n\n"
+                            "Para detalle completo de un recorrido, preguntame directamente:"
+                        ),
+                        "images": [],
+                        "quick_replies": [
+                            "¿Horarios completos de Paso del Toro de Interisleña?",
+                            "¿Horarios desde Antequera de Interisleña?",
+                            "¿Horarios desde Felicaria de Interisleña?"
+                        ]
+                    }
             if linea == 'lineasdelta':
                 periodo = col.get('periodo', 'escolar')
                 label = periodo.replace('_', ' ')
