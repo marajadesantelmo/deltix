@@ -660,6 +660,18 @@ def detect_quick_response(user_input):
     return None
 
 
+HISTORY_MAX_MSGS  = 6    # últimos 3 intercambios (user+assistant × 3)
+HISTORY_MAX_CHARS = 250  # truncar cada mensaje para no reventar la cookie
+
+def _history_add(user_msg, bot_reply):
+    """Agrega un par user/assistant al historial, truncando y limitando el tamaño."""
+    hist = session.setdefault('history', [])
+    hist.append({"role": "user",      "content": user_msg[:HISTORY_MAX_CHARS]})
+    hist.append({"role": "assistant", "content": bot_reply[:HISTORY_MAX_CHARS]})
+    session['history'] = hist[-HISTORY_MAX_MSGS:]
+    session.modified = True
+
+
 # ─── Routes ───────────────────────────────────────────────────────────────────
 
 @app.route('/')
@@ -704,9 +716,7 @@ def chat():
     ]:
         resp = flow_fn(user_message)
         if resp:
-            session['history'].append({"role": "user", "content": user_message})
-            session['history'].append({"role": "assistant", "content": resp["reply"]})
-            session.modified = True
+            _history_add(user_message, resp["reply"])
             log_interaction(user_message, resp["reply"], flow_type,
                             resp.get("images"), resp.get("quick_replies"))
             return jsonify(resp)
@@ -714,9 +724,7 @@ def chat():
     # Keyword-based quick responses (single-step)
     quick = detect_quick_response(user_message)
     if quick:
-        session['history'].append({"role": "user", "content": user_message})
-        session['history'].append({"role": "assistant", "content": quick["reply"]})
-        session.modified = True
+        _history_add(user_message, quick["reply"])
         log_interaction(user_message, quick["reply"], "quick",
                         quick.get("images"), quick.get("quick_replies"))
         return jsonify(quick)
@@ -729,7 +737,7 @@ def chat():
 
     context = build_llm_context(user_message)
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-    for msg in session['history'][-10:]:
+    for msg in session.get('history', []):
         messages.append(msg)
 
     content = user_message
@@ -744,9 +752,7 @@ def chat():
             max_tokens=600
         )
         reply = response.choices[0].message.content
-        session['history'].append({"role": "user", "content": user_message})
-        session['history'].append({"role": "assistant", "content": reply})
-        session.modified = True
+        _history_add(user_message, reply)
         log_interaction(user_message, reply, "llm")
         return jsonify({'reply': reply, 'images': [], 'quick_replies': []})
     except Exception as e:
