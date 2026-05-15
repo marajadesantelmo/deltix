@@ -185,11 +185,13 @@ def build_llm_context(user_input):
         context.append(load_rag_file("interislena.txt"))
     if any(k in text for k in KEYWORDS["lineasdelta"]):
         context.append(load_rag_file("lineasdelta.txt"))
-    if any(k in text for k in KEYWORDS["activities"] +
-           KEYWORDS["amanita"] + KEYWORDS["alfareria"] + KEYWORDS["labusqueda"] +
-           KEYWORDS["kayaks"] + KEYWORDS["masajes"] + KEYWORDS["familia"] +
-           KEYWORDS["frutales"] + KEYWORDS["dulceras"] + KEYWORDS["vivero"] +
-           KEYWORDS["nahuel"] + KEYWORDS["aguariba"] + KEYWORDS["lena"]):
+    _base_act_kws = (KEYWORDS["activities"] + KEYWORDS["amanita"] + KEYWORDS["alfareria"] +
+                     KEYWORDS["labusqueda"] + KEYWORDS["kayaks"] + KEYWORDS["masajes"] +
+                     KEYWORDS["familia"] + KEYWORDS["frutales"] + KEYWORDS["dulceras"] +
+                     KEYWORDS["vivero"] + KEYWORDS["nahuel"] + KEYWORDS["aguariba"])
+    _lena_ok = (any(k in text for k in KEYWORDS["lena"]) and
+                not any(k in text for k in KEYWORDS["interislena"]))
+    if any(k in text for k in _base_act_kws) or _lena_ok:
         context.append(load_rag_file("actividades.txt"))
     return "\n\n".join(c for c in context if c)
 
@@ -568,7 +570,7 @@ def detect_quick_response(user_input):
             "images": ["/img/actividades_productos/aguariba.png"]
         }
 
-    if any(k in text for k in KEYWORDS["lena"]):
+    if any(k in text for k in KEYWORDS["lena"]) and not any(k in text for k in KEYWORDS["interislena"]):
         return {
             "reply": "🪵 **Leña a tu Muelle — Gabriel**\n\nBolsas tamaño salamandra (10-12 kg)\n· Quebracho Colorado: $8.500\n· Ligustro: $7.500\n· Sauce: $6.500\n· Maderitas para prender: $3.000\n\nCompra mínima: 5 bolsas\nContacto: Gabriel — 1564584445",
             "images": ["/img/actividades_productos/gabi_lena.jpeg"]

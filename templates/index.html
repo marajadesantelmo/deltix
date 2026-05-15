@@ -333,6 +333,20 @@
     @media (min-width: 768px) {
       aside { display: none !important; }
 
+      /* Header branding fade in/out */
+      .header-avatar, .header-brand {
+        transition: opacity 0.3s ease;
+      }
+      .is-landing .header-avatar,
+      .is-landing .header-brand {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .is-chat .header-avatar,
+      .is-chat .header-brand {
+        opacity: 1;
+      }
+
       /* Landing state */
       .is-landing main { align-items: center; justify-content: center; }
       .is-landing #chat-messages { display: none !important; }
@@ -410,7 +424,7 @@
   <!-- Header -->
   <header>
     <img src="/img/bot_icon.png" alt="Deltix" class="header-avatar">
-    <div>
+    <div class="header-brand">
       <div class="header-title">Deltix</div>
       <div class="header-sub">bot_del_humedal delta_del_paraná</div>
     </div>
