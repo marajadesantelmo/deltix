@@ -666,8 +666,8 @@ HISTORY_MAX_CHARS = 250  # truncar cada mensaje para no reventar la cookie
 def _history_add(user_msg, bot_reply):
     """Agrega un par user/assistant al historial, truncando y limitando el tamaño."""
     hist = session.setdefault('history', [])
-    hist.append({"role": "user",      "content": user_msg[:HISTORY_MAX_CHARS]})
-    hist.append({"role": "assistant", "content": bot_reply[:HISTORY_MAX_CHARS]})
+    hist.append({"role": "user",      "content": (user_msg  or '')[:HISTORY_MAX_CHARS]})
+    hist.append({"role": "assistant", "content": (bot_reply or '')[:HISTORY_MAX_CHARS]})
     session['history'] = hist[-HISTORY_MAX_MSGS:]
     session.modified = True
 
