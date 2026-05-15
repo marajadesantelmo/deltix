@@ -1,4 +1,5 @@
 import os
+import re
 import csv
 import json
 import uuid
@@ -234,9 +235,13 @@ AGENDA_OPTIONS = {
 
 
 SOCIAL_GREETINGS = ['hola', 'buenas', 'buen dia', 'buen día', 'buenos dias', 'buenos días',
-                    'buenas tardes', 'buenas noches', 'hey', 'hi']
-SOCIAL_THANKS    = ['gracias', 'muchas gracias', 'mil gracias', 'grax', 'graciass']
-SOCIAL_BYE       = ['chau', 'adios', 'adiós', 'hasta luego', 'nos vemos', 'bye']
+                    'buenas tardes', 'buenas noches', 'hey']
+SOCIAL_THANKS    = ['gracias', 'muchas gracias', 'mil gracias', 'grax']
+SOCIAL_BYE       = ['chau', 'adios', 'adiós', 'hasta luego', 'nos vemos']
+
+def _social_match(text, keywords):
+    """Coincidencia con word boundary para evitar falsos positivos en substrings."""
+    return any(re.search(r'\b' + re.escape(k) + r'\b', text) for k in keywords)
 
 GREETING_REPLIES = [
     "¡Hola! Soy Deltix, el bot del humedal 🦦 ¿En qué te puedo ayudar?\n\nPreguntame sobre clima, mareas, colectivas, almaceneras o actividades del Delta.",
@@ -260,20 +265,25 @@ GREETING_CHIPS = ["🌤️ Clima", "🌊 Mareas", "⛵ Colectivas", "🛒 Almace
 def handle_social_flow(user_input):
     """
     Responde a saludos, agradecimientos y despedidas sin llamar al LLM.
-    Solo actúa sobre mensajes cortos (≤ 6 palabras) para no interceptar
-    preguntas que de casualidad contengan estas palabras.
+    - Solo actúa sobre mensajes cortos (≤ 6 palabras).
+    - No interrumpe flows activos (almaceneras, colectivas, agenda).
+    - Usa word boundaries para evitar falsos positivos en substrings.
     """
+    # No interrumpir si hay un flow multi-paso activo
+    if session.get('alm_flow') or session.get('col') or session.get('agenda_flow'):
+        return None
+
     text = user_input.lower().strip()
     if len(text.split()) > 6:
         return None
 
-    if any(k in text for k in SOCIAL_THANKS):
+    if _social_match(text, SOCIAL_THANKS):
         return {"reply": random.choice(THANKS_REPLIES), "images": [], "quick_replies": []}
 
-    if any(k in text for k in SOCIAL_BYE):
+    if _social_match(text, SOCIAL_BYE):
         return {"reply": random.choice(BYE_REPLIES), "images": [], "quick_replies": []}
 
-    if any(k in text for k in SOCIAL_GREETINGS):
+    if _social_match(text, SOCIAL_GREETINGS):
         return {"reply": random.choice(GREETING_REPLIES), "images": [], "quick_replies": GREETING_CHIPS}
 
     return None
