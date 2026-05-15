@@ -233,6 +233,52 @@ AGENDA_OPTIONS = {
 }
 
 
+SOCIAL_GREETINGS = ['hola', 'buenas', 'buen dia', 'buen día', 'buenos dias', 'buenos días',
+                    'buenas tardes', 'buenas noches', 'hey', 'hi']
+SOCIAL_THANKS    = ['gracias', 'muchas gracias', 'mil gracias', 'grax', 'graciass']
+SOCIAL_BYE       = ['chau', 'adios', 'adiós', 'hasta luego', 'nos vemos', 'bye']
+
+GREETING_REPLIES = [
+    "¡Hola! Soy Deltix, el bot del humedal 🦦 ¿En qué te puedo ayudar?\n\nPreguntame sobre clima, mareas, colectivas, almaceneras o actividades del Delta.",
+    "¡Buenas! Soy Deltix 🌿 Estoy acá para ayudarte con info del Delta del Paraná.\n\nPreguntame sobre clima, mareas, horarios de lanchas, almaceneras o actividades.",
+    "¡Hola! 🦦 ¿Qué necesitás saber del Delta?",
+]
+THANKS_REPLIES = [
+    "¡De nada! Es un placer ayudar a lxs humanos que visitan el humedal 🦦",
+    "¡De nada! Siempre a disposición 🌿",
+    "¡Con gusto! Para eso estoy 🦦",
+]
+BYE_REPLIES = [
+    "¡Hasta luego! Que disfrutes el humedal 🌿",
+    "¡Chau! Volvé cuando quieras 🦦",
+    "¡Hasta la próxima! Que estés bien 🌿",
+]
+
+GREETING_CHIPS = ["🌤️ Clima", "🌊 Mareas", "⛵ Colectivas", "🛒 Almaceneras", "🗓️ Agenda del Río"]
+
+
+def handle_social_flow(user_input):
+    """
+    Responde a saludos, agradecimientos y despedidas sin llamar al LLM.
+    Solo actúa sobre mensajes cortos (≤ 6 palabras) para no interceptar
+    preguntas que de casualidad contengan estas palabras.
+    """
+    text = user_input.lower().strip()
+    if len(text.split()) > 6:
+        return None
+
+    if any(k in text for k in SOCIAL_THANKS):
+        return {"reply": random.choice(THANKS_REPLIES), "images": [], "quick_replies": []}
+
+    if any(k in text for k in SOCIAL_BYE):
+        return {"reply": random.choice(BYE_REPLIES), "images": [], "quick_replies": []}
+
+    if any(k in text for k in SOCIAL_GREETINGS):
+        return {"reply": random.choice(GREETING_REPLIES), "images": [], "quick_replies": GREETING_CHIPS}
+
+    return None
+
+
 def handle_almaceneras_flow(user_input):
     text = user_input.strip()
     text_lower = text.lower()
@@ -615,6 +661,7 @@ def chat():
 
     # Multi-step flows (order matters)
     for flow_fn, flow_type in [
+        (handle_social_flow,      "social"),
         (handle_memes_flow,       "memes"),
         (handle_almaceneras_flow, "almaceneras"),
         (handle_agenda_flow,      "agenda"),
