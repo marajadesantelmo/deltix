@@ -1,6 +1,7 @@
 import os
 import re
 import csv
+import unicodedata
 import json
 import uuid
 import random
@@ -139,6 +140,13 @@ KEYWORDS = {
     "memes":       ['meme', 'memes'],
 }
 
+def _norm(s):
+    """Lowercase + strip accents for accent-insensitive keyword matching."""
+    return unicodedata.normalize('NFD', s.lower()).encode('ascii', 'ignore').decode('ascii')
+
+# Pre-normalized keyword lists (computed once at startup)
+KEYWORDS_NORM = {k: [_norm(kw) for kw in v] for k, v in KEYWORDS.items()}
+
 def is_winter():
     return datetime.now().month in [4, 5, 6, 7, 8, 9]
 
@@ -188,9 +196,9 @@ def format_hidrografia():
 
 
 def build_llm_context(user_input):
-    text = user_input.lower()
+    text = _norm(user_input)
     context = []
-    if any(k in text for k in KEYWORDS["weather"]):
+    if any(k in text for k in KEYWORDS_NORM["weather"]):
         w = load_weather_data()
         if w:
             current = w.get('current_weather', {})
@@ -200,22 +208,22 @@ def build_llm_context(user_input):
             desc = current.get('weather', [{}])[0].get('description', 'N/A')
             wind = current.get('wind', {}).get('speed', 'N/A')
             context.append(f"Clima en Tigre: {temp}°C (sensación {feels}°C), {desc}, humedad {humidity}%, viento {wind} m/s")
-    if any(k in text for k in KEYWORDS["tides"] + KEYWORDS["hidrografia"]):
+    if any(k in text for k in KEYWORDS_NORM["tides"] + KEYWORDS_NORM["hidrografia"]):
         context.append(load_tides_text())
-    if any(k in text for k in KEYWORDS["almacen"]):
+    if any(k in text for k in KEYWORDS_NORM["almacen"]):
         context.append(load_rag_file("almaceneras.txt"))
-    if any(k in text for k in KEYWORDS["jilguero"]):
+    if any(k in text for k in KEYWORDS_NORM["jilguero"]):
         context.append(load_rag_file("jilguero.txt"))
-    if any(k in text for k in KEYWORDS["interislena"]):
+    if any(k in text for k in KEYWORDS_NORM["interislena"]):
         context.append(load_rag_file("interislena.txt"))
-    if any(k in text for k in KEYWORDS["lineasdelta"]):
+    if any(k in text for k in KEYWORDS_NORM["lineasdelta"]):
         context.append(load_rag_file("lineasdelta.txt"))
-    _base_act_kws = (KEYWORDS["activities"] + KEYWORDS["amanita"] + KEYWORDS["alfareria"] +
-                     KEYWORDS["labusqueda"] + KEYWORDS["kayaks"] + KEYWORDS["masajes"] +
-                     KEYWORDS["familia"] + KEYWORDS["frutales"] + KEYWORDS["dulceras"] +
-                     KEYWORDS["vivero"] + KEYWORDS["nahuel"] + KEYWORDS["aguariba"])
-    _lena_ok = (any(k in text for k in KEYWORDS["lena"]) and
-                not any(k in text for k in KEYWORDS["interislena"]))
+    _base_act_kws = (KEYWORDS_NORM["activities"] + KEYWORDS_NORM["amanita"] + KEYWORDS_NORM["alfareria"] +
+                     KEYWORDS_NORM["labusqueda"] + KEYWORDS_NORM["kayaks"] + KEYWORDS_NORM["masajes"] +
+                     KEYWORDS_NORM["familia"] + KEYWORDS_NORM["frutales"] + KEYWORDS_NORM["dulceras"] +
+                     KEYWORDS_NORM["vivero"] + KEYWORDS_NORM["nahuel"] + KEYWORDS_NORM["aguariba"])
+    _lena_ok = (any(k in text for k in KEYWORDS_NORM["lena"]) and
+                not any(k in text for k in KEYWORDS_NORM["interislena"]))
     if any(k in text for k in _base_act_kws) or _lena_ok:
         context.append(load_rag_file("actividades.txt"))
     return "\n\n".join(c for c in context if c)
@@ -264,8 +272,10 @@ SOCIAL_THANKS    = ['gracias', 'muchas gracias', 'mil gracias', 'grax']
 SOCIAL_BYE       = ['chau', 'adios', 'adiós', 'hasta luego', 'nos vemos']
 
 def _social_match(text, keywords):
-    """Coincidencia con word boundary para evitar falsos positivos en substrings."""
-    return any(re.search(r'\b' + re.escape(k) + r'\b', text) for k in keywords)
+    """Coincidencia con word boundary para evitar falsos positivos en substrings.
+    Normaliza tanto el texto como las keywords para matching sin tildes."""
+    text_n = _norm(text)
+    return any(re.search(r'\b' + re.escape(_norm(k)) + r'\b', text_n) for k in keywords)
 
 GREETING_REPLIES = [
     "¡Hola! Soy Deltix, el bot del humedal 🦦 ¿En qué te puedo ayudar?\n\nPreguntame sobre clima, mareas, colectivas, almaceneras o actividades del Delta.",
@@ -297,7 +307,7 @@ def handle_social_flow(user_input):
     if session.get('alm_flow') or session.get('col') or session.get('agenda_flow'):
         return None
 
-    text = user_input.lower().strip()
+    text = user_input.strip()
     if len(text.split()) > 6:
         return None
 
@@ -315,18 +325,19 @@ def handle_social_flow(user_input):
 
 def _is_different_topic(text):
     """Devuelve True si el texto claramente corresponde a otro dominio."""
+    text = _norm(text)
     other_kws = (
-        KEYWORDS["weather"] + KEYWORDS["tides"] + KEYWORDS["hidrografia"] +
-        KEYWORDS["agenda"] + KEYWORDS["windguru"] + KEYWORDS["jilguero"] +
-        KEYWORDS["interislena"] + KEYWORDS["lineasdelta"] + KEYWORDS["colectivas"] +
-        KEYWORDS["memes"]
+        KEYWORDS_NORM["weather"] + KEYWORDS_NORM["tides"] + KEYWORDS_NORM["hidrografia"] +
+        KEYWORDS_NORM["agenda"] + KEYWORDS_NORM["windguru"] + KEYWORDS_NORM["jilguero"] +
+        KEYWORDS_NORM["interislena"] + KEYWORDS_NORM["lineasdelta"] + KEYWORDS_NORM["colectivas"] +
+        KEYWORDS_NORM["memes"]
     )
     return any(k in text for k in other_kws)
 
 
 def handle_almaceneras_flow(user_input):
     text = user_input.strip()
-    text_lower = text.lower()
+    text_lower = _norm(text)
     alm = session.get('alm_flow')
 
     if alm and alm.get('step') == 'select':
@@ -345,7 +356,7 @@ def handle_almaceneras_flow(user_input):
         return {"reply": "Elegí una almacenera de la lista 👇",
                 "images": [], "quick_replies": list(ALMACENERAS.keys())}
 
-    if any(k in text_lower for k in KEYWORDS["almacen"]):
+    if any(k in text_lower for k in KEYWORDS_NORM["almacen"]):
         session['alm_flow'] = {'step': 'select'}
         session.modified = True
         return {"reply": "¿Cuál almacenera querés consultar? 🛒",
@@ -356,7 +367,7 @@ def handle_almaceneras_flow(user_input):
 
 def handle_agenda_flow(user_input):
     text = user_input.strip()
-    text_lower = text.lower()
+    text_lower = _norm(text)
     agenda = session.get('agenda_flow')
 
     if agenda and agenda.get('step') == 'select':
@@ -373,7 +384,7 @@ def handle_agenda_flow(user_input):
         return {"reply": "Elegí una actividad 👇",
                 "images": [], "quick_replies": list(AGENDA_OPTIONS.keys())}
 
-    if any(k in text_lower for k in KEYWORDS["agenda"]):
+    if any(k in text_lower for k in KEYWORDS_NORM["agenda"]):
         session['agenda_flow'] = {'step': 'select'}
         session.modified = True
         return {"reply": "¿Qué actividad te interesa? 🌿",
@@ -383,7 +394,7 @@ def handle_agenda_flow(user_input):
 
 
 def handle_memes_flow(user_input):
-    text = user_input.lower().strip()
+    text = _norm(user_input).strip()
     meme = session.get('meme_flow')
 
     if meme:
@@ -421,7 +432,7 @@ def handle_memes_flow(user_input):
 
         return None
 
-    if any(k in text for k in KEYWORDS["memes"]):
+    if any(k in text for k in KEYWORDS_NORM["memes"]):
         session['meme_flow'] = {'step': 'more'}
         session.modified = True
         n = random.randint(1, 56)
@@ -441,14 +452,14 @@ def handle_colectivas_flow(user_input):
     Guarda el estado en session['col']. Retorna dict o None.
     Preguntas específicas (con '?', 'cuándo', etc.) van al LLM con RAG.
     """
-    text = user_input.lower().strip()
+    text = _norm(user_input).strip()
     col = session.get('col')
 
     # Preguntas específicas de horario → LLM con RAG (no flujo guiado)
     if not col:
-        specific_patterns = ['?', 'cuándo', 'cuando', 'a qué hora', 'que hora',
-                             'últim', 'primer', 'sale desde', 'llega a', 'demora',
-                             'tarda', 'horario de', 'cuántos', 'hay servicio']
+        specific_patterns = ['?', 'cuando', 'a que hora', 'que hora',
+                             'ultim', 'primer', 'sale desde', 'llega a', 'demora',
+                             'tarda', 'horario de', 'cuantos', 'hay servicio']
         if any(p in text for p in specific_patterns):
             return None
 
@@ -457,17 +468,17 @@ def handle_colectivas_flow(user_input):
         step = col.get('step')
 
         if step == 'linea':
-            if any(k in text for k in KEYWORDS["jilguero"]):
+            if any(k in text for k in KEYWORDS_NORM["jilguero"]):
                 session['col'] = {'step': 'direccion', 'linea': 'jilguero'}
                 session.modified = True
                 return {"reply": "Jilguero 🚢 ¿Ida o vuelta?", "images": [],
                         "quick_replies": ["Ida", "Vuelta"]}
-            if any(k in text for k in KEYWORDS["interislena"]):
+            if any(k in text for k in KEYWORDS_NORM["interislena"]):
                 session['col'] = {'step': 'temporada', 'linea': 'interislena'}
                 session.modified = True
                 return {"reply": "Interisleña ⛵ ¿Qué temporada?", "images": [],
                         "quick_replies": ["Invierno", "Verano"]}
-            if any(k in text for k in KEYWORDS["lineasdelta"]):
+            if any(k in text for k in KEYWORDS_NORM["lineasdelta"]):
                 session['col'] = {'step': 'periodo', 'linea': 'lineasdelta'}
                 session.modified = True
                 return {"reply": "Líneas Delta 🛥️ ¿Período escolar o no escolar?", "images": [],
@@ -559,25 +570,25 @@ def handle_colectivas_flow(user_input):
                 }
 
     # ── Inicio del flujo desde cero ──
-    if any(k in text for k in KEYWORDS["colectivas"]):
+    if any(k in text for k in KEYWORDS_NORM["colectivas"]):
         session['col'] = {'step': 'linea'}
         session.modified = True
         return {"reply": "¿Qué línea de colectiva querés consultar? 🚢", "images": [],
                 "quick_replies": ["Jilguero", "Interisleña", "Líneas Delta"]}
 
-    if any(k in text for k in KEYWORDS["jilguero"]):
+    if any(k in text for k in KEYWORDS_NORM["jilguero"]):
         session['col'] = {'step': 'direccion', 'linea': 'jilguero'}
         session.modified = True
         return {"reply": "Jilguero 🚢 ¿Ida o vuelta?", "images": [],
                 "quick_replies": ["Ida", "Vuelta"]}
 
-    if any(k in text for k in KEYWORDS["interislena"]):
+    if any(k in text for k in KEYWORDS_NORM["interislena"]):
         session['col'] = {'step': 'temporada', 'linea': 'interislena'}
         session.modified = True
         return {"reply": "Interisleña ⛵ ¿Qué temporada?", "images": [],
                 "quick_replies": ["Invierno", "Verano"]}
 
-    if any(k in text for k in KEYWORDS["lineasdelta"]):
+    if any(k in text for k in KEYWORDS_NORM["lineasdelta"]):
         session['col'] = {'step': 'periodo', 'linea': 'lineasdelta'}
         session.modified = True
         return {"reply": "Líneas Delta 🛥️ ¿Período escolar o no escolar?", "images": [],
@@ -592,86 +603,86 @@ def detect_quick_response(user_input):
     texto + imágenes sin necesidad de llamar al LLM.
     Retorna None si no hay coincidencia directa.
     """
-    text = user_input.lower()
+    text = _norm(user_input)
 
-    if any(k in text for k in KEYWORDS["hidrografia"]):
+    if any(k in text for k in KEYWORDS_NORM["hidrografia"]):
         return {"reply": format_hidrografia(), "images": [], "quick_replies": []}
 
-    if any(k in text for k in KEYWORDS["tides"]):
+    if any(k in text for k in KEYWORDS_NORM["tides"]):
         return {"reply": "Acá tenés el pronóstico de mareas del INA 🌊",
                 "images": ["/img/marea.png"], "quick_replies": []}
 
-    if any(k in text for k in KEYWORDS["windguru"]):
+    if any(k in text for k in KEYWORDS_NORM["windguru"]):
         return {"reply": "Pronóstico de WindGurú para las islas ☁️",
                 "images": ["/img/windguru.png"], "quick_replies": []}
 
-    if any(k in text for k in KEYWORDS["amanita"]):
+    if any(k in text for k in KEYWORDS_NORM["amanita"]):
         return {
             "reply": "🛶 **Experiencias en Canoa Isleña**\n\nPaseos por el Delta del Paraná\nCon guía bilingüe (opcional)\nServicio puerta a puerta (opcional)\n\nInstagram: amanitaturismodelta\nContacto: 1169959272",
             "images": ["/img/actividades_productos/amanita.png"]
         }
 
-    if any(k in text for k in KEYWORDS["alfareria"]):
+    if any(k in text for k in KEYWORDS_NORM["alfareria"]):
         return {
             "reply": "🏺 **Kutral Alfarería**\n\nEncuentros con el barro\nTalleres de alfarería\nExperimentación y creación con arcilla\n\nInstagram: kutralalfareria",
             "images": ["/img/actividades_productos/alfareria.png"]
         }
 
-    if any(k in text for k in KEYWORDS["labusqueda"]):
+    if any(k in text for k in KEYWORDS_NORM["labusqueda"]):
         return {
             "reply": "🌿 **La Búsqueda**\n\nEspacio para encuentros y ceremonias\nHostal en el Delta\nConexión con la naturaleza\n\nInstagram: labusqueda_cabanadelta\nContacto: 1150459556",
             "images": ["/img/actividades_productos/labusqueda.png"]
         }
 
-    if any(k in text for k in KEYWORDS["kayaks"]):
+    if any(k in text for k in KEYWORDS_NORM["kayaks"]):
         return {
             "reply": "🚣 **Cañaveral Kayaks**\n\nExcursiones en kayak\nPaseos con guía\nRemadas nocturnas\n\nlinktr.ee/canaveralkayaks\nContacto: 1126961274",
             "images": ["/img/actividades_productos/canaveralkayaks.png"]
         }
 
-    if any(k in text for k in KEYWORDS["masajes"]):
+    if any(k in text for k in KEYWORDS_NORM["masajes"]):
         return {
             "reply": "💆 **Masaje Thai**\n\nen el Tres Bocas\n@estecharco\nContacto: 1122541171",
             "images": ["/img/actividades_productos/charco_masajes.png"]
         }
 
-    if any(k in text for k in KEYWORDS["familia"]):
+    if any(k in text for k in KEYWORDS_NORM["familia"]):
         return {
             "reply": "🌾 **La Familia Isleña**\n\nAlimentos dietéticos, nutritivos y a buen precio\nHarinas, arroces, lentejas, porotos, frutos secos y más\nRepartos a tu muelle con envíos gratis todas las semanas\n\nPedidos al WhatsApp de Jorge (Piojo): 11 3046-6301",
             "images": ["/img/actividades_productos/familia_islena_flyer.jpg"]
         }
 
-    if any(k in text for k in KEYWORDS["frutales"]):
+    if any(k in text for k in KEYWORDS_NORM["frutales"]):
         return {
             "reply": "🍋 **Planta Frutales**\n\nVenta de plantas cítricas para islas y amarras\nLimoneros, Mandarinas, Naranjas, Kinotos, Pomelos y más\n\nPrecios (macetas 6 lts): $26.000 c/u · $25.000 x5 · $24.000 x10\nEntrega en CABA, Zona Norte, Islas y Amarras\n\nContacto: 116 369 0177",
             "images": ["/img/actividades_productos/frutales.png"]
         }
 
-    if any(k in text for k in KEYWORDS["dulceras"]):
+    if any(k in text for k in KEYWORDS_NORM["dulceras"]):
         return {
             "reply": "🍯 **Dulceras del Río**\n\nProductos dulces y repostería artesanal\nEntregas los jueves en Amarras Hugo del Carril\nPuntos de entrega: Amarra Hugo Carril · Muelle La Anacahuita Río Carpachay\nReutilizamos frascos de vidrio 🫙\n\nInstagram: @dulcerasdelrio\nContacto: 11 5525 3829",
             "images": ["/img/actividades_productos/dulceras1.jpeg", "/img/actividades_productos/dulceras2.jpeg"]
         }
 
-    if any(k in text for k in KEYWORDS["vivero"]):
+    if any(k in text for k in KEYWORDS_NORM["vivero"]):
         return {
             "reply": "🌱 **Vivero Isleño — Cooperativa Igarapé Delta**\n\n\"Hacer huerta es terapia\"\n\nTierra Fértil: $9.200 (bolsas 40 lts)\nCompost Orgánico: $11.500\n10% descuento pidiendo 30 bolsas o más\n\nEntrega en tu muelle · Zona Correa y San Antonio\nContacto: 1159233663",
             "images": ["/img/actividades_productos/vivero_isleno.jpeg"]
         }
 
-    if any(k in text for k in KEYWORDS["nahuel"]):
+    if any(k in text for k in KEYWORDS_NORM["nahuel"]):
         return {
             "reply": "🔨 **Nahuel Servicios**\n\nTrabajos para tu hogar y terreno en el Delta\n· Poda en altura (corte y mantenimiento de árboles)\n· Movimiento de tierra y zanjas\n· Carpintería: decks, torres de agua, estructuras en madera\n· Limpieza de terrenos y mantenimiento general\n\nContacto: Nahuel — 11 5349 2653",
             "images": ["/img/actividades_productos/nahuel.jpeg"]
         }
 
-    if any(k in text for k in KEYWORDS["aguariba"]):
+    if any(k in text for k in KEYWORDS_NORM["aguariba"]):
         return {
             "reply": "🥬 **Aguariba Anfibia**\n\nProducción agroecológica del Delta\nPedidos para entrega el miércoles\n(cargar hasta el lunes a las 22hs)\n40% de reintegro con CUENTA DNI 💳\n\nWeb: aguaribayanfibia.com.ar\nInstagram: @aguaribayanfibia",
             "images": ["/img/actividades_productos/aguariba.png"]
         }
 
-    if any(k in text for k in KEYWORDS["lena"]) and not any(k in text for k in KEYWORDS["interislena"]):
+    if any(k in text for k in KEYWORDS_NORM["lena"]) and not any(k in text for k in KEYWORDS_NORM["interislena"]):
         return {
             "reply": "🪵 **Leña a tu Muelle — Gabriel**\n\nBolsas tamaño salamandra (10-12 kg)\n· Quebracho Colorado: $8.500\n· Ligustro: $7.500\n· Sauce: $6.500\n· Maderitas para prender: $3.000\n\nCompra mínima: 5 bolsas\nContacto: Gabriel — 1564584445",
             "images": ["/img/actividades_productos/gabi_lena.jpeg"]
