@@ -301,6 +301,26 @@
     }
     .chip:hover { background: rgba(0,255,65,0.12); border-color: rgba(0,255,65,0.3); color: #d4edda; }
 
+    /* ── Pinned quick chips (desktop: sticky at top of chat after first message) ── */
+    #pinned-chips {
+      display: none;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-self: stretch;
+      position: sticky;
+      top: 0;
+      z-index: 4;
+      background: rgba(2,11,2,0.97);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(0,255,65,0.08);
+      margin-bottom: 4px;
+    }
+    @media (max-width: 767px) {
+      #pinned-chips { display: none !important; }
+    }
+
     /* ── Landing / Chat states ── */
     #landing-hero {
       display: none;
@@ -721,6 +741,18 @@
       <!-- Chat messages -->
       <div id="chat-messages">
 
+        <!-- Pinned quick chips (desktop only, shown after first message) -->
+        <div id="pinned-chips">
+          <button class="chip" onclick="sendQuick('clima')">🌤️ Clima</button>
+          <button class="chip" onclick="sendQuick('mareas')">🌊 Mareas</button>
+          <button class="chip" onclick="sendQuick('hidrografia')">📊 Hidrografía</button>
+          <button class="chip" onclick="sendQuick('windguru')">💨 Windgurú</button>
+          <button class="chip" onclick="sendQuick('colectivas')">⛵ Lanchas Colectivas</button>
+          <button class="chip" onclick="sendQuick('almaceneras')">🛒 Almaceneras</button>
+          <button class="chip" onclick="sendQuick('agenda del rio')">🌿 Agenda del Río</button>
+          <button class="chip" onclick="sendQuick('memes')">😄 Memes</button>
+        </div>
+
         <!-- Welcome (mobile only) -->
         <div class="msg-row mobile-welcome">
           <img src="/img/bot_icon.png" alt="Deltix" class="bot-avatar">
@@ -829,6 +861,16 @@
         // Fade in header branding
         if (_headerAvatar) { _headerAvatar.style.transition = 'opacity 0.3s ease'; _headerAvatar.style.opacity = '1'; _headerAvatar.style.pointerEvents = ''; }
         if (_headerBrand)  { _headerBrand.style.transition  = 'opacity 0.3s ease'; _headerBrand.style.opacity  = '1'; _headerBrand.style.pointerEvents  = ''; }
+        // Fade in pinned chips at top of chat history (desktop only)
+        const pinnedChips = document.getElementById('pinned-chips');
+        if (pinnedChips && window.innerWidth >= 768) {
+          pinnedChips.style.opacity = '0';
+          pinnedChips.style.display = 'flex';
+          setTimeout(() => {
+            pinnedChips.style.transition = 'opacity 0.35s ease';
+            pinnedChips.style.opacity = '1';
+          }, 60);
+        }
       }, 180);
     }
 
