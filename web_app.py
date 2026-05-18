@@ -522,11 +522,14 @@ def handle_colectivas_flow(user_input):
             session.pop('col', None)
             session.modified = True
 
+            _col_note = "La comunidad Deltix se fortalece por el aporte de habitantes de la isla 🌿"
+
             if linea == 'jilguero':
                 return {
                     "reply": f"Jilguero — {direccion.capitalize()} 🚢",
                     "images": [f"/img/colectivas/jilguero_{direccion}.png"],
-                    "quick_replies": []
+                    "quick_replies": ["✏️ Sugerí una modificación"],
+                    "note": _col_note
                 }
             if linea == 'interislena':
                 temporada = col.get('temporada', 'invierno')
@@ -537,28 +540,42 @@ def handle_colectivas_flow(user_input):
                         "images": [f"/img/colectivas/interislena_ida_{temporada}.png"],
                         "quick_replies": [
                             "¿Horarios de vuelta de Interisleña?",
-                            "¿Horarios de un recorrido específico de Interisleña?"
-                        ]
+                            "¿Horarios de un recorrido específico de Interisleña?",
+                            "✏️ Sugerí una modificación"
+                        ],
+                        "note": _col_note
                     }
-                else:  # vuelta — no hay imagen, respuesta textual con RAG
+                else:  # vuelta — respuesta textual con recorridos completos del PDF
                     return {
                         "reply": (
-                            f"Interisleña — Vuelta — {temp_label} ⛵\n\n"
-                            "Principales salidas hacia Tigre:\n\n"
-                            "🚢 **Paso del Toro** (L-V): 6:30 / 7:30 / 8:30 / 10:30 / 12:30 / 14:50 / 16:10 / 16:50 / 18:00 / 20:10\n"
-                            "⛵ **Antequera** (L-V): 8:00 / 12:30 · Sáb: 8:00 / 11:30 / 18:30 · Dom: 18:00 / 19:30 / 20:00\n"
-                            "🌿 **Cruz Colorada** (L-V): 7:00 / 12:00 / 18:00 · Sáb: 7:00 / 12:00 / 18:00 / 19:30 · Dom: 19:30\n"
-                            "🛶 **Felicaria** (L-V): 6:30 / 16:50 · Sáb: 6:30 / 12:00 / 16:30 · Dom: 12:00 / 16:30 / 20:00\n"
-                            "🌊 **Arroyo Toro** (L-V): 7:30 / 18:00 · Sáb: 7:30 / 11:15 / 18:50 · Dom: 7:30 / 11:15\n"
-                            "⬆️ **Rama Negra** (L-V): 7:30 / 18:00 · Sáb: 7:30 / 12:15 / 18:00 / 19:30\n\n"
-                            "Para detalle completo de un recorrido, preguntame directamente:"
+                            f"Interisleña — Vuelta — {temp_label} ⛵\n"
+                            "Salidas hacia Est. Fluvial Tigre, Muelle 2:\n\n"
+                            "🚢 **Río Tigre, Luján, Sarmiento, Capitán hasta Paso del Toro**\n"
+                            "L-V: 6:30 / 7:30 / 8:30 / 10:30 / 12:30 / 14:50 / 16:10 / 16:50 / 18:00 / 20:10\n"
+                            "Sáb: 6:30 / 7:30 / 8:30 / 9:15 / 10:30 / 11:15 / 12:15 / 12:30 / 13:50 / 15:15 / 16:30 / 18:00 / 19:15 / 20:10\n"
+                            "Dom: 7:30 / 9:15 / 10:30 / 11:15 / 12:15 / 12:30 / 13:50 / 15:15 / 16:30 / 18:00 / 19:15 / 20:10\n\n"
+                            "🛥️ **Río Tigre, Luján, Sarmiento, Capitán, Paraná de las Palmas**\n"
+                            "L-V: 6:30 / 8:30 / 10:30 / 12:30 / 15:00 / 16:50 / 18:00 / 20:00\n"
+                            "Sáb: 6:30 / 8:30 / 10:30 / 12:00 / 16:30 / 17:30 / 18:00 / 19:20 / 20:00\n"
+                            "Dom: 10:30 / 12:00 / 15:00 / 16:30 / 17:30 / 18:00 / 19:20 / 20:00\n\n"
+                            "⛵ **Río Tigre, Luján, Sarmiento, Capitán, Arroyo Antequera**\n"
+                            "L-V: 8:00 / 12:30 · Sáb: 8:00 / 11:30 / 18:30 · Dom: 18:00 / 19:30 / 20:00\n\n"
+                            "🌿 **Río Tigre, Luján, Sarmiento, Espera hasta Cruz Colorada**\n"
+                            "L-V: 7:00 / 12:00 / 18:00 · Sáb: 7:00 / 12:00 / 18:00 / 19:30 · Dom: 19:30\n\n"
+                            "🌊 **Río Tigre, Luján, Sarmiento, Capitán, Arroyo Toro**\n"
+                            "L-V: 7:30 / 18:00 · Sáb: 7:30 / 11:15 / 18:50 · Dom: 7:30 / 11:15\n\n"
+                            "⬆️ **Río Tigre, Luján, Sarmiento, Capitán, Arroyo Rama Negra**\n"
+                            "L-V: 7:30 / 18:00 · Sáb: 7:30 / 12:15 / 18:00 / 19:30 · Dom: 7:30 / 12:15 / 19:30\n\n"
+                            "🛶 **Río Tigre, Luján, Sarmiento, Capitán, Paraná de las Palmas, Arroyo Felicaria**\n"
+                            "L/Ma/V: 6:30 · L-V: 16:50 · Sáb: 6:30 / 12:00 / 16:30 / 20:00 · Dom: 12:00 / 16:30 / 20:00"
                         ),
                         "images": [],
                         "quick_replies": [
-                            "¿Horarios completos de Paso del Toro de Interisleña?",
-                            "¿Horarios desde Antequera de Interisleña?",
-                            "¿Horarios desde Felicaria de Interisleña?"
-                        ]
+                            "¿Horarios completos desde Paso del Toro?",
+                            "¿Horarios completos desde Antequera?",
+                            "✏️ Sugerí una modificación"
+                        ],
+                        "note": _col_note
                     }
             if linea == 'lineasdelta':
                 periodo = col.get('periodo', 'escolar')
@@ -566,7 +583,8 @@ def handle_colectivas_flow(user_input):
                 return {
                     "reply": f"Líneas Delta — {direccion.capitalize()} — {label.capitalize()} 🛥️",
                     "images": [f"/img/colectivas/lineas_delta_{direccion}_{periodo}.png"],
-                    "quick_replies": []
+                    "quick_replies": ["✏️ Sugerí una modificación"],
+                    "note": _col_note
                 }
 
     # ── Inicio del flujo desde cero ──

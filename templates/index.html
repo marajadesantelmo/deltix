@@ -259,6 +259,27 @@
       border-color: rgba(0,255,65,0.5);
       color: #d4edda;
     }
+    /* Chip de sugerencia de modificación */
+    .qr-btn.suggest-btn {
+      border-color: rgba(0,255,65,0.18);
+      background: rgba(0,255,65,0.04);
+      color: rgba(212,237,218,0.5);
+      font-size: 12px;
+    }
+    .qr-btn.suggest-btn:hover {
+      background: rgba(0,255,65,0.1);
+      border-color: rgba(0,255,65,0.3);
+      color: rgba(212,237,218,0.8);
+    }
+    /* Nota de comunidad debajo de chips */
+    .chat-note {
+      font-size: 10.5px;
+      color: rgba(212,237,218,0.28);
+      font-style: italic;
+      padding-left: 40px;
+      margin-top: -4px;
+      line-height: 1.5;
+    }
 
     /* ── Typing indicator ── */
     #typing-row { display: flex; align-items: flex-end; gap: 8px; }
@@ -899,7 +920,7 @@
       document.querySelectorAll('.quick-replies').forEach(el => el.remove());
     }
 
-    function addMessage(role, text, images = [], quickReplies = [], footerText = '') {
+    function addMessage(role, text, images = [], quickReplies = [], footerText = '', note = '') {
       clearQuickReplies();
 
       const row = document.createElement('div');
@@ -946,12 +967,21 @@
         qrRow.style.paddingLeft = '40px';
         quickReplies.forEach(label => {
           const btn = document.createElement('button');
-          btn.className = 'qr-btn';
+          const isSuggest = label.includes('Sugerí una modificación') || label.includes('Sugeri una modificacion');
+          btn.className = 'qr-btn' + (isSuggest ? ' suggest-btn' : '');
           btn.textContent = label;
           btn.onclick = () => sendQuick(label);
           qrRow.appendChild(btn);
         });
         messages.appendChild(qrRow);
+      }
+
+      // Nota de comunidad (texto pequeño debajo de chips)
+      if (note) {
+        const noteEl = document.createElement('p');
+        noteEl.className = 'chat-note';
+        noteEl.textContent = note;
+        messages.appendChild(noteEl);
       }
 
       scrollBottom();
@@ -988,7 +1018,7 @@
         });
         const data = await res.json();
         removeTyping();
-        addMessage('bot', data.reply || '', data.images || [], data.quick_replies || [], data.footer_text || '');
+        addMessage('bot', data.reply || '', data.images || [], data.quick_replies || [], data.footer_text || '', data.note || '');
       } catch {
         removeTyping();
         addMessage('bot', 'Error de conexión. Intentá de nuevo.');
@@ -1007,6 +1037,11 @@
       if (text.includes('Cambiar o dar de baja')) {
         clearQuickReplies();
         document.getElementById('modal-data-request').classList.remove('hidden');
+        return;
+      }
+      if (text.includes('Suger')) {
+        clearQuickReplies();
+        document.getElementById('modal-sugerencia').classList.remove('hidden');
         return;
       }
       input.value = text;
