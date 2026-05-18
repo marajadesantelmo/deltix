@@ -91,32 +91,51 @@ SYSTEM_PROMPT = (
 )
 
 KEYWORDS = {
-    "weather":     ['clima', 'temperatura', 'pronostico', 'tiempo', 'lluvia', 'viento', 'tormenta', 'calor', 'frio', 'nublado'],
-    "tides":       ['mareas', 'marea', 'pleamar', 'bajamar'],
-    "hidrografia": ['hidrografia', 'hidrografía', 'naval'],
+    # 'tiempo' y 'viento' removidos — demasiado ambiguos; viento sólo en windguru
+    "weather":     ['clima', 'temperatura', 'pronostico', 'pronóstico', 'lluvia', 'tormenta',
+                    'calor', 'frio', 'frío', 'nublado', 'el tiempo', 'qué tiempo', 'que tiempo'],
+    # crecida/inundación agregados
+    "tides":       ['mareas', 'marea', 'pleamar', 'bajamar',
+                    'crecida', 'inundacion', 'inundación', 'nivel del rio', 'nivel del río',
+                    'subio el rio', 'subió el río', 'bajo el rio', 'bajó el río'],
+    # 'naval' removido — demasiado genérico
+    "hidrografia": ['hidrografia', 'hidrografía'],
     "agenda":      ['agenda', 'actividades', 'emprendimientos', 'agenda del rio', 'agenda del río'],
-    "windguru":    ['windguru', 'viento', 'wind'],
+    # 'viento' mantenido aquí (único lugar), 'wind' removido — inglés innecesario
+    "windguru":    ['windguru', 'viento'],
     "jilguero":    ['jilguero', 'carapachay', 'angostura'],
     "interislena": ['interisleña', 'interislena', 'sarmiento', 'san antonio', 'capitan', 'capitán',
                     'paso del toro', 'rama negra', 'antequera', 'cruz colorada', 'felicaria',
                     'arroyo toro', 'abra vieja', 'fredes', 'estudiantes', 'puy carabi', 'canal 5'],
     "lineasdelta": ['lineasdelta', 'lineas delta', 'caraguata', 'canal arias'],
-    "colectivas":  ['colectivas', 'horarios', 'lancha', 'lanchas'],
-    "almacen":     ['almacen', 'almacén', 'almacenera', 'almaceneras'],
+    # 'horarios' removido — demasiado genérico, activa flujo colectivas para cualquier negocio
+    "colectivas":  ['colectivas', 'lancha', 'lanchas', 'horario de lancha', 'horarios de lancha',
+                    'horario del barco', 'barco colectivo'],
+    # delivery/provisiones agregados
+    "almacen":     ['almacen', 'almacén', 'almacenera', 'almaceneras',
+                    'delivery', 'provisiones', 'mercaderia', 'mercadería', 'abastecimiento'],
     "activities":  ['actividades', 'emprendimientos', 'qué hacer', 'que hacer', 'qué visitar',
                     'que visitar', 'paseos', 'experiencias', 'turismo', 'recorrido'],
-    "amanita":     ['amanita', 'canoa'],
-    "alfareria":   ['alfareria', 'alfarería', 'barro', 'arcilla', 'kutral'],
-    "labusqueda":  ['labusqueda', 'busqueda', 'hostal', 'ceremonias'],
+    # 'canoa' sola removida — demasiado genérica
+    "amanita":     ['amanita', 'paseo en canoa', 'excursion canoa', 'excursión canoa', 'canoa isleña'],
+    # 'barro' removido — muy común en contexto del delta (barro/lodo)
+    "alfareria":   ['alfareria', 'alfarería', 'arcilla', 'kutral', 'taller de barro'],
+    # 'busqueda' y 'busqueda' solas removidas; 'alimentos' removido
+    "labusqueda":  ['labusqueda', 'la busqueda', 'la búsqueda', 'hostal', 'hostal delta', 'ceremonias'],
     "kayaks":      ['kayak', 'kayaks', 'canaveral', 'cañaveral'],
     "masajes":     ['masaje', 'masajes', 'charco', 'thai'],
-    "familia":     ['familia islena', 'familia isleña', 'dietetica', 'alimentos'],
+    # 'alimentos' removido — demasiado genérico
+    "familia":     ['familia islena', 'familia isleña', 'dietetica', 'dietética', 'piojo isleno'],
     "frutales":    ['frutales', 'citricos', 'cítricos', 'limonero', 'naranjas', 'mandarina', 'planta frutal'],
     "dulceras":    ['dulceras', 'dulcera', 'dulceras del rio', 'reposteria', 'repostería'],
     "vivero":      ['vivero', 'tierra fertil', 'tierra fértil', 'compost', 'igarape', 'igarapé', 'huerta'],
-    "nahuel":      ['nahuel', 'poda', 'carpinteria', 'carpintería', 'zanja', 'mantenimiento isla'],
-    "aguariba":    ['aguariba', 'agroecologico', 'agroecológico', 'verduras', 'bolson', 'bolsón'],
-    "lena":        ['leña', 'lena', 'quebracho', 'salamandra', 'ligustro'],
+    "nahuel":      ['nahuel servicios', 'poda de arboles', 'poda en altura', 'carpinteria isla',
+                    'carpintería isla', 'zanja', 'mantenimiento isla', 'nahuel delta'],
+    "aguariba":    ['aguariba', 'agroecologico', 'agroecológico', 'verduras delta', 'bolson agroecologico',
+                    'bolsón agroecológico'],
+    # calefacción/estufa agregados
+    "lena":        ['leña', 'lena', 'quebracho', 'salamandra', 'ligustro', 'calefaccion',
+                    'calefacción', 'estufa a leña', 'estufa a lena'],
     "memes":       ['meme', 'memes'],
 }
 
