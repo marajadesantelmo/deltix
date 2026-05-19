@@ -266,9 +266,9 @@ ALMACENERAS = {
 AGENDA_OPTIONS = {
     "Amanita Canoa":       "amanita canoa",
     "Kutral Alfarería":    "alfareria kutral",
-    "La Búsqueda":         "labusqueda",
+    "La Búsqueda":         "la busqueda",
     "Cañaveral Kayaks":    "canaveral kayaks",
-    "Masaje Thai":         "charco masajes",
+    "Masaje Thai":         "masaje thai",
     "Familia Isleña":      "familia islena",
     "Planta Frutales":     "planta frutales",
     "Dulceras del Río":    "dulceras del rio",
