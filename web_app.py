@@ -143,6 +143,11 @@ KEYWORDS = {
     # 'igarape delta' (2 palabras) se chequea ANTES que 'vivero' para evitar
     # que 'igarape' solo matchee al vivero cuando el usuario busca las excursiones
     "igarapedelta": ['igarape delta', 'delta salvaje', 'guia naturalista', 'senderismo delta'],
+    # Lanchas taxis y fletes — subcategorías específicas primero, luego el menú general
+    "fletesmareaexpress": ['fletes marea express', 'marea express'],
+    "viajesvita":         ['viajes vita', 'vita delta', 'fletes vita'],
+    "oscart":             ['oscar t', 'oscar traslados', 'arroyo espera viajes'],
+    "taxifletes":         ['taxifletes', 'taxi fletes', 'lancha taxi', 'traslado isla', 'flete isla'],
 }
 
 def _norm(s):
@@ -227,7 +232,9 @@ def build_llm_context(user_input):
                      KEYWORDS_NORM["labusqueda"] + KEYWORDS_NORM["kayaks"] + KEYWORDS_NORM["masajes"] +
                      KEYWORDS_NORM["familia"] + KEYWORDS_NORM["frutales"] + KEYWORDS_NORM["dulceras"] +
                      KEYWORDS_NORM["vivero"] + KEYWORDS_NORM["nahuel"] + KEYWORDS_NORM["aguariba"] +
-                     KEYWORDS_NORM["sublinor"] + KEYWORDS_NORM["yoga"] + KEYWORDS_NORM["igarapedelta"])
+                     KEYWORDS_NORM["sublinor"] + KEYWORDS_NORM["yoga"] + KEYWORDS_NORM["igarapedelta"] +
+                     KEYWORDS_NORM["taxifletes"] + KEYWORDS_NORM["fletesmareaexpress"] +
+                     KEYWORDS_NORM["viajesvita"] + KEYWORDS_NORM["oscart"])
     _lena_ok = (any(k in text for k in KEYWORDS_NORM["lena"]) and
                 not any(k in text for k in KEYWORDS_NORM["interislena"]))
     if any(k in text for k in _base_act_kws) or _lena_ok:
@@ -269,9 +276,10 @@ AGENDA_OPTIONS = {
     "Nahuel Servicios":    "nahuel servicios",
     "Aguariba Anfibia":    "aguariba",
     "Leña a tu Muelle":    "leña muelle",
-    "Sublinor Gráfica 🖨️": "sublinor imprenta",
-    "Yoga con Lau 🧘":     "yoga lau",
-    "Igarapé Delta 🌿":    "igarape delta senderismo",
+    "Sublinor Gráfica 🖨️":    "sublinor imprenta",
+    "Yoga con Lau 🧘":        "yoga lau",
+    "Igarapé Delta 🌿":       "igarape delta senderismo",
+    "Lanchas Taxis y Fletes 🚤": "taxifletes traslado lancha",
 }
 
 
@@ -349,13 +357,15 @@ def handle_almaceneras_flow(user_input):
     text_lower = _norm(text)
     alm = session.get('alm_flow')
 
+    _alm_note = "La comunidad Deltix se fortalece por el aporte de habitantes de la isla 🌿"
+
     if alm and alm.get('step') == 'select':
         # Buscar coincidencia con nombre de almacenera
         for name, info in ALMACENERAS.items():
             if name.lower() in text_lower or text_lower in name.lower():
                 session.pop('alm_flow', None)
                 session.modified = True
-                return {"reply": info, "images": [], "quick_replies": []}
+                return {"reply": info, "images": [], "quick_replies": ["✏️ Sugerí una modificación"], "note": _alm_note}
         # Sin coincidencia — si es otro tema, liberar el flow
         if _is_different_topic(text_lower):
             session.pop('alm_flow', None)
@@ -381,7 +391,10 @@ def handle_agenda_flow(user_input):
 
     if agenda and agenda.get('step') == 'select':
         for label, query in AGENDA_OPTIONS.items():
-            if any(w in text_lower for w in query.split()):
+            # Ignorar palabras de 3 letras o menos (ej. "del", "rio", "lau")
+            # para evitar falsos positivos por substring (ej. "del" dentro de "delta")
+            words = [w for w in query.split() if len(w) >= 4]
+            if words and any(w in text_lower for w in words):
                 session.pop('agenda_flow', None)
                 session.modified = True
                 return detect_quick_response(query)
@@ -727,6 +740,33 @@ def detect_quick_response(user_input):
         return {
             "reply": "🖨️ **Sublinor Gráfica**\n\nImprenta gráfica en Acassuso y en el Delta del Tigre\nEspecializada en rompecabezas, posavasos, papelería para bares,\npapelería comercial, merchandising corporativo y más\n\nInstagram: @sublinorgrafica\nContacto: sublinorgrafica@gmail.com",
             "images": []
+        }
+
+    # Servicios individuales de transporte — chequeados ANTES del menú taxifletes
+    if any(k in text for k in KEYWORDS_NORM["fletesmareaexpress"]):
+        return {
+            "reply": "🚢 **Fletes Marea Express**\n\nFletes en lancha, transporte seguro por agua\nCargas de todo tipo: materiales, herramientas, mercadería\nZonas rurales, islas y barrios ribereños\n\nContacto: 1168803724",
+            "images": ["/img/actividades_productos/flete1.jpeg"]
+        }
+
+    if any(k in text for k in KEYWORDS_NORM["viajesvita"]):
+        return {
+            "reply": "🚤 **Viajes y Fletes Vita**\n\nViajes y fletes en lancha por el Delta\n\nContacto Claudio: 1162564547\nContacto Valeria: 1163044895",
+            "images": ["/img/actividades_productos/viajes.jpeg"]
+        }
+
+    if any(k in text for k in KEYWORDS_NORM["oscart"]):
+        return {
+            "reply": "⛵ **Óscar T — Traslados y Paseos**\n\nViajes, traslados y paseos las 24 horas\nBase: Arroyo Espera, Delta del Paraná\nSu traslado de confianza, siempre.\n\nContacto: 1165012823 / 1131761412",
+            "images": ["/img/actividades_productos/viajes2.jpeg"]
+        }
+
+    # Menú Lanchas Taxis y Fletes (submenu con sub-chips)
+    if any(k in text for k in KEYWORDS_NORM["taxifletes"]):
+        return {
+            "reply": "🚤 **Lanchas Taxis y Fletes**\n\n¿Cuál servicio buscás?",
+            "images": [],
+            "quick_replies": ["Fletes Marea Express 🚢", "Viajes Vita 🚤", "Óscar T Traslados ⛵"]
         }
 
     if any(k in text for k in KEYWORDS_NORM["lena"]) and not any(k in text for k in KEYWORDS_NORM["interislena"]):
