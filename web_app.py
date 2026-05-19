@@ -82,9 +82,14 @@ def log_interaction(user_message, bot_reply, response_type, images=None, quick_r
 SYSTEM_PROMPT = (
     "Vos sos Deltix, el bot del humedal. Sos un carpincho digital que ayuda a habitantes y visitantes "
     "del Delta del Paraná en Tigre. Respondé de forma concisa y útil. No saludes ni repitas 'hola'. "
-    "No inventes información ni alucines datos. Tu postura es anticapitalista y ambientalista. "
-    "Si no podés responder algo, sugerí palabras clave: clima, mareas, hidrografia, windguru, "
-    "colectivas, almaceneras, actividades. "
+    "Fuiste creado por Facundo como proyecto comunitario del Delta del Paraná. "
+    "Si te preguntan sobre tu historia u origen, decí que sos un bot que desde el 2023 está disponible en Telegram "
+    "y desde el 2026 en formato web, y que buscás crear un espacio digital comunitario, anticapitalista "
+    "y en defensa de los humedales — no inventes más detalles. "
+    "NUNCA inventes información: no alucines nombres de lanchas, cooperativas, almaceneras, horarios, "
+    "precios ni datos de contacto que no estén en el contexto provisto. "
+    "Si no tenés el dato, decí que no lo tenés y sugerí las palabras clave disponibles: "
+    "clima, mareas, hidrografia, windguru, colectivas, almaceneras, actividades. "
     "Sobre datos de contacto: si el usuario pide explícitamente el contacto, teléfono o WhatsApp "
     "de un emprendimiento, dalo siempre de forma directa y completa — nunca digas que está oculto "
     "ni que no podés compartirlo. Si el usuario solo pregunta qué servicios hay o qué hace un emprendimiento, "
@@ -258,7 +263,6 @@ ALMACENERAS = {
     "Gloria I":        "🛒 *Gloria I* — Jorge Rinaldi\nMIÉRCOLES: Río San Antonio / Canal Honda / Aguaje del Durazno\nJUEVES: Chaná / Paraná Mini / Tuyú Paré\nVIERNES: Arroyo Correntoso / La Barca / La Barquita\n📞 1531298913",
     "Ignacio Franco":  "🛒 *Ignacio Franco* — Familia Bettiga\nMIÉRCOLES: Río Sarmiento / Capitán hasta Club Imos / Fredes\nJUEVES: Río Capitán / Arroyo Fredes\nVIERNES: Arroyo Estudiante / Felicaria / Paraná Mini\nSÁBADO: Arroyo Fredes / Paraná Miní / Tuyú Paré / Chaná\n📞 1562828206",
     "Madreselva":      "🛒 *Madreselva* — Familia Bettiga\nMIÉRCOLES: Capitán arriba / Estudiante / Paicarabí\nJUEVES: Río Sarmiento / Espera / Cruz Colorada\nVIERNES: Paicarabí / Canal La Serna / Canal 4\n📞 1554709382",
-    "Nélida G":        "🛒 *Nélida G* — José Olivera\nLUN, MIÉ, VIE, SÁB: Arroyo Caraguatá / Cruz Colorada / Canal Arias / Río Luján\n📞 155644466",
     "Raquel N":        "🛒 *Raquel N* — Roberto Baraldo\nLUNES y SÁBADO: Río Sarmiento / Capitán / Arroyo La Horca\nMARTES y MIÉRCOLES: Río Paraná hasta Carabelas / Canal 5\n📞 1544981064",
     "Stella Maris":    "🛒 *Stella Maris* — Manuel Compagnucci\nVIERNES: Escobar / Paraná / Paycaraby / Estudiantes / Las Cañas\nSÁBADOS: Puerto Escobar / La Serna / Arroyo Chana / Felicaria\n📞 1562771474",
 }
@@ -362,7 +366,7 @@ def handle_almaceneras_flow(user_input):
     if alm and alm.get('step') == 'select':
         # Buscar coincidencia con nombre de almacenera
         for name, info in ALMACENERAS.items():
-            if name.lower() in text_lower or text_lower in name.lower():
+            if _norm(name) in text_lower or text_lower in _norm(name):
                 session.pop('alm_flow', None)
                 session.modified = True
                 return {"reply": info, "images": [], "quick_replies": ["✏️ Sugerí una modificación"], "note": _alm_note}
@@ -422,8 +426,12 @@ def handle_memes_flow(user_input):
     if meme:
         step = meme.get('step')
 
+        # Word boundaries para evitar falsos positivos: "no" en "invierno", "si" en substrings, etc.
+        def _mw(keywords, t):
+            return any(re.search(r'\b' + re.escape(k) + r'\b', t) for k in keywords)
+
         if step == 'more':
-            if any(s in text for s in ['si', 'sí', 'dale', 'otro', 'mas', 'más', 'meme']):
+            if _mw(['si', 'sí', 'dale', 'otro', 'mas', 'más', 'meme'], text):
                 session['meme_flow'] = {'step': 'more2'}
                 session.modified = True
                 n = random.randint(1, 56)
@@ -431,14 +439,14 @@ def handle_memes_flow(user_input):
                         "images": [f"/img/memes/{n}.png"],
                         "footer_text": "Uno más? 😄",
                         "quick_replies": ["Sí, otro 😄", "No gracias"]}
-            if any(s in text for s in ['no', 'gracias', 'listo']):
+            if _mw(['no', 'gracias', 'listo'], text):
                 session.pop('meme_flow', None)
                 session.modified = True
                 return {"reply": "Bueno... si querés podés seguir explorando el delta con Deltix 🦫",
                         "images": [], "quick_replies": []}
 
         if step == 'more2':
-            if any(s in text for s in ['si', 'sí', 'dale', 'otro', 'mas', 'más', 'meme']):
+            if _mw(['si', 'sí', 'dale', 'otro', 'mas', 'más', 'meme'], text):
                 session['meme_flow'] = {'step': 'more'}
                 session.modified = True
                 n = random.randint(1, 56)
@@ -446,7 +454,7 @@ def handle_memes_flow(user_input):
                         "images": [f"/img/memes/{n}.png"],
                         "footer_text": "Te mando otro? 😄",
                         "quick_replies": ["Sí, otro 😄", "No gracias"]}
-            if any(s in text for s in ['no', 'gracias', 'listo']):
+            if _mw(['no', 'gracias', 'listo'], text):
                 session.pop('meme_flow', None)
                 session.modified = True
                 return {"reply": "Bueno... si querés podés seguir explorando el delta con Deltix 🦫",
