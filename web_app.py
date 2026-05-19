@@ -138,6 +138,11 @@ KEYWORDS = {
     "lena":        ['leña', 'lena', 'quebracho', 'salamandra', 'ligustro', 'calefaccion',
                     'calefacción', 'estufa a leña', 'estufa a lena'],
     "memes":       ['meme', 'memes'],
+    "sublinor":    ['sublinor', 'imprenta'],
+    "yoga":        ['yoga', 'iyengar'],
+    # 'igarape delta' (2 palabras) se chequea ANTES que 'vivero' para evitar
+    # que 'igarape' solo matchee al vivero cuando el usuario busca las excursiones
+    "igarapedelta": ['igarape delta', 'delta salvaje', 'guia naturalista', 'senderismo delta'],
 }
 
 def _norm(s):
@@ -221,7 +226,8 @@ def build_llm_context(user_input):
     _base_act_kws = (KEYWORDS_NORM["activities"] + KEYWORDS_NORM["amanita"] + KEYWORDS_NORM["alfareria"] +
                      KEYWORDS_NORM["labusqueda"] + KEYWORDS_NORM["kayaks"] + KEYWORDS_NORM["masajes"] +
                      KEYWORDS_NORM["familia"] + KEYWORDS_NORM["frutales"] + KEYWORDS_NORM["dulceras"] +
-                     KEYWORDS_NORM["vivero"] + KEYWORDS_NORM["nahuel"] + KEYWORDS_NORM["aguariba"])
+                     KEYWORDS_NORM["vivero"] + KEYWORDS_NORM["nahuel"] + KEYWORDS_NORM["aguariba"] +
+                     KEYWORDS_NORM["sublinor"] + KEYWORDS_NORM["yoga"] + KEYWORDS_NORM["igarapedelta"])
     _lena_ok = (any(k in text for k in KEYWORDS_NORM["lena"]) and
                 not any(k in text for k in KEYWORDS_NORM["interislena"]))
     if any(k in text for k in _base_act_kws) or _lena_ok:
@@ -263,6 +269,9 @@ AGENDA_OPTIONS = {
     "Nahuel Servicios":    "nahuel servicios",
     "Aguariba Anfibia":    "aguariba",
     "Leña a tu Muelle":    "leña muelle",
+    "Sublinor Gráfica 🖨️": "sublinor imprenta",
+    "Yoga con Lau 🧘":     "yoga lau",
+    "Igarapé Delta 🌿":    "igarape delta senderismo",
 }
 
 
@@ -682,6 +691,14 @@ def detect_quick_response(user_input):
             "images": ["/img/actividades_productos/dulceras1.jpeg", "/img/actividades_productos/dulceras2.jpeg"]
         }
 
+    # Igarapé Delta excursiones — chequeado ANTES de vivero porque 'igarape delta'
+    # (2 palabras) es más específico que 'igarape' solo (que pertenece al vivero)
+    if any(k in text for k in KEYWORDS_NORM["igarapedelta"]):
+        return {
+            "reply": "🌿 **Igarapé Delta**\n\nExcursiones de Navegación, Senderismo, Canotaje y Turismo Rural\nNaturaleza · Cultura · Aventura — Delta Salvaje\nGuía Local Isleño Naturalista\n\nInstagram: @igarapedelta\nContacto: 005491159233663",
+            "images": []
+        }
+
     if any(k in text for k in KEYWORDS_NORM["vivero"]):
         return {
             "reply": "🌱 **Vivero Isleño — Cooperativa Igarapé Delta**\n\n\"Hacer huerta es terapia\"\n\nTierra Fértil: $9.200 (bolsas 40 lts)\nCompost Orgánico: $11.500\n10% descuento pidiendo 30 bolsas o más\n\nEntrega en tu muelle · Zona Correa y San Antonio\nContacto: 1159233663",
@@ -698,6 +715,18 @@ def detect_quick_response(user_input):
         return {
             "reply": "🥬 **Aguariba Anfibia**\n\nProducción agroecológica del Delta\nPedidos para entrega el miércoles\n(cargar hasta el lunes a las 22hs)\n40% de reintegro con CUENTA DNI 💳\n\nWeb: aguaribayanfibia.com.ar\nInstagram: @aguaribayanfibia",
             "images": ["/img/actividades_productos/aguariba.png"]
+        }
+
+    if any(k in text for k in KEYWORDS_NORM["yoga"]):
+        return {
+            "reply": "🧘 **Yoga con Lau**\n\nClases de Yoga Iyengar en la isla para adultxs\nNo se necesita experiencia previa\n\n📅 Lunes 10 a 11:30hs\n📅 Jueves 16:30 a 18hs\n📍 Cabañas Mayuwausi — Arroyo Reyes\n\nInstagram: @lau_g_yoga\nContacto: 1130614215",
+            "images": ["/img/actividades_productos/yoga_con_lau.png"]
+        }
+
+    if any(k in text for k in KEYWORDS_NORM["sublinor"]):
+        return {
+            "reply": "🖨️ **Sublinor Gráfica**\n\nImprenta gráfica en Acassuso y en el Delta del Tigre\nEspecializada en rompecabezas, posavasos, papelería para bares,\npapelería comercial, merchandising corporativo y más\n\nInstagram: @sublinorgrafica\nContacto: sublinorgrafica@gmail.com",
+            "images": []
         }
 
     if any(k in text for k in KEYWORDS_NORM["lena"]) and not any(k in text for k in KEYWORDS_NORM["interislena"]):
