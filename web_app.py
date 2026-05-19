@@ -648,7 +648,7 @@ def detect_quick_response(user_input):
     if any(k in text for k in KEYWORDS_NORM["hidrografia"]):
         return {"reply": format_hidrografia(), "images": [], "quick_replies": []}
 
-    if any(k in text for k in KEYWORDS_NORM["tides"]):
+    if any(k in text for k in KEYWORDS_NORM["tides"]) and not any(k in text for k in KEYWORDS_NORM["fletesmareaexpress"]):
         return {"reply": "Acá tenés el pronóstico de mareas del INA 🌊",
                 "images": ["/img/marea.png"], "quick_replies": []}
 
