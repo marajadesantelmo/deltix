@@ -122,13 +122,13 @@ else:
 min_date = df_full["date"].min()
 max_date = df_full["date"].max()
 
-_col_logo, _col_controls, _col_empty = st.columns([1, 2, 5])
+_col_logo, _col_empty, _col_date, _col_btn = st.columns([1, 5, 2, 1])
 
 with _col_logo:
     if (ROOT / "bot_icon.png").exists():
         st.image(str(ROOT / "bot_icon.png"), width=60)
 
-with _col_controls:
+with _col_date:
     date_range = st.date_input(
         "Período",
         value=(min_date, max_date),
@@ -136,21 +136,25 @@ with _col_controls:
         max_value=max_date,
         label_visibility="collapsed",
     )
+
+with _col_btn:
+    st.markdown("<div style='margin-top:4px'>", unsafe_allow_html=True)
     if IS_CLOUD:
-        if st.button("🔄 Actualizar", use_container_width=True):
+        if st.button("🔄", use_container_width=True, help="Actualizar datos"):
             st.cache_data.clear()
             st.rerun()
     else:
-        if st.button("🔄 Sincronizar", use_container_width=True):
+        if st.button("🔄", use_container_width=True, help="Sincronizar desde PythonAnywhere"):
             sync_script = Path(__file__).parent / "sync_csv.py"
             with st.spinner("Descargando..."):
                 ret = os.system(f'"{sync_script}" 2>&1')
             st.cache_data.clear()
             st.rerun()
         if SYNC_LOG.exists():
-            with st.expander("Log de sync"):
+            with st.expander("Log"):
                 lines = SYNC_LOG.read_text(encoding="utf-8", errors="replace").strip().splitlines()
                 st.code("\n".join(lines[-15:]), language=None)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("---")
 
