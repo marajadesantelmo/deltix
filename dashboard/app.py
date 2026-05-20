@@ -229,7 +229,7 @@ prev_pct_llm = (df_prev["response_type"].isin(["llm","llm_blocked","llm_error"])
 
 # ── KPI row ───────────────────────────────────────────────────────────────────
 
-c1, c2, c3, c4, c5 = st.columns(5)
+c1, c2, c3, c4, c5, c6 = st.columns(6)
 kpi(c1, "Interacciones",
     f"{total:,}".replace(",", "."),
     f"{n_sess} sesiones",
@@ -248,6 +248,11 @@ kpi(c4, "Ratio LLM",
 kpi(c5, "Tasa de error",
     f"{error_rate:.2f}%",
     f"{llm_blocked} blocked + {llm_error} errores")
+unique_msgs = df["user_message"].str.strip().str.lower().nunique()
+pct_unique  = unique_msgs / total * 100 if total else 0
+kpi(c6, "Msgs únicos",
+    f"{pct_unique:.0f}%",
+    f"{unique_msgs} de {total}")
 
 st.markdown("<br>", unsafe_allow_html=True)
 
@@ -456,6 +461,301 @@ with col3:
     )
     st.plotly_chart(fig4, use_container_width=True)
 
+# ── Patrones de uso ───────────────────────────────────────────────────────────
+
+st.markdown("---")
+st.markdown("## Patrones de uso")
+
+col_wd, col_br, col_errt = st.columns(3)
+
+with col_wd:
+    st.markdown("### Actividad por día de semana")
+    WEEKDAY_ORDER = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
+    WEEKDAY_ES    = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"]
+    wd = (df["weekday"].value_counts()
+          .reindex(WEEKDAY_ORDER, fill_value=0)
+          .reset_index())
+    wd.columns = ["weekday", "count"]
+    wd["label"] = WEEKDAY_ES
+    fig_wd = go.Figure(go.Bar(
+        x=wd["label"], y=wd["count"],
+        marker=dict(
+            color=wd["count"],
+            colorscale=[[0, "#2a5c1e"], [0.5, "#4a9e30"], [1, "#7ed957"]],
+            line=dict(width=0),
+        ),
+        text=wd["count"],
+        textposition="outside",
+        textfont=dict(color=TEXT, size=11),
+        hovertemplate="<b>%{x}</b>: %{y} msgs<extra></extra>",
+    ))
+    fig_wd.update_layout(
+        paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
+        margin=dict(l=0, r=0, t=10, b=0), height=240,
+        xaxis=dict(showgrid=False, color=TEXT),
+        yaxis=dict(showgrid=True, gridcolor=GRID, color=TEXT, zeroline=False),
+        hoverlabel=dict(bgcolor="#2a4a2a", font_color="#e8f5e2"),
+    )
+    st.plotly_chart(fig_wd, use_container_width=True)
+
+with col_br:
+    st.markdown("### Bounce rate diario")
+    daily_bounces = (
+        df.groupby(["date", "session_id"]).size()
+          .reset_index(name="n")
+          .assign(bounced=lambda x: (x["n"] == 1).astype(int))
+          .groupby("date")
+          .agg(total_sess=("session_id", "count"), bounced=("bounced", "sum"))
+          .reset_index()
+    )
+    daily_bounces["bounce_pct"] = (
+        daily_bounces["bounced"] / daily_bounces["total_sess"] * 100
+    ).round(1)
+    daily_bounces["date_str"] = daily_bounces["date"].astype(str)
+    fig_br = go.Figure(go.Scatter(
+        x=daily_bounces["date_str"], y=daily_bounces["bounce_pct"],
+        mode="lines+markers",
+        line=dict(color="#3b9dc4", width=2.5, shape="spline"),
+        marker=dict(color="#3b9dc4", size=8, line=dict(color="#0e1a0e", width=1.5)),
+        fill="tozeroy",
+        fillcolor="rgba(59,157,196,0.12)",
+        hovertemplate="<b>%{x}</b><br>%{y:.1f}% bounce<extra></extra>",
+    ))
+    fig_br.update_layout(
+        paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
+        margin=dict(l=0, r=0, t=10, b=0), height=240,
+        xaxis=dict(showgrid=False, color=TEXT),
+        yaxis=dict(showgrid=True, gridcolor=GRID, color=TEXT,
+                   zeroline=False, ticksuffix="%"),
+        hoverlabel=dict(bgcolor="#2a4a2a", font_color="#e8f5e2"),
+    )
+    st.plotly_chart(fig_br, use_container_width=True)
+
+with col_errt:
+    st.markdown("### Tendencia de errores diaria")
+    _all_dates = sorted(df["date"].unique())
+    daily_err = (
+        df[df["response_type"].isin(["llm_blocked", "llm_error"])]
+        .groupby("date").size()
+        .reindex(_all_dates, fill_value=0)
+        .reset_index()
+    )
+    daily_err.columns = ["date", "errors"]
+    daily_err["date_str"] = daily_err["date"].astype(str)
+    fig_errt = go.Figure(go.Scatter(
+        x=daily_err["date_str"], y=daily_err["errors"],
+        mode="lines+markers",
+        line=dict(color="#c44040", width=2.5, shape="spline"),
+        marker=dict(color="#c44040", size=8, line=dict(color="#0e1a0e", width=1.5)),
+        fill="tozeroy",
+        fillcolor="rgba(196,64,64,0.12)",
+        hovertemplate="<b>%{x}</b><br>%{y} errores<extra></extra>",
+    ))
+    fig_errt.update_layout(
+        paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
+        margin=dict(l=0, r=0, t=10, b=0), height=240,
+        xaxis=dict(showgrid=False, color=TEXT),
+        yaxis=dict(showgrid=True, gridcolor=GRID, color=TEXT, zeroline=False),
+        hoverlabel=dict(bgcolor="#2a4a2a", font_color="#e8f5e2"),
+    )
+    st.plotly_chart(fig_errt, use_container_width=True)
+
+# ── Análisis de flujos ────────────────────────────────────────────────────────
+
+st.markdown("---")
+st.markdown("## Análisis de flujos")
+
+col_col, col_div, col_comp = st.columns(3)
+
+with col_col:
+    st.markdown("### Desglose de colectivas")
+    col_msgs = df[df["response_type"] == "colectivas"]["user_message"].str.lower()
+    line_counts = pd.Series({
+        "Jilguero":     int(col_msgs.str.contains("jilguero", na=False).sum()),
+        "Interisleña":  int(col_msgs.str.contains("interisle", na=False).sum()),
+        "Líneas Delta": int(col_msgs.str.contains(r"l.neas delta|lineas delta",
+                                                   regex=True, na=False).sum()),
+        "Ida":          int(col_msgs.str.contains(r"\bida\b", regex=True, na=False).sum()),
+        "Vuelta":       int(col_msgs.str.contains(r"\bvuelta\b", regex=True, na=False).sum()),
+        "Escolar":      int(col_msgs.str.contains("escolar", na=False).sum()),
+    }).sort_values()
+    lc_df = line_counts.reset_index()
+    lc_df.columns = ["consulta", "count"]
+    fig_col2 = go.Figure(go.Bar(
+        x=lc_df["count"], y=lc_df["consulta"],
+        orientation="h",
+        marker=dict(
+            color=lc_df["count"],
+            colorscale=[[0, "#2a5c1e"], [0.5, "#4a9e30"], [1, "#7ed957"]],
+            line=dict(width=0),
+        ),
+        text=lc_df["count"],
+        textposition="outside",
+        textfont=dict(color=TEXT, size=11),
+        hovertemplate="%{y}: %{x} consultas<extra></extra>",
+    ))
+    fig_col2.update_layout(
+        paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
+        margin=dict(l=0, r=40, t=10, b=0), height=280,
+        xaxis=dict(showgrid=True, gridcolor=GRID, color=TEXT),
+        yaxis=dict(showgrid=False, color=TEXT, tickfont=dict(size=11)),
+        hoverlabel=dict(bgcolor="#2a4a2a", font_color="#e8f5e2"),
+    )
+    st.plotly_chart(fig_col2, use_container_width=True)
+
+with col_div:
+    st.markdown("### Diversidad de features")
+    feat_div = (df.groupby("session_id")["response_type"]
+                  .nunique().reset_index(name="n_types"))
+    feat_div["bucket"] = feat_div["n_types"].apply(
+        lambda x: "1 tipo" if x == 1 else ("2 tipos" if x == 2 else "3+ tipos")
+    )
+    div_counts = (feat_div["bucket"].value_counts()
+                  .reindex(["1 tipo", "2 tipos", "3+ tipos"], fill_value=0)
+                  .reset_index())
+    div_counts.columns = ["bucket", "count"]
+    fig_div = go.Figure(go.Bar(
+        x=div_counts["bucket"], y=div_counts["count"],
+        marker=dict(
+            color=["#3b6e2e", "#4a9e30", "#7ed957"],
+            line=dict(width=0),
+        ),
+        text=[f"{v} ({v/n_sess*100:.0f}%)" if n_sess else str(v)
+              for v in div_counts["count"]],
+        textposition="outside",
+        textfont=dict(color=TEXT, size=11),
+        hovertemplate="<b>%{x}</b>: %{y} sesiones<extra></extra>",
+    ))
+    fig_div.update_layout(
+        paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
+        margin=dict(l=0, r=0, t=10, b=30), height=280,
+        xaxis=dict(showgrid=False, color=TEXT),
+        yaxis=dict(showgrid=True, gridcolor=GRID, color=TEXT, zeroline=False),
+        hoverlabel=dict(bgcolor="#2a4a2a", font_color="#e8f5e2"),
+    )
+    st.plotly_chart(fig_div, use_container_width=True)
+
+with col_comp:
+    st.markdown("### Completitud de flujos")
+    _flow_rows = []
+    for ft in ["colectivas", "almaceneras", "agenda"]:
+        s = df[df["response_type"] == ft].groupby("session_id").size()
+        _flow_rows.append({
+            "tipo": ft.capitalize(),
+            "1 interacción": int((s == 1).sum()),
+            "2+": int((s >= 2).sum()),
+        })
+    df_flow = pd.DataFrame(_flow_rows)
+    fig_flow = go.Figure()
+    fig_flow.add_trace(go.Bar(
+        name="1 paso (inicio)",
+        x=df_flow["tipo"], y=df_flow["1 interacción"],
+        marker=dict(color="#3b6e2e", line=dict(width=0)),
+        hovertemplate="<b>%{x}</b><br>1 paso: %{y}<extra></extra>",
+    ))
+    fig_flow.add_trace(go.Bar(
+        name="2+ pasos (completado)",
+        x=df_flow["tipo"], y=df_flow["2+"],
+        marker=dict(color="#7ed957", line=dict(width=0)),
+        hovertemplate="<b>%{x}</b><br>2+ pasos: %{y}<extra></extra>",
+    ))
+    fig_flow.update_layout(
+        barmode="stack",
+        paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
+        margin=dict(l=0, r=0, t=10, b=0), height=280,
+        xaxis=dict(showgrid=False, color=TEXT),
+        yaxis=dict(showgrid=True, gridcolor=GRID, color=TEXT, zeroline=False),
+        legend=dict(orientation="h", x=0, y=1.12,
+                    font=dict(color=TEXT, size=10), bgcolor=TRANSP),
+        hoverlabel=dict(bgcolor="#2a4a2a", font_color="#e8f5e2"),
+    )
+    st.plotly_chart(fig_flow, use_container_width=True)
+
+# ── Análisis del LLM ──────────────────────────────────────────────────────────
+
+st.markdown("---")
+st.markdown("## Análisis del LLM")
+
+col_words, col_rlen = st.columns(2)
+
+with col_words:
+    st.markdown("### Temas frecuentes en LLM")
+    STOPWORDS_ES = frozenset([
+        "de","la","el","en","y","a","que","los","las","un","una","con",
+        "por","para","del","se","es","al","lo","le","más","su","como",
+        "me","qué","no","si","hay","tiene","tenés","te","mi","pero",
+        "o","e","ni","ya","yo","tu","él","también","sobre","cuando",
+        "desde","hasta","todo","puede","esto","esta","eso","ese","esos",
+        "estas","todos","todas","muy","bien","hola","gracias","favor",
+        "necesito","quiero","sabe","saben","donde","cuándo","cuando",
+        "cómo","como","cuál","cual","cuánto","cuanto",
+    ])
+    _word_freq: dict = {}
+    for _msg in df[df["response_type"] == "llm"]["user_message"].dropna():
+        for _w in _msg.lower().split():
+            _w = _w.strip("¿?!.,;:()")
+            if len(_w) > 2 and _w not in STOPWORDS_ES:
+                _word_freq[_w] = _word_freq.get(_w, 0) + 1
+    _top_words = sorted(_word_freq.items(), key=lambda x: x[1], reverse=True)[:15]
+    if _top_words:
+        tw_df = pd.DataFrame(_top_words, columns=["palabra", "count"])
+        tw_df = tw_df.sort_values("count")
+        fig_tw = go.Figure(go.Bar(
+            x=tw_df["count"], y=tw_df["palabra"],
+            orientation="h",
+            marker=dict(
+                color=tw_df["count"],
+                colorscale=[[0, "#2a5c1e"], [0.5, "#4a9e30"], [1, "#7ed957"]],
+                line=dict(width=0),
+            ),
+            text=tw_df["count"],
+            textposition="outside",
+            textfont=dict(color=TEXT, size=11),
+            hovertemplate="%{y}: %{x} veces<extra></extra>",
+        ))
+        fig_tw.update_layout(
+            paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
+            margin=dict(l=0, r=40, t=10, b=0), height=340,
+            xaxis=dict(showgrid=True, gridcolor=GRID, color=TEXT),
+            yaxis=dict(showgrid=False, color=TEXT, tickfont=dict(size=11)),
+            hoverlabel=dict(bgcolor="#2a4a2a", font_color="#e8f5e2"),
+        )
+        st.plotly_chart(fig_tw, use_container_width=True)
+    else:
+        st.info("Sin datos LLM en el período seleccionado.")
+
+with col_rlen:
+    st.markdown("### Longitud de respuesta por tipo")
+    avg_rlen = (
+        df.assign(reply_len=df["bot_reply"].str.len().fillna(0))
+          .groupby("response_type")["reply_len"]
+          .mean().round(0).astype(int)
+          .sort_values()
+          .reset_index()
+    )
+    avg_rlen.columns = ["tipo", "avg_len"]
+    fig_rlen = go.Figure(go.Bar(
+        x=avg_rlen["avg_len"], y=avg_rlen["tipo"],
+        orientation="h",
+        marker=dict(
+            color=avg_rlen["avg_len"],
+            colorscale=[[0, "#2a5c1e"], [0.5, "#4a9e30"], [1, "#7ed957"]],
+            line=dict(width=0),
+        ),
+        text=avg_rlen["avg_len"].apply(lambda v: f"{v} chars"),
+        textposition="outside",
+        textfont=dict(color=TEXT, size=11),
+        hovertemplate="<b>%{y}</b>: prom. %{x} chars<extra></extra>",
+    ))
+    fig_rlen.update_layout(
+        paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
+        margin=dict(l=0, r=80, t=10, b=0), height=340,
+        xaxis=dict(showgrid=True, gridcolor=GRID, color=TEXT),
+        yaxis=dict(showgrid=False, color=TEXT, tickfont=dict(size=11)),
+        hoverlabel=dict(bgcolor="#2a4a2a", font_color="#e8f5e2"),
+    )
+    st.plotly_chart(fig_rlen, use_container_width=True)
+
 # ── Expanders de detalle ──────────────────────────────────────────────────────
 
 def detail_table(response_type: str, col_name: str):
@@ -512,6 +812,42 @@ with col_err:
         df_err["timestamp"] = df_err["timestamp"].dt.strftime("%d/%m %H:%M")
         df_err.columns = ["Fecha", "Usuario", "Bot", "Tipo"]
         st.dataframe(df_err, use_container_width=True, height=420, hide_index=True)
+
+# ── Explorador de sesiones ───────────────────────────────────────────────────
+
+st.markdown("---")
+st.markdown("## Explorador de sesiones")
+
+sess_summary = (
+    df.groupby("session_id")
+      .agg(first_ts=("timestamp", "min"), n_msgs=("user_message", "count"))
+      .sort_values("first_ts", ascending=False)
+      .reset_index()
+)
+sess_summary["label"] = (
+    sess_summary["first_ts"].dt.strftime("%d/%m %H:%M")
+    + "  —  " + sess_summary["session_id"]
+    + "  (" + sess_summary["n_msgs"].astype(str) + " msgs)"
+)
+
+selected_label = st.selectbox(
+    "Seleccioná una sesión",
+    options=sess_summary["label"].tolist(),
+    index=0,
+)
+selected_sid = sess_summary.loc[
+    sess_summary["label"] == selected_label, "session_id"
+].values[0]
+
+df_sess = (
+    df[df["session_id"] == selected_sid]
+    [["timestamp", "user_message", "bot_reply", "response_type"]]
+    .sort_values("timestamp")
+    .copy()
+)
+df_sess["timestamp"] = df_sess["timestamp"].dt.strftime("%H:%M:%S")
+df_sess.columns = ["Hora", "Usuario", "Bot", "Tipo"]
+st.dataframe(df_sess, use_container_width=True, hide_index=True)
 
 # ── Footer ────────────────────────────────────────────────────────────────────
 
