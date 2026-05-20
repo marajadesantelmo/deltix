@@ -22,6 +22,7 @@ st.set_page_config(
     page_title="Deltix — Métricas",
     page_icon="🦫",
     layout="wide",
+    initial_sidebar_state="collapsed",
 )
 
 # ── Paleta y estilos ──────────────────────────────────────────────────────────
@@ -66,8 +67,8 @@ st.markdown("""
 /* Section headers */
 h2 { border-bottom: 2px solid #2e4e2e; padding-bottom: .3rem; }
 
-/* Sidebar cleanup */
-section[data-testid="stSidebar"] { background: #162a16; }
+/* Ocultar botón de colapso del sidebar */
+button[kind="header"] { display: none; }
 
 /* Expander */
 details summary { font-weight: 600; }
@@ -116,50 +117,50 @@ if IS_CLOUD:
 else:
     df_full = load_data()
 
-# ── Sidebar ───────────────────────────────────────────────────────────────────
-
-if (ROOT / "bot_icon.png").exists():
-    st.sidebar.image(str(ROOT / "bot_icon.png"), width=80)
-st.sidebar.title("Deltix Dashboard")
-st.sidebar.markdown("---")
+# ── Barra superior ────────────────────────────────────────────────────────────
 
 min_date = df_full["date"].min()
 max_date = df_full["date"].max()
 
-date_range = st.sidebar.date_input(
-    "Período de análisis",
-    value=(min_date, max_date),
-    min_value=min_date,
-    max_value=max_date,
-)
+_col_logo, _col_filter, _col_sync = st.columns([1, 3, 2])
 
-st.sidebar.markdown("---")
+with _col_logo:
+    if (ROOT / "bot_icon.png").exists():
+        st.image(str(ROOT / "bot_icon.png"), width=60)
+    st.markdown("**Deltix Dashboard**")
 
-# Sync status
-if IS_CLOUD:
-    st.sidebar.markdown("☁️ **Fuente:** PythonAnywhere API")
-    if st.sidebar.button("🔄 Actualizar datos", use_container_width=True):
-        st.cache_data.clear()
-        st.rerun()
-else:
-    if TIMESTAMP_FILE.exists():
-        last_sync = TIMESTAMP_FILE.read_text(encoding="utf-8").strip()
-        st.sidebar.markdown(f"🔄 **Último sync**  \n`{last_sync}`")
+with _col_filter:
+    date_range = st.date_input(
+        "Período de análisis",
+        value=(min_date, max_date),
+        min_value=min_date,
+        max_value=max_date,
+    )
+
+with _col_sync:
+    if IS_CLOUD:
+        st.markdown("☁️ **Fuente:** PythonAnywhere API")
+        if st.button("🔄 Actualizar datos", use_container_width=True):
+            st.cache_data.clear()
+            st.rerun()
     else:
-        st.sidebar.markdown("🔄 Datos locales (sin sync)")
+        if TIMESTAMP_FILE.exists():
+            last_sync = TIMESTAMP_FILE.read_text(encoding="utf-8").strip()
+            st.markdown(f"🔄 **Último sync:** `{last_sync}`")
+        else:
+            st.markdown("🔄 Sin sync local")
+        if st.button("🔄 Sincronizar ahora", use_container_width=True):
+            sync_script = Path(__file__).parent / "sync_csv.py"
+            with st.spinner("Descargando desde PythonAnywhere..."):
+                ret = os.system(f'"{sync_script}" 2>&1')
+            st.cache_data.clear()
+            st.rerun()
+        if SYNC_LOG.exists():
+            with st.expander("Log de sync"):
+                lines = SYNC_LOG.read_text(encoding="utf-8", errors="replace").strip().splitlines()
+                st.code("\n".join(lines[-15:]), language=None)
 
-    if st.sidebar.button("🔄 Sincronizar ahora", use_container_width=True):
-        sync_script = Path(__file__).parent / "sync_csv.py"
-        with st.spinner("Descargando desde PythonAnywhere..."):
-            ret = os.system(f'"{sync_script}" 2>&1')
-        st.cache_data.clear()
-        st.rerun()
-
-    # Log viewer (colapsado)
-    if SYNC_LOG.exists():
-        with st.sidebar.expander("Log de sync"):
-            lines = SYNC_LOG.read_text(encoding="utf-8", errors="replace").strip().splitlines()
-            st.code("\n".join(lines[-15:]), language=None)
+st.markdown("---")
 
 # ── Filtrar datos ─────────────────────────────────────────────────────────────
 
@@ -181,8 +182,8 @@ df_prev = df_full[
 # ── Header ────────────────────────────────────────────────────────────────────
 
 st.title("Bot Deltix — Dashboard de Métricas")
-period_str = f"{start} → {end}" if not df.empty else "sin datos"
-st.caption(f"Período: **{period_str}** &nbsp;•&nbsp; Fuente: `web_interactions.csv`")
+period_str = f"{start.strftime('%d/%m/%Y')} → {end.strftime('%d/%m/%Y')}" if not df.empty else "sin datos"
+st.caption(f"Período: **{period_str}**")
 
 # ── Helpers trend ─────────────────────────────────────────────────────────────
 
