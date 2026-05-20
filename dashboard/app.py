@@ -122,36 +122,28 @@ else:
 min_date = df_full["date"].min()
 max_date = df_full["date"].max()
 
-_col_logo, _col_filter, _col_sync = st.columns([1, 3, 2])
+_col_logo, _col_controls, _col_empty = st.columns([1, 2, 5])
 
 with _col_logo:
     if (ROOT / "bot_icon.png").exists():
         st.image(str(ROOT / "bot_icon.png"), width=60)
-    st.markdown("**Deltix Dashboard**")
 
-with _col_filter:
+with _col_controls:
     date_range = st.date_input(
-        "Período de análisis",
+        "Período",
         value=(min_date, max_date),
         min_value=min_date,
         max_value=max_date,
+        label_visibility="collapsed",
     )
-
-with _col_sync:
     if IS_CLOUD:
-        st.markdown("☁️ **Fuente:** PythonAnywhere API")
-        if st.button("🔄 Actualizar datos", use_container_width=True):
+        if st.button("🔄 Actualizar", use_container_width=True):
             st.cache_data.clear()
             st.rerun()
     else:
-        if TIMESTAMP_FILE.exists():
-            last_sync = TIMESTAMP_FILE.read_text(encoding="utf-8").strip()
-            st.markdown(f"🔄 **Último sync:** `{last_sync}`")
-        else:
-            st.markdown("🔄 Sin sync local")
-        if st.button("🔄 Sincronizar ahora", use_container_width=True):
+        if st.button("🔄 Sincronizar", use_container_width=True):
             sync_script = Path(__file__).parent / "sync_csv.py"
-            with st.spinner("Descargando desde PythonAnywhere..."):
+            with st.spinner("Descargando..."):
                 ret = os.system(f'"{sync_script}" 2>&1')
             st.cache_data.clear()
             st.rerun()
