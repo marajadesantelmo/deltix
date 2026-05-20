@@ -120,7 +120,7 @@ else:
 
 if (ROOT / "bot_icon.png").exists():
     st.sidebar.image(str(ROOT / "bot_icon.png"), width=80)
-st.sidebar.title("🦫 Deltix Dashboard")
+st.sidebar.title("Deltix Dashboard")
 st.sidebar.markdown("---")
 
 min_date = df_full["date"].min()
@@ -157,7 +157,7 @@ else:
 
     # Log viewer (colapsado)
     if SYNC_LOG.exists():
-        with st.sidebar.expander("📋 Log de sync"):
+        with st.sidebar.expander("Log de sync"):
             lines = SYNC_LOG.read_text(encoding="utf-8", errors="replace").strip().splitlines()
             st.code("\n".join(lines[-15:]), language=None)
 
@@ -180,7 +180,7 @@ df_prev = df_full[
 
 # ── Header ────────────────────────────────────────────────────────────────────
 
-st.title("🦫 Bot Deltix — Dashboard de Métricas")
+st.title("Bot Deltix — Dashboard de Métricas")
 period_str = f"{start} → {end}" if not df.empty else "sin datos"
 st.caption(f"Período: **{period_str}** &nbsp;•&nbsp; Fuente: `web_interactions.csv`")
 
@@ -256,7 +256,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 col_l, col_r = st.columns([3, 2])
 
 with col_l:
-    st.markdown("### 📅 Interacciones y sesiones por día")
+    st.markdown("### Interacciones y sesiones por día")
     daily_msgs = df.groupby("date").size().reset_index(name="interacciones")
     daily_sess = df.groupby("date")["session_id"].nunique().reset_index(name="sesiones")
     daily = daily_msgs.merge(daily_sess, on="date")
@@ -312,7 +312,7 @@ with col_l:
     st.plotly_chart(fig, use_container_width=True)
 
 with col_r:
-    st.markdown("### 🔢 Funcionalidades usadas")
+    st.markdown("### Funcionalidades usadas")
     type_map = {
         "colectivas":   "🚢 Colectivas",
         "quick":        "⚡ Clima/Mareas",
@@ -350,7 +350,7 @@ with col_r:
 
 # ── Fila 2: actividad horaria ─────────────────────────────────────────────────
 
-st.markdown("### ⏰ Actividad por hora del día")
+st.markdown("### Actividad por hora del día")
 hourly = df.groupby("hour").size().reindex(range(24), fill_value=0).reset_index()
 hourly.columns = ["hour", "count"]
 peak_h = int(hourly.loc[hourly["count"].idxmax(), "hour"])
@@ -392,7 +392,7 @@ st.plotly_chart(fig3, use_container_width=True)
 col3, col4 = st.columns([2, 3])
 
 with col3:
-    st.markdown("### 📈 Engagement por sesión")
+    st.markdown("### Engagement por sesión")
     ranges_labels = ["1-2 msgs", "3-5 msgs", "6-10 msgs", "10+ msgs"]
     ranges_vals   = [0, 0, 0, 0]
     for l in sess_lens:
@@ -422,7 +422,7 @@ with col3:
     st.plotly_chart(fig4, use_container_width=True)
 
 with col4:
-    st.markdown("### 💬 Top 10 mensajes de usuario")
+    st.markdown("### Top 10 mensajes de usuario")
     top_msgs = (
         df["user_message"].str.strip().str.lower()
         .value_counts().head(10)
@@ -464,20 +464,20 @@ def detail_table(response_type: str, col_name: str):
 
 col_exp1, col_exp2, col_exp3 = st.columns(3)
 with col_exp1:
-    with st.expander("🚢 Detalle Colectivas"):
+    with st.expander("Detalle Colectivas"):
         detail_table("colectivas", "Consulta")
 with col_exp2:
-    with st.expander("🛒 Detalle Almaceneras"):
+    with st.expander("Detalle Almaceneras"):
         detail_table("almaceneras", "Almacenera / Consulta")
 with col_exp3:
-    with st.expander("📅 Detalle Agenda del Río"):
+    with st.expander("Detalle Agenda del Río"):
         detail_table("agenda", "Emprendimiento / Consulta")
 
 # ── Footer ────────────────────────────────────────────────────────────────────
 
 st.markdown("---")
 st.caption(
-    f"🦫 Deltix Dashboard &nbsp;•&nbsp; "
+    f"Deltix Dashboard &nbsp;•&nbsp; "
     f"datos: `{CSV_PATH.name}` &nbsp;•&nbsp; "
     f"generado: {datetime.now().strftime('%d/%m/%Y %H:%M')}"
 )
