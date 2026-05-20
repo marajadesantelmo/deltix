@@ -101,6 +101,8 @@ def load_data(pa_token: str = "", pa_user: str = "facundol") -> pd.DataFrame:
         df = pd.read_csv(StringIO(resp.text), parse_dates=["timestamp"])
     else:          # local: lee desde disco
         df = pd.read_csv(str(CSV_PATH), parse_dates=["timestamp"])
+    # Los timestamps están en UTC; Argentina es UTC-3
+    df["timestamp"] = df["timestamp"] - pd.Timedelta(hours=3)
     df["date"]    = df["timestamp"].dt.date
     df["hour"]    = df["timestamp"].dt.hour
     df["weekday"] = df["timestamp"].dt.day_name()
