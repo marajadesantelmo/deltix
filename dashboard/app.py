@@ -47,24 +47,32 @@ TEXT   = "#c8e6c0"
 
 st.markdown("""
 <style>
-/* KPI cards */
+/* ── KPI cards ──────────────────────────────────────────────────────────── */
 .kpi-card {
-    background: linear-gradient(135deg, #2a4a2a 0%, #2f5230 100%);
-    border: 1px solid #3e6e3e;
+    background: linear-gradient(160deg, #1b381b 0%, #224022 100%);
+    border: 1px solid rgba(90,158,71,0.2);
+    border-top: 3px solid var(--kpi-accent, #5a9e47);
     border-radius: 12px;
-    padding: 1.1rem 1rem 0.9rem;
+    padding: 0.85rem 0.75rem 0.8rem;
     text-align: center;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.35);
 }
-.kpi-label  { font-size: 0.7rem; color: #7ab87a; font-weight: 700;
-              text-transform: uppercase; letter-spacing: .08em; }
-.kpi-value  { font-size: 2.1rem; font-weight: 800; color: #e8f5e2;
-              line-height: 1.1; margin: 2px 0; }
-.kpi-sub    { font-size: 0.72rem; color: #7ab87a; }
-.kpi-trend-up   { color: #5fbf5f; font-size: 0.78rem; font-weight: 600; }
-.kpi-trend-down { color: #bf5f5f; font-size: 0.78rem; font-weight: 600; }
-.kpi-trend-neu  { color: #aaa;    font-size: 0.78rem; }
+.kpi-icon  { font-size: 1.25rem; line-height: 1.4; }
+.kpi-label { font-size: 0.6rem; color: #7ab87a; font-weight: 700;
+             text-transform: uppercase; letter-spacing: .11em; margin-top: 1px; }
+.kpi-value { font-size: 1.95rem; font-weight: 800; color: #f0f8ed;
+             line-height: 1.1; margin: 4px 0 2px; }
+.kpi-sub   { font-size: 0.67rem; color: #5f9a5f; min-height: 1em; }
+.kpi-sep   { height: 1px; background: rgba(90,158,71,0.15); margin: 6px 0 5px; }
+.kpi-trend-up   { color: #5cc75c; font-size: 0.68rem; font-weight: 600; }
+.kpi-trend-down { color: #c75c5c; font-size: 0.68rem; font-weight: 600; }
+.kpi-trend-neu  { color: #777;    font-size: 0.68rem; }
 
-/* Section headers */
+/* ── Brand header ────────────────────────────────────────────────────────── */
+.brand-title    { font-size: 1.2rem; font-weight: 800; color: #e8f5e2; line-height: 1.1; }
+.brand-subtitle { font-size: 0.7rem; color: #7ab87a; font-weight: 500; letter-spacing: .05em; }
+
+/* ── Section headers ─────────────────────────────────────────────────────── */
 h2 { border-bottom: 2px solid #2e4e2e; padding-bottom: .3rem; }
 
 /* Ocultar botón de colapso del sidebar */
@@ -124,11 +132,19 @@ else:
 min_date = df_full["date"].min()
 max_date = df_full["date"].max()
 
-_col_logo, _col_empty, _col_date, _col_btn = st.columns([1, 5, 2, 1])
+_col_brand, _col_empty, _col_date, _col_btn = st.columns([3, 3, 2, 1])
 
-with _col_logo:
-    if (ROOT / "bot_icon.png").exists():
-        st.image(str(ROOT / "bot_icon.png"), width=60)
+with _col_brand:
+    _sub_img, _sub_txt = st.columns([1, 3])
+    with _sub_img:
+        if (ROOT / "bot_icon.png").exists():
+            st.image(str(ROOT / "bot_icon.png"), width=54)
+    with _sub_txt:
+        st.markdown("""
+        <div style="padding-top:10px">
+          <div class="brand-title">Bot Deltix</div>
+          <div class="brand-subtitle">Dashboard de Métricas</div>
+        </div>""", unsafe_allow_html=True)
 
 with _col_date:
     date_range = st.date_input(
@@ -158,7 +174,7 @@ with _col_btn:
                 st.code("\n".join(lines[-15:]), language=None)
     st.markdown("</div>", unsafe_allow_html=True)
 
-st.markdown("---")
+st.markdown('<hr style="border:none;border-top:1px solid #2e5030;margin:0.4rem 0 0.8rem">', unsafe_allow_html=True)
 
 # ── Filtrar datos ─────────────────────────────────────────────────────────────
 
@@ -177,11 +193,13 @@ df_prev = df_full[
     (df_full["date"] >= prev_start) & (df_full["date"] <= prev_end)
 ].copy()
 
-# ── Header ────────────────────────────────────────────────────────────────────
+# ── Período activo ────────────────────────────────────────────────────────────
 
-st.title("Bot Deltix — Dashboard de Métricas")
 period_str = f"{start.strftime('%d/%m/%Y')} → {end.strftime('%d/%m/%Y')}" if not df.empty else "sin datos"
-st.caption(f"Período: **{period_str}**")
+st.markdown(
+    f'<p style="font-size:0.75rem;color:#5f9a5f;margin:-4px 0 12px">📅 {period_str}</p>',
+    unsafe_allow_html=True,
+)
 
 # ── Helpers trend ─────────────────────────────────────────────────────────────
 
@@ -194,13 +212,16 @@ def trend_html(current, previous, fmt=".0f", suffix=""):
     cls   = "kpi-trend-up" if delta >= 0 else "kpi-trend-down"
     return f'<span class="{cls}">{arrow} {abs(pct):.1f}% vs período anterior</span>'
 
-def kpi(col, label, value_str, sub="", trend_html_str=""):
+def kpi(col, label, value_str, sub="", trend_html_str="", icon="", accent="#5a9e47"):
+    icon_html = f'<div class="kpi-icon">{icon}</div>' if icon else ""
     col.markdown(f"""
-    <div class="kpi-card">
+    <div class="kpi-card" style="--kpi-accent:{accent}">
+        {icon_html}
         <div class="kpi-label">{label}</div>
         <div class="kpi-value">{value_str}</div>
         <div class="kpi-sub">{sub}</div>
-        <div style="margin-top:4px">{trend_html_str}</div>
+        <div class="kpi-sep"></div>
+        <div style="min-height:1rem">{trend_html_str}</div>
     </div>""", unsafe_allow_html=True)
 
 # ── Métricas ──────────────────────────────────────────────────────────────────
@@ -232,26 +253,32 @@ c1, c2, c3, c4, c5, c6 = st.columns(6)
 kpi(c1, "Interacciones",
     f"{total:,}".replace(",", "."),
     f"{n_sess} sesiones",
-    trend_html(total, prev_total))
+    trend_html(total, prev_total),
+    icon="💬", accent="#5a9e47")
 kpi(c2, "Sesiones únicas",
     str(n_sess),
     f"{bounces} rebotes (1 msg)",
-    trend_html(n_sess, prev_sess))
-kpi(c3, "Prom. msgs / sesión",
+    trend_html(n_sess, prev_sess),
+    icon="👥", accent="#3b9dc4")
+kpi(c3, "Msgs / sesión",
     f"{avg_len:.1f}",
-    f"{power_users} power users (10+)")
+    f"{power_users} power users (10+)",
+    icon="📈", accent="#e0a020")
 kpi(c4, "Ratio LLM",
     f"{pct_llm:.1f}%",
     "umbral saludable < 15%",
-    trend_html(pct_llm, prev_pct_llm))
+    trend_html(pct_llm, prev_pct_llm),
+    icon="🤖", accent="#9b5fc0")
 kpi(c5, "Tasa de error",
     f"{error_rate:.2f}%",
-    f"{llm_blocked} blocked + {llm_error} errores")
+    f"{llm_blocked} blocked + {llm_error} errores",
+    icon="⚠️", accent="#c44040")
 unique_msgs = df["user_message"].str.strip().str.lower().nunique()
 pct_unique  = unique_msgs / total * 100 if total else 0
 kpi(c6, "Msgs únicos",
     f"{pct_unique:.0f}%",
-    f"{unique_msgs} de {total}")
+    f"{unique_msgs} de {total}",
+    icon="✨", accent="#3bbdaa")
 
 st.markdown("<br>", unsafe_allow_html=True)
 
