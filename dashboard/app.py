@@ -88,28 +88,33 @@ SYNC_LOG       = Path(__file__).parent / "sync.log"
 IS_CLOUD = not CSV_PATH.exists()
 
 @st.cache_data(ttl=3600)
-def load_data() -> pd.DataFrame:
-    if CSV_PATH.exists():           # local: lee desde disco
-        df = pd.read_csv(str(CSV_PATH), parse_dates=["timestamp"])
-    else:                           # Streamlit Cloud: descarga desde PythonAnywhere
-        token = st.secrets.get("PA_API_TOKEN", "")
-        user  = st.secrets.get("PA_USERNAME", "facundol")
-        if not token:
-            st.error("⚠️ Configurá `PA_API_TOKEN` en Streamlit Secrets (Settings → Secrets).")
-            st.stop()
+def load_data(pa_token: str = "", pa_user: str = "facundol") -> pd.DataFrame:
+    """Carga datos. Puro: no llama a st.* para compatibilidad con st.cache_data."""
+    if pa_token:   # cloud: descarga desde PythonAnywhere API
         url = (
-            f"https://www.pythonanywhere.com/api/v0/user/{user}"
-            f"/files/path/home/{user}/deltix/web_interactions.csv"
+            f"https://www.pythonanywhere.com/api/v0/user/{pa_user}"
+            f"/files/path/home/{pa_user}/deltix/web_interactions.csv"
         )
-        resp = requests.get(url, headers={"Authorization": f"Token {token}"}, timeout=30)
+        resp = requests.get(url, headers={"Authorization": f"Token {pa_token}"}, timeout=30)
         resp.raise_for_status()
         df = pd.read_csv(StringIO(resp.text), parse_dates=["timestamp"])
+    else:          # local: lee desde disco
+        df = pd.read_csv(str(CSV_PATH), parse_dates=["timestamp"])
     df["date"]    = df["timestamp"].dt.date
     df["hour"]    = df["timestamp"].dt.hour
     df["weekday"] = df["timestamp"].dt.day_name()
     return df
 
-df_full = load_data()
+# Validar secretos y cargar datos (st.error/st.stop van FUERA de @st.cache_data)
+if IS_CLOUD:
+    _pa_token = st.secrets.get("PA_API_TOKEN", "")
+    _pa_user  = st.secrets.get("PA_USERNAME", "facundol")
+    if not _pa_token:
+        st.error("⚠️ Configurá `PA_API_TOKEN` en Streamlit Secrets (Settings → Secrets).")
+        st.stop()
+    df_full = load_data(_pa_token, _pa_user)
+else:
+    df_full = load_data()
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 
