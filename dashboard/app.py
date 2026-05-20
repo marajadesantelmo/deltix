@@ -132,7 +132,7 @@ else:
 min_date = df_full["date"].min()
 max_date = df_full["date"].max()
 
-_col_brand, _col_empty, _col_date, _col_btn = st.columns([3, 3, 2, 1])
+_col_brand, _col_empty, _col_controls = st.columns([3, 5, 2])
 
 with _col_brand:
     _sub_img, _sub_txt = st.columns([1, 3])
@@ -146,33 +146,34 @@ with _col_brand:
           <div class="brand-subtitle">Dashboard de Métricas</div>
         </div>""", unsafe_allow_html=True)
 
-with _col_date:
-    date_range = st.date_input(
-        "Período",
-        value=(min_date, max_date),
-        min_value=min_date,
-        max_value=max_date,
-        label_visibility="collapsed",
-    )
-
-with _col_btn:
-    st.markdown("<div style='margin-top:4px'>", unsafe_allow_html=True)
-    if IS_CLOUD:
-        if st.button("🔄", use_container_width=True, help="Actualizar datos"):
-            st.cache_data.clear()
-            st.rerun()
-    else:
-        if st.button("🔄", use_container_width=True, help="Sincronizar desde PythonAnywhere"):
-            sync_script = Path(__file__).parent / "sync_csv.py"
-            with st.spinner("Descargando..."):
-                ret = os.system(f'"{sync_script}" 2>&1')
-            st.cache_data.clear()
-            st.rerun()
-        if SYNC_LOG.exists():
-            with st.expander("Log"):
-                lines = SYNC_LOG.read_text(encoding="utf-8", errors="replace").strip().splitlines()
-                st.code("\n".join(lines[-15:]), language=None)
-    st.markdown("</div>", unsafe_allow_html=True)
+with _col_controls:
+    _sub_date, _sub_btn = st.columns([4, 1])
+    with _sub_date:
+        date_range = st.date_input(
+            "Período",
+            value=(min_date, max_date),
+            min_value=min_date,
+            max_value=max_date,
+            label_visibility="collapsed",
+        )
+    with _sub_btn:
+        st.markdown("<div style='margin-top:4px'>", unsafe_allow_html=True)
+        if IS_CLOUD:
+            if st.button("🔄", use_container_width=True, help="Actualizar datos"):
+                st.cache_data.clear()
+                st.rerun()
+        else:
+            if st.button("🔄", use_container_width=True, help="Sincronizar desde PythonAnywhere"):
+                sync_script = Path(__file__).parent / "sync_csv.py"
+                with st.spinner("Descargando..."):
+                    ret = os.system(f'"{sync_script}" 2>&1')
+                st.cache_data.clear()
+                st.rerun()
+            if SYNC_LOG.exists():
+                with st.expander("Log"):
+                    lines = SYNC_LOG.read_text(encoding="utf-8", errors="replace").strip().splitlines()
+                    st.code("\n".join(lines[-15:]), language=None)
+        st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown('<hr style="border:none;border-top:1px solid #2e5030;margin:0.4rem 0 0.8rem">', unsafe_allow_html=True)
 
@@ -259,26 +260,26 @@ kpi(c2, "Sesiones únicas",
     str(n_sess),
     f"{bounces} rebotes (1 msg)",
     trend_html(n_sess, prev_sess),
-    icon="👥", accent="#3b9dc4")
+    icon="👥", accent="#5a9e47")
 kpi(c3, "Msgs / sesión",
     f"{avg_len:.1f}",
     f"{power_users} power users (10+)",
-    icon="📈", accent="#e0a020")
+    icon="📈", accent="#5a9e47")
 kpi(c4, "Ratio LLM",
     f"{pct_llm:.1f}%",
     "umbral saludable < 15%",
     trend_html(pct_llm, prev_pct_llm),
-    icon="🤖", accent="#9b5fc0")
+    icon="🤖", accent="#5a9e47")
 kpi(c5, "Tasa de error",
     f"{error_rate:.2f}%",
     f"{llm_blocked} blocked + {llm_error} errores",
-    icon="⚠️", accent="#c44040")
+    icon="⚠️", accent="#5a9e47")
 unique_msgs = df["user_message"].str.strip().str.lower().nunique()
 pct_unique  = unique_msgs / total * 100 if total else 0
 kpi(c6, "Msgs únicos",
     f"{pct_unique:.0f}%",
     f"{unique_msgs} de {total}",
-    icon="✨", accent="#3bbdaa")
+    icon="✨", accent="#5a9e47")
 
 st.markdown("<br>", unsafe_allow_html=True)
 
