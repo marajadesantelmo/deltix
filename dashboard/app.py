@@ -384,7 +384,7 @@ with col_h:
         paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
         margin=dict(l=0, r=0, t=10, b=0), height=280,
         xaxis=dict(showgrid=False, color=TEXT, tickmode="linear",
-                   tick0=0, dtick=1, title="Hora (0-23)"),
+                   tick0=0, dtick=1),
         yaxis=dict(showgrid=True, gridcolor=GRID, color=TEXT, zeroline=False),
         hoverlabel=dict(bgcolor="#1a2e1a", font_color="#e8f5e2"),
     )
