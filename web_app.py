@@ -653,6 +653,40 @@ def detect_quick_response(user_input):
     """
     text = _norm(user_input)
 
+    # ── Clima: chip click vs pregunta natural ─────────────────────────────────
+    # El chip "🌤️ Clima" llega como "clima" (1 palabra). Si el mensaje es corto
+    # y no contiene marcadores temporales ni interrogativos, respondemos
+    # directo con el resumen del clima actual sin pasar por el LLM.
+    # Mensajes como "¿Va a hacer calor el sábado?" sí van al LLM.
+    if any(k in text for k in KEYWORDS_NORM["weather"]):
+        _temporal = ['manana', 'sabado', 'domingo', 'lunes', 'martes', 'miercoles',
+                     'jueves', 'viernes', 'semana', 'proximo', 'proxima',
+                     'estara', 'estaran', 'va a', 'habra', 'noche', 'tarde']
+        _question = ['como', 'cuanto', 'cuanto', 'que tal', 'por que', 'cuando']
+        _is_chip  = (len(text.strip().split()) <= 3
+                     and not any(t in text for t in _temporal)
+                     and not any(q in text for q in _question))
+        if _is_chip:
+            w = load_weather_data()
+            if w:
+                _cur   = w.get('current_weather', {})
+                _temp  = _cur.get('main', {}).get('temp', 'N/A')
+                _feels = _cur.get('main', {}).get('feels_like', 'N/A')
+                _hum   = _cur.get('main', {}).get('humidity', 'N/A')
+                _desc  = _cur.get('weather', [{}])[0].get('description', 'N/A')
+                _wind  = _cur.get('wind', {}).get('speed', 'N/A')
+                _reply = (
+                    f"🌡 **Clima actual en Tigre**\n\n"
+                    f"🌡 **{_temp}°C** — sensación {_feels}°C\n"
+                    f"☁️ {str(_desc).capitalize()}\n"
+                    f"💧 Humedad: {_hum}%\n"
+                    f"💨 Viento: {_wind} m/s"
+                )
+            else:
+                _reply = "No tengo datos de clima disponibles en este momento. Intentá de nuevo en unos minutos."
+            return {"reply": _reply, "images": [], "quick_replies": ["🌊 Mareas", "🌬️ WindGurú"]}
+        # else: pregunta natural ("¿Va a hacer calor mañana?") → cae al LLM con contexto
+
     if any(k in text for k in KEYWORDS_NORM["hidrografia"]):
         return {"reply": format_hidrografia(), "images": [], "quick_replies": []}
 
