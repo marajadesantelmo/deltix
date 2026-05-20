@@ -348,48 +348,83 @@ with col_r:
     )
     st.plotly_chart(fig2, use_container_width=True)
 
-# ── Fila 2: actividad horaria ─────────────────────────────────────────────────
+# ── Fila 2: actividad horaria + top mensajes ─────────────────────────────────
 
-st.markdown("### Actividad por hora del día")
-hourly = df.groupby("hour").size().reindex(range(24), fill_value=0).reset_index()
-hourly.columns = ["hour", "count"]
-peak_h = int(hourly.loc[hourly["count"].idxmax(), "hour"])
+col_h, col_top = st.columns([3, 2])
 
-fig3 = go.Figure()
-fig3.add_trace(go.Scatter(
-    x=hourly["hour"], y=hourly["count"],
-    mode="lines+markers",
-    fill="tozeroy",
-    fillcolor="rgba(90,158,71,0.18)",
-    line=dict(color="#7ed957", width=2.5, shape="spline"),
-    marker=dict(
-        color=["#e07a30" if h == peak_h else "#5a9e47" for h in hourly["hour"]],
-        size=[10 if h == peak_h else 5 for h in hourly["hour"]],
-    ),
-    hovertemplate="<b>%{x}h</b>: %{y} msgs<extra></extra>",
-))
-fig3.add_annotation(
-    x=peak_h, y=int(hourly.loc[hourly["hour"]==peak_h, "count"].values[0]),
-    text=f"Pico: {peak_h}h",
-    showarrow=True, arrowhead=2,
-    font=dict(color="#e07a30", size=12),
-    arrowcolor="#e07a30",
-    bgcolor="#1a2e1a", bordercolor="#e07a30",
-    ay=-30,
-)
-fig3.update_layout(
-    paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
-    margin=dict(l=0, r=0, t=10, b=0), height=200,
-    xaxis=dict(showgrid=False, color=TEXT, tickmode="linear",
-               tick0=0, dtick=1, title="Hora (0-23)"),
-    yaxis=dict(showgrid=True, gridcolor=GRID, color=TEXT, zeroline=False),
-    hoverlabel=dict(bgcolor="#1a2e1a", font_color="#e8f5e2"),
-)
-st.plotly_chart(fig3, use_container_width=True)
+with col_h:
+    st.markdown("### Actividad por hora del día")
+    hourly = df.groupby("hour").size().reindex(range(24), fill_value=0).reset_index()
+    hourly.columns = ["hour", "count"]
+    peak_h = int(hourly.loc[hourly["count"].idxmax(), "hour"])
 
-# ── Fila 3: engagement + top mensajes ────────────────────────────────────────
+    fig3 = go.Figure()
+    fig3.add_trace(go.Scatter(
+        x=hourly["hour"], y=hourly["count"],
+        mode="lines+markers",
+        fill="tozeroy",
+        fillcolor="rgba(90,158,71,0.18)",
+        line=dict(color="#7ed957", width=2.5, shape="spline"),
+        marker=dict(
+            color=["#e07a30" if h == peak_h else "#5a9e47" for h in hourly["hour"]],
+            size=[10 if h == peak_h else 5 for h in hourly["hour"]],
+        ),
+        hovertemplate="<b>%{x}h</b>: %{y} msgs<extra></extra>",
+    ))
+    fig3.add_annotation(
+        x=peak_h, y=int(hourly.loc[hourly["hour"]==peak_h, "count"].values[0]),
+        text=f"Pico: {peak_h}h",
+        showarrow=True, arrowhead=2,
+        font=dict(color="#e07a30", size=12),
+        arrowcolor="#e07a30",
+        bgcolor="#1a2e1a", bordercolor="#e07a30",
+        ay=-30,
+    )
+    fig3.update_layout(
+        paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
+        margin=dict(l=0, r=0, t=10, b=0), height=280,
+        xaxis=dict(showgrid=False, color=TEXT, tickmode="linear",
+                   tick0=0, dtick=1, title="Hora (0-23)"),
+        yaxis=dict(showgrid=True, gridcolor=GRID, color=TEXT, zeroline=False),
+        hoverlabel=dict(bgcolor="#1a2e1a", font_color="#e8f5e2"),
+    )
+    st.plotly_chart(fig3, use_container_width=True)
 
-col3, col4 = st.columns([2, 3])
+with col_top:
+    st.markdown("### Top 10 mensajes de usuario")
+    top_msgs = (
+        df["user_message"].str.strip().str.lower()
+        .value_counts().head(10)
+        .reset_index()
+    )
+    top_msgs.columns = ["Mensaje", "Veces"]
+
+    fig5 = go.Figure(go.Bar(
+        x=top_msgs["Veces"][::-1],
+        y=top_msgs["Mensaje"][::-1],
+        orientation="h",
+        marker=dict(
+            color=top_msgs["Veces"][::-1],
+            colorscale=[[0, "#2a5c1e"], [0.5, "#4a9e30"], [1, "#7ed957"]],
+            line=dict(width=0),
+        ),
+        text=top_msgs["Veces"][::-1],
+        textposition="outside",
+        textfont=dict(color=TEXT, size=11),
+        hovertemplate="%{y}: %{x} veces<extra></extra>",
+    ))
+    fig5.update_layout(
+        paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
+        margin=dict(l=0, r=40, t=10, b=0), height=280,
+        xaxis=dict(showgrid=True, gridcolor=GRID, color=TEXT),
+        yaxis=dict(showgrid=False, color=TEXT, tickfont=dict(size=11)),
+        hoverlabel=dict(bgcolor="#2a4a2a", font_color="#e8f5e2"),
+    )
+    st.plotly_chart(fig5, use_container_width=True)
+
+# ── Fila 3: engagement ────────────────────────────────────────────────────────
+
+col3, _ = st.columns([2, 3])
 
 with col3:
     st.markdown("### Engagement por sesión")
@@ -421,35 +456,6 @@ with col3:
     )
     st.plotly_chart(fig4, use_container_width=True)
 
-with col4:
-    st.markdown("### Top 10 mensajes de usuario")
-    top_msgs = (
-        df["user_message"].str.strip().str.lower()
-        .value_counts().head(10)
-        .reset_index()
-    )
-    top_msgs.columns = ["Mensaje", "Veces"]
-    top_msgs.index   = top_msgs.index + 1
-
-    fig5 = go.Figure(go.Bar(
-        x=top_msgs["Veces"][::-1],
-        y=top_msgs["Mensaje"][::-1],
-        orientation="h",
-        marker=dict(color="#3b9dc4", line=dict(width=0)),
-        text=top_msgs["Veces"][::-1],
-        textposition="outside",
-        textfont=dict(color=TEXT, size=11),
-        hovertemplate="%{y}: %{x} veces<extra></extra>",
-    ))
-    fig5.update_layout(
-        paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
-        margin=dict(l=0, r=40, t=10, b=0), height=260,
-        xaxis=dict(showgrid=True, gridcolor=GRID, color=TEXT),
-        yaxis=dict(showgrid=False, color=TEXT, tickfont=dict(size=11)),
-        hoverlabel=dict(bgcolor="#2a4a2a", font_color="#e8f5e2"),
-    )
-    st.plotly_chart(fig5, use_container_width=True)
-
 # ── Expanders de detalle ──────────────────────────────────────────────────────
 
 def detail_table(response_type: str, col_name: str):
@@ -472,6 +478,40 @@ with col_exp2:
 with col_exp3:
     with st.expander("Detalle Agenda del Río"):
         detail_table("agenda", "Emprendimiento / Consulta")
+
+# ── Conversaciones ────────────────────────────────────────────────────────────
+
+st.markdown("---")
+st.markdown("## Conversaciones")
+
+col_llm, col_err = st.columns(2)
+
+with col_llm:
+    st.markdown("### LLM")
+    df_llm = (
+        df[df["response_type"] == "llm"]
+        [["timestamp", "user_message", "bot_reply"]]
+        .sort_values("timestamp", ascending=False)
+        .copy()
+    )
+    df_llm["timestamp"] = df_llm["timestamp"].dt.strftime("%d/%m %H:%M")
+    df_llm.columns = ["Fecha", "Usuario", "Bot"]
+    st.dataframe(df_llm, use_container_width=True, height=420, hide_index=True)
+
+with col_err:
+    st.markdown("### Errores")
+    df_err = (
+        df[df["response_type"].isin(["llm_blocked", "llm_error"])]
+        [["timestamp", "user_message", "bot_reply", "response_type"]]
+        .sort_values("timestamp", ascending=False)
+        .copy()
+    )
+    if df_err.empty:
+        st.success("Sin errores en el período seleccionado.")
+    else:
+        df_err["timestamp"] = df_err["timestamp"].dt.strftime("%d/%m %H:%M")
+        df_err.columns = ["Fecha", "Usuario", "Bot", "Tipo"]
+        st.dataframe(df_err, use_container_width=True, height=420, hide_index=True)
 
 # ── Footer ────────────────────────────────────────────────────────────────────
 
