@@ -431,7 +431,7 @@ def handle_memes_flow(user_input):
             return any(re.search(r'\b' + re.escape(k) + r'\b', t) for k in keywords)
 
         if step == 'more':
-            if _mw(['si', 'sí', 'dale', 'otro', 'mas', 'más', 'meme'], text):
+            if _mw(['si', 'sí', 'dale', 'otro', 'mas', 'más', 'meme', 'memes'], text):
                 session['meme_flow'] = {'step': 'more2'}
                 session.modified = True
                 n = random.randint(1, 56)
@@ -446,7 +446,7 @@ def handle_memes_flow(user_input):
                         "images": [], "quick_replies": []}
 
         if step == 'more2':
-            if _mw(['si', 'sí', 'dale', 'otro', 'mas', 'más', 'meme'], text):
+            if _mw(['si', 'sí', 'dale', 'otro', 'mas', 'más', 'meme', 'memes'], text):
                 session['meme_flow'] = {'step': 'more'}
                 session.modified = True
                 n = random.randint(1, 56)
