@@ -8,3 +8,16 @@ user_experience_backup.csv
 subscribers_mareas_backup.csv
 subscribers_windguru_backup.csv
 *.csv
+
+# Archivos generados por el servidor (no trackear)
+marea.png
+windguru.png
+table_data.txt
+rag/current_weather.json
+rag/forecast_data.json
+rag/weather_data.json
+
+# Dashboard local files (no subir al repo)
+dashboard/.env
+dashboard/sync.log
+dashboard/.last_sync
