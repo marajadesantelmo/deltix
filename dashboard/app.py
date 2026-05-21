@@ -30,7 +30,11 @@ st.set_page_config(
 # Colores distintos para cada funcionalidad
 FEATURE_COLORS = {
     "🚢 Colectivas":    "#5a9e47",
-    "⚡ Clima/Mareas":  "#3b9dc4",
+    "🌤️ Clima":         "#3b9dc4",
+    "🌊 Mareas":        "#1a6fa0",
+    "📡 Hidrografía":   "#2eb8b8",
+    "🌬️ WindGurú":      "#6baed6",
+    "⚡ Clima/Mareas":  "#3b9dc4",   # histórico (tipo "quick" sin clasificar)
     "📅 Agenda":        "#e0a020",
     "😂 Memes":         "#c45a8a",
     "🤖 LLM":           "#9b5fc0",
@@ -244,6 +248,13 @@ sess_lens    = df.groupby("session_id").size()
 avg_len      = sess_lens.mean() if len(sess_lens) else 0
 power_users  = int((sess_lens >= 10).sum())
 bounces      = int((sess_lens == 1).sum())
+bounce_pct   = bounces / n_sess * 100 if n_sess else 0
+
+# Usuarios activos únicos por día (session_id distintos por día)
+dau          = df.groupby("date")["session_id"].nunique()  # Daily Active Users
+avg_dau      = dau.mean() if len(dau) else 0
+max_dau      = int(dau.max()) if len(dau) else 0
+prev_dau     = df_prev.groupby("date")["session_id"].nunique().mean() if len(df_prev) else 0
 
 prev_pct_llm = (df_prev["response_type"].isin(["llm","llm_blocked","llm_error"]).sum()
                 / len(df_prev) * 100) if len(df_prev) else 0
@@ -258,28 +269,27 @@ kpi(c1, "Interacciones",
     icon="💬", accent="#5a9e47")
 kpi(c2, "Sesiones únicas",
     str(n_sess),
-    f"{bounces} rebotes (1 msg)",
+    f"conversaciones distintas",
     trend_html(n_sess, prev_sess),
-    icon="👥", accent="#5a9e47")
-kpi(c3, "Msgs / sesión",
+    icon="🗂️", accent="#5a9e47")
+kpi(c3, "Usuarios/día (DAU)",
+    f"{avg_dau:.1f}",
+    f"pico: {max_dau} usuarios",
+    trend_html(avg_dau, prev_dau),
+    icon="👥", accent="#3b9dc4")
+kpi(c4, "Msgs / sesión",
     f"{avg_len:.1f}",
     f"{power_users} power users (10+)",
     icon="📈", accent="#5a9e47")
-kpi(c4, "Ratio LLM",
+kpi(c5, "Ratio LLM",
     f"{pct_llm:.1f}%",
     "umbral saludable < 15%",
     trend_html(pct_llm, prev_pct_llm),
-    icon="🤖", accent="#5a9e47")
-kpi(c5, "Tasa de error",
+    icon="🤖", accent="#9b5fc0")
+kpi(c6, "Tasa de error",
     f"{error_rate:.2f}%",
-    f"{llm_blocked} blocked + {llm_error} errores",
-    icon="⚠️", accent="#5a9e47")
-unique_msgs = df["user_message"].str.strip().str.lower().nunique()
-pct_unique  = unique_msgs / total * 100 if total else 0
-kpi(c6, "Msgs únicos",
-    f"{pct_unique:.0f}%",
-    f"{unique_msgs} de {total}",
-    icon="✨", accent="#5a9e47")
+    f"{llm_blocked} blocked + {llm_error} err.",
+    icon="⚠️", accent="#e07a30")
 
 st.markdown("<br>", unsafe_allow_html=True)
 
@@ -288,7 +298,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 col_l, col_r = st.columns([3, 2])
 
 with col_l:
-    st.markdown("### Interacciones y sesiones por día")
+    st.markdown("### Interacciones, sesiones y usuarios únicos por día")
     daily_msgs = df.groupby("date").size().reset_index(name="interacciones")
     daily_sess = df.groupby("date")["session_id"].nunique().reset_index(name="sesiones")
     daily = daily_msgs.merge(daily_sess, on="date")
@@ -309,15 +319,29 @@ with col_l:
         hovertemplate="<b>%{x}</b><br>%{y} interacciones<extra></extra>",
     ))
 
-    # Línea — sesiones (eje derecho)
+    # Línea — sesiones/usuarios únicos por día (eje derecho)
+    daily_dau = dau.reset_index()
+    daily_dau.columns = ["date", "usuarios"]
+    daily_dau["date_str"] = daily_dau["date"].astype(str)
+    daily = daily.merge(daily_dau, on=["date", "date_str"], how="left")
+
     fig.add_trace(go.Scatter(
         x=daily["date_str"], y=daily["sesiones"],
         name="Sesiones",
         mode="lines+markers",
-        line=dict(color="#3b9dc4", width=2.5, shape="spline"),
-        marker=dict(color="#3b9dc4", size=7, line=dict(color="#0e1a0e", width=1.5)),
+        line=dict(color="#3b9dc4", width=2, shape="spline", dash="dot"),
+        marker=dict(color="#3b9dc4", size=6, line=dict(color="#0e1a0e", width=1.5)),
         yaxis="y2",
         hovertemplate="<b>%{x}</b><br>%{y} sesiones<extra></extra>",
+    ))
+    fig.add_trace(go.Scatter(
+        x=daily["date_str"], y=daily["usuarios"],
+        name="Usuarios únicos",
+        mode="lines+markers",
+        line=dict(color="#e0a020", width=2.5, shape="spline"),
+        marker=dict(color="#e0a020", size=7, line=dict(color="#0e1a0e", width=1.5)),
+        yaxis="y2",
+        hovertemplate="<b>%{x}</b><br>%{y} usuarios únicos<extra></extra>",
     ))
 
     fig.update_layout(
@@ -329,9 +353,10 @@ with col_l:
             showgrid=True, gridcolor=GRID, color="#7ed957", zeroline=False,
         ),
         yaxis2=dict(
-            title="Sesiones", title_font=dict(color="#3b9dc4", size=11),
+            title="Sesiones / Usuarios únicos",
+            title_font=dict(color="#e0a020", size=11),
             overlaying="y", side="right",
-            color="#3b9dc4", zeroline=False, showgrid=False,
+            color="#e0a020", zeroline=False, showgrid=False,
         ),
         legend=dict(
             orientation="h", x=0, y=1.08,
@@ -345,9 +370,42 @@ with col_l:
 
 with col_r:
     st.markdown("### Funcionalidades usadas")
+
+    # Reclassify historical "quick" rows using keywords in the user message
+    _CLIMA_KW      = ['clima', 'temperatura', 'pronostico', 'pronóstico', 'lluvia',
+                      'tormenta', 'calor', 'frio', 'frío', 'nublado', 'el tiempo',
+                      'qué tiempo', 'que tiempo']
+    _MAREAS_KW     = ['mareas', 'marea', 'pleamar', 'bajamar', 'crecida',
+                      'inundacion', 'inundación', 'nivel del rio', 'nivel del río',
+                      'subio el rio', 'subió el río', 'bajo el rio', 'bajó el río']
+    _HIDRO_KW      = ['hidrografia', 'hidrografía']
+    _WINDGURU_KW   = ['windguru', 'viento']
+
+    def _reclassify_quick(row):
+        if row["response_type"] != "quick":
+            return row["response_type"]
+        msg = str(row["user_message"]).lower()
+        if any(k in msg for k in _HIDRO_KW):
+            return "hidrografia"
+        if any(k in msg for k in _MAREAS_KW):
+            return "mareas"
+        if any(k in msg for k in _CLIMA_KW):
+            return "clima"
+        if any(k in msg for k in _WINDGURU_KW):
+            return "windguru"
+        return "quick"
+
+    df_pie = df.copy()
+    df_pie["response_type"] = df_pie.apply(_reclassify_quick, axis=1)
+    pie_counts = df_pie["response_type"].value_counts()
+
     type_map = {
         "colectivas":   "🚢 Colectivas",
-        "quick":        "⚡ Clima/Mareas",
+        "clima":        "🌤️ Clima",
+        "mareas":       "🌊 Mareas",
+        "hidrografia":  "📡 Hidrografía",
+        "windguru":     "🌬️ WindGurú",
+        "quick":        "⚡ Clima/Mareas",   # fallback for unclassified historical rows
         "agenda":       "📅 Agenda",
         "memes":        "😂 Memes",
         "llm":          "🤖 LLM",
@@ -356,7 +414,7 @@ with col_r:
         "llm_blocked":  "⚠️ LLM bloqueado",
         "llm_error":    "❌ LLM error",
     }
-    tc = (type_counts
+    tc = (pie_counts
           .rename(index=type_map)
           .loc[lambda s: s.index.isin(type_map.values())]
           .reset_index())
@@ -454,9 +512,9 @@ with col_top:
     )
     st.plotly_chart(fig5, use_container_width=True)
 
-# ── Fila 3: engagement ────────────────────────────────────────────────────────
+# ── Fila 3: engagement + ratio LLM diario ────────────────────────────────────
 
-col3, _ = st.columns([2, 3])
+col3, col_llmr = st.columns([2, 3])
 
 with col3:
     st.markdown("### Engagement por sesión")
@@ -487,6 +545,55 @@ with col3:
         hoverlabel=dict(bgcolor="#2a4a2a", font_color="#e8f5e2"),
     )
     st.plotly_chart(fig4, use_container_width=True)
+
+with col_llmr:
+    st.markdown("### Evolución del ratio LLM por día")
+    _all_dates_llm = sorted(df["date"].unique())
+    daily_llm = (
+        df.groupby("date")
+          .apply(lambda g: pd.Series({
+              "total": len(g),
+              "llm":   g["response_type"].isin(["llm", "llm_blocked", "llm_error"]).sum(),
+          }))
+          .reindex(_all_dates_llm)
+          .fillna(0)
+          .reset_index()
+    )
+    daily_llm["pct"] = (daily_llm["llm"] / daily_llm["total"].replace(0, pd.NA) * 100).round(1)
+    daily_llm["date_str"] = daily_llm["date"].astype(str)
+
+    fig_llmr = go.Figure()
+    # Área rellena
+    fig_llmr.add_trace(go.Scatter(
+        x=daily_llm["date_str"], y=daily_llm["pct"],
+        mode="lines+markers",
+        fill="tozeroy",
+        fillcolor="rgba(155,95,192,0.15)",
+        line=dict(color="#9b5fc0", width=2.5, shape="spline"),
+        marker=dict(color="#9b5fc0", size=7, line=dict(color="#0e1a0e", width=1.5)),
+        hovertemplate="<b>%{x}</b><br>%{y:.1f}% LLM<extra></extra>",
+        name="Ratio LLM",
+    ))
+    # Línea de umbral saludable (15 %)
+    fig_llmr.add_hline(
+        y=15,
+        line=dict(color="#e07a30", width=1.5, dash="dot"),
+        annotation_text="umbral 15%",
+        annotation_position="top right",
+        annotation_font=dict(color="#e07a30", size=11),
+    )
+    fig_llmr.update_layout(
+        paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
+        margin=dict(l=0, r=0, t=10, b=0), height=220,
+        xaxis=dict(showgrid=False, color=TEXT, tickfont=dict(size=11)),
+        yaxis=dict(
+            showgrid=True, gridcolor=GRID, color=TEXT,
+            zeroline=False, ticksuffix="%",
+        ),
+        legend=dict(font=dict(color=TEXT, size=11), bgcolor=TRANSP),
+        hoverlabel=dict(bgcolor="#2a4a2a", font_color="#e8f5e2"),
+    )
+    st.plotly_chart(fig_llmr, use_container_width=True)
 
 # ── Patrones de uso ───────────────────────────────────────────────────────────
 
@@ -526,7 +633,7 @@ with col_wd:
     st.plotly_chart(fig_wd, use_container_width=True)
 
 with col_br:
-    st.markdown("### Bounce rate diario")
+    st.markdown("### % de interacciones de un sólo mensaje")
     daily_bounces = (
         df.groupby(["date", "session_id"]).size()
           .reset_index(name="n")

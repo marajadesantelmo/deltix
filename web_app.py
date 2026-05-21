@@ -684,19 +684,19 @@ def detect_quick_response(user_input):
                 )
             else:
                 _reply = "No tengo datos de clima disponibles en este momento. Intentá de nuevo en unos minutos."
-            return {"reply": _reply, "images": [], "quick_replies": ["🌊 Mareas", "🌬️ WindGurú"]}
+            return {"reply": _reply, "images": [], "quick_replies": ["🌊 Mareas", "🌬️ WindGurú"], "type": "clima"}
         # else: pregunta natural ("¿Va a hacer calor mañana?") → cae al LLM con contexto
 
     if any(k in text for k in KEYWORDS_NORM["hidrografia"]):
-        return {"reply": format_hidrografia(), "images": [], "quick_replies": []}
+        return {"reply": format_hidrografia(), "images": [], "quick_replies": [], "type": "hidrografia"}
 
     if any(k in text for k in KEYWORDS_NORM["tides"]) and not any(k in text for k in KEYWORDS_NORM["fletesmareaexpress"]):
         return {"reply": "Acá tenés el pronóstico de mareas del INA 🌊",
-                "images": ["/img/marea.png"], "quick_replies": []}
+                "images": ["/img/marea.png"], "quick_replies": [], "type": "mareas"}
 
     if any(k in text for k in KEYWORDS_NORM["windguru"]):
         return {"reply": "Pronóstico de WindGurú para las islas ☁️",
-                "images": ["/img/windguru.png"], "quick_replies": []}
+                "images": ["/img/windguru.png"], "quick_replies": [], "type": "windguru"}
 
     if any(k in text for k in KEYWORDS_NORM["amanita"]):
         return {
@@ -885,7 +885,7 @@ def chat():
     quick = detect_quick_response(user_message)
     if quick:
         _history_add(user_message, quick["reply"])
-        log_interaction(user_message, quick["reply"], "quick",
+        log_interaction(user_message, quick["reply"], quick.get("type", "quick"),
                         quick.get("images"), quick.get("quick_replies"))
         return jsonify(quick)
 
