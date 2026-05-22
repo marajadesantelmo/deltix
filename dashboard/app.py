@@ -201,10 +201,6 @@ df_prev = df_full[
 # ── Período activo ────────────────────────────────────────────────────────────
 
 period_str = f"{start.strftime('%d/%m/%Y')} → {end.strftime('%d/%m/%Y')}" if not df.empty else "sin datos"
-st.markdown(
-    f'<p style="font-size:0.75rem;color:#5f9a5f;margin:-4px 0 12px">📅 {period_str}</p>',
-    unsafe_allow_html=True,
-)
 
 # ── Helpers trend ─────────────────────────────────────────────────────────────
 
@@ -285,9 +281,35 @@ _msgs_monthly = (
 )
 avg_msgs_monthly = _msgs_monthly.mean() if len(_msgs_monthly) else 0
 
-# ── KPI row ───────────────────────────────────────────────────────────────────
+# ── Labels de los dos grupos de KPIs ─────────────────────────────────────────
 
-c1, c2, c3, c4, c5, c6 = st.columns(6)
+_lbl_l, _lbl_r = st.columns([6, 5])
+with _lbl_l:
+    st.markdown(
+        f'<p style="font-size:0.72rem;color:#5f9a5f;margin:-2px 0 4px">📅 {period_str}</p>',
+        unsafe_allow_html=True,
+    )
+with _lbl_r:
+    st.markdown(
+        f'<p style="font-size:0.72rem;color:#7a9e9f;margin:-2px 0 4px">'
+        f'📌 Datos fijos — '
+        f'Hoy: <b>{_today.strftime("%d/%m/%Y")}</b> · '
+        f'Mes: <b>{_today.strftime("%B %Y")}</b></p>',
+        unsafe_allow_html=True,
+    )
+
+# ── KPI row única ─────────────────────────────────────────────────────────────
+
+c1, c2, c3, c4, c5, c6, _sep, k1, k2, k3, k4 = st.columns(
+    [1, 1, 1, 1, 1, 1, 0.06, 1, 1, 1, 1]
+)
+# Separador visual
+_sep.markdown(
+    '<div style="border-left:1px solid rgba(90,158,71,0.25);height:100%;'
+    'margin:0 auto;width:1px"></div>',
+    unsafe_allow_html=True,
+)
+
 kpi(c1, "Interacciones",
     f"{total:,}".replace(",", "."),
     f"{n_sess} sesiones",
@@ -295,7 +317,7 @@ kpi(c1, "Interacciones",
     icon="💬", accent="#5a9e47")
 kpi(c2, "Sesiones únicas",
     str(n_sess),
-    f"conversaciones distintas",
+    "conversaciones distintas",
     trend_html(n_sess, prev_sess),
     icon="🗂️", accent="#5a9e47")
 kpi(c3, "Usuarios/día (DAU)",
@@ -316,18 +338,6 @@ kpi(c6, "Tasa de error",
     f"{error_rate:.2f}%",
     f"{llm_blocked} blocked + {llm_error} err.",
     icon="⚠️", accent="#e07a30")
-
-st.markdown("<div style='margin:6px 0 4px'></div>", unsafe_allow_html=True)
-
-# ── KPI row 2: hoy + este mes ─────────────────────────────────────────────────
-st.markdown(
-    f'<p style="font-size:0.7rem;color:#5f9a5f;margin:0 0 4px">'
-    f'📌 Datos fijos (independientes del filtro de período) — '
-    f'Hoy: <b>{_today.strftime("%d/%m/%Y")}</b> · '
-    f'Mes: <b>{_today.strftime("%B %Y")}</b></p>',
-    unsafe_allow_html=True,
-)
-k1, k2, k3, k4, _kpad = st.columns([2, 2, 2, 2, 3])
 kpi(k1, "Usuarios hoy",
     str(users_today),
     f"prom. diario: {avg_dau_full:.1f}",
