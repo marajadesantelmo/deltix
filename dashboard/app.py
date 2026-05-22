@@ -333,7 +333,7 @@ with col_l:
 
     fig.update_layout(
         paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
-        margin=dict(l=0, r=50, t=10, b=0), height=270,
+        margin=dict(l=0, r=50, t=10, b=0), height=430,
         xaxis=dict(showgrid=False, color=TEXT, tickfont=dict(size=11)),
         yaxis=dict(
             title="Interacciones", title_font=dict(color="#7ed957", size=11),
