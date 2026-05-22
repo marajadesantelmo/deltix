@@ -293,15 +293,16 @@ kpi(c6, "Tasa de error",
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# ── Fila 1: barras + dona ─────────────────────────────────────────────────────
+# ── Fila 1: barras + dona + tablas ───────────────────────────────────────────
 
-col_l, col_r = st.columns([3, 2])
+col_l, col_r, col_tabs = st.columns([3, 2, 2])
 
 with col_l:
-    st.markdown("### Interacciones, sesiones y usuarios únicos por día")
+    st.markdown("### Interacciones y usuarios únicos por día")
     daily_msgs = df.groupby("date").size().reset_index(name="interacciones")
-    daily_sess = df.groupby("date")["session_id"].nunique().reset_index(name="sesiones")
-    daily = daily_msgs.merge(daily_sess, on="date")
+    daily_dau  = dau.reset_index()
+    daily_dau.columns = ["date", "usuarios"]
+    daily = daily_msgs.merge(daily_dau, on="date", how="left")
     daily["date_str"] = daily["date"].astype(str)
 
     fig = go.Figure()
@@ -319,21 +320,7 @@ with col_l:
         hovertemplate="<b>%{x}</b><br>%{y} interacciones<extra></extra>",
     ))
 
-    # Línea — sesiones/usuarios únicos por día (eje derecho)
-    daily_dau = dau.reset_index()
-    daily_dau.columns = ["date", "usuarios"]
-    daily_dau["date_str"] = daily_dau["date"].astype(str)
-    daily = daily.merge(daily_dau, on=["date", "date_str"], how="left")
-
-    fig.add_trace(go.Scatter(
-        x=daily["date_str"], y=daily["sesiones"],
-        name="Sesiones",
-        mode="lines+markers",
-        line=dict(color="#3b9dc4", width=2, shape="spline", dash="dot"),
-        marker=dict(color="#3b9dc4", size=6, line=dict(color="#0e1a0e", width=1.5)),
-        yaxis="y2",
-        hovertemplate="<b>%{x}</b><br>%{y} sesiones<extra></extra>",
-    ))
+    # Línea — usuarios únicos por día (eje derecho)
     fig.add_trace(go.Scatter(
         x=daily["date_str"], y=daily["usuarios"],
         name="Usuarios únicos",
@@ -353,8 +340,7 @@ with col_l:
             showgrid=True, gridcolor=GRID, color="#7ed957", zeroline=False,
         ),
         yaxis2=dict(
-            title="Sesiones / Usuarios únicos",
-            title_font=dict(color="#e0a020", size=11),
+            title="Usuarios únicos", title_font=dict(color="#e0a020", size=11),
             overlaying="y", side="right",
             color="#e0a020", zeroline=False, showgrid=False,
         ),
@@ -369,7 +355,7 @@ with col_l:
     st.plotly_chart(fig, use_container_width=True)
 
 with col_r:
-    st.markdown("### Funcionalidades usadas")
+    st.markdown("### Funcionalidades usadas · *por sesión*")
 
     # Reclassify historical "quick" rows using keywords in the user message
     _CLIMA_KW      = ['clima', 'temperatura', 'pronostico', 'pronóstico', 'lluvia',
@@ -397,7 +383,15 @@ with col_r:
 
     df_pie = df.copy()
     df_pie["response_type"] = df_pie.apply(_reclassify_quick, axis=1)
-    pie_counts = df_pie["response_type"].value_counts()
+
+    # Contar sesiones únicas por feature (no mensajes individuales).
+    # Evita el sesgo de features multi-paso (colectivas, almaceneras)
+    # que generan varios mensajes por intención de usuario.
+    pie_counts = (
+        df_pie.drop_duplicates(subset=["session_id", "response_type"])
+              ["response_type"]
+              .value_counts()
+    )
 
     type_map = {
         "colectivas":   "🚢 Colectivas",
@@ -427,7 +421,7 @@ with col_r:
         hole=0.45,
         textinfo="percent",
         textfont=dict(size=12, color="white"),
-        hovertemplate="<b>%{label}</b><br>%{value} (%{percent})<extra></extra>",
+        hovertemplate="<b>%{label}</b><br>%{value} sesiones (%{percent})<extra></extra>",
     ))
     fig2.update_layout(
         paper_bgcolor=TRANSP,
@@ -437,6 +431,36 @@ with col_r:
         hoverlabel=dict(bgcolor="#2a4a2a", font_color="#e8f5e2"),
     )
     st.plotly_chart(fig2, use_container_width=True)
+
+with col_tabs:
+    # ── Tabla: Últimas conversaciones ─────────────────────────────────────────
+    st.markdown("### Últimas conversaciones")
+    ultimas = (
+        df.groupby("session_id")
+          .agg(fecha=("timestamp", "min"), mensajes=("user_message", "count"))
+          .sort_values("fecha", ascending=False)
+          .head(15)
+          .reset_index(drop=True)
+    )
+    ultimas["Fecha"] = ultimas["fecha"].dt.strftime("%d/%m %H:%M")
+    ultimas = ultimas.rename(columns={"mensajes": "Msgs"})[["Fecha", "Msgs"]]
+    st.dataframe(ultimas, use_container_width=True, hide_index=True, height=175)
+
+    # ── Tabla: Interacciones diarias ──────────────────────────────────────────
+    st.markdown("### Interacciones diarias")
+    daily_tbl = (
+        daily[["date", "interacciones", "usuarios"]]
+        .sort_values("date", ascending=False)
+        .copy()
+    )
+    daily_tbl["Fecha"] = daily_tbl["date"].apply(
+        lambda d: d.strftime("%d/%m/%Y") if hasattr(d, "strftime") else str(d)
+    )
+    daily_tbl = daily_tbl.rename(columns={
+        "interacciones": "Msgs",
+        "usuarios":      "Usuarios",
+    })[["Fecha", "Msgs", "Usuarios"]]
+    st.dataframe(daily_tbl, use_container_width=True, hide_index=True, height=175)
 
 # ── Fila 2: actividad horaria + top mensajes ─────────────────────────────────
 
