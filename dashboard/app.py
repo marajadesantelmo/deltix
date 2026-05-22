@@ -259,6 +259,32 @@ prev_dau     = df_prev.groupby("date")["session_id"].nunique().mean() if len(df_
 prev_pct_llm = (df_prev["response_type"].isin(["llm","llm_blocked","llm_error"]).sum()
                 / len(df_prev) * 100) if len(df_prev) else 0
 
+# ── Métricas hoy / este mes (sobre df_full, independiente del filtro) ─────────
+_today       = df_full["date"].max()          # fecha más reciente del dataset
+_dau_full    = df_full.groupby("date")["session_id"].nunique()
+_msgs_daily  = df_full.groupby("date").size()
+users_today  = int(_dau_full.get(_today, 0))
+msgs_today   = int(_msgs_daily.get(_today, 0))
+avg_dau_full = _dau_full.mean() if len(_dau_full) else 0
+avg_msgs_daily = _msgs_daily.mean() if len(_msgs_daily) else 0
+
+_this_month  = _today.replace(day=1)
+df_month     = df_full[df_full["date"] >= _this_month]
+users_month  = int(df_month["session_id"].nunique())
+msgs_month   = int(len(df_month))
+
+# Promedio mensual histórico
+_monthly = (
+    df_full.assign(month=df_full["date"].apply(lambda d: d.replace(day=1)))
+           .groupby("month")["session_id"].nunique()
+)
+avg_monthly  = _monthly.mean() if len(_monthly) else 0
+_msgs_monthly = (
+    df_full.assign(month=df_full["date"].apply(lambda d: d.replace(day=1)))
+           .groupby("month").size()
+)
+avg_msgs_monthly = _msgs_monthly.mean() if len(_msgs_monthly) else 0
+
 # ── KPI row ───────────────────────────────────────────────────────────────────
 
 c1, c2, c3, c4, c5, c6 = st.columns(6)
@@ -290,6 +316,34 @@ kpi(c6, "Tasa de error",
     f"{error_rate:.2f}%",
     f"{llm_blocked} blocked + {llm_error} err.",
     icon="⚠️", accent="#e07a30")
+
+st.markdown("<div style='margin:6px 0 4px'></div>", unsafe_allow_html=True)
+
+# ── KPI row 2: hoy + este mes ─────────────────────────────────────────────────
+st.markdown(
+    f'<p style="font-size:0.7rem;color:#5f9a5f;margin:0 0 4px">'
+    f'📌 Datos fijos (independientes del filtro de período) — '
+    f'Hoy: <b>{_today.strftime("%d/%m/%Y")}</b> · '
+    f'Mes: <b>{_today.strftime("%B %Y")}</b></p>',
+    unsafe_allow_html=True,
+)
+k1, k2, k3, k4, _kpad = st.columns([2, 2, 2, 2, 3])
+kpi(k1, "Usuarios hoy",
+    str(users_today),
+    f"prom. diario: {avg_dau_full:.1f}",
+    icon="🟢", accent="#3b9dc4")
+kpi(k2, "Mensajes hoy",
+    str(msgs_today),
+    f"prom. diario: {avg_msgs_daily:.0f}",
+    icon="💬", accent="#3b9dc4")
+kpi(k3, "Usuarios este mes",
+    str(users_month),
+    f"prom. mensual: {avg_monthly:.0f}",
+    icon="📅", accent="#5a9e47")
+kpi(k4, "Mensajes este mes",
+    str(msgs_month),
+    f"prom. mensual: {avg_msgs_monthly:.0f}",
+    icon="📊", accent="#5a9e47")
 
 st.markdown("<br>", unsafe_allow_html=True)
 
