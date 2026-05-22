@@ -314,7 +314,7 @@ BYE_REPLIES = [
     "¡Hasta la próxima! Que estés bien 🌿",
 ]
 
-GREETING_CHIPS = ["🌤️ Clima", "🌊 Mareas", "⛵ Colectivas", "🛒 Almaceneras", "🗓️ Agenda del Río"]
+GREETING_CHIPS = ["🌊 Mareas", "⛵ Colectivas", "🛒 Almaceneras", "🗓️ Agenda del Río", "🌤️ Clima"]
 
 
 def handle_social_flow(user_input):
@@ -669,18 +669,64 @@ def detect_quick_response(user_input):
         if _is_chip:
             w = load_weather_data()
             if w:
+                # ── Clima actual ──────────────────────────────────────────
                 _cur   = w.get('current_weather', {})
                 _temp  = _cur.get('main', {}).get('temp', 'N/A')
                 _feels = _cur.get('main', {}).get('feels_like', 'N/A')
                 _hum   = _cur.get('main', {}).get('humidity', 'N/A')
                 _desc  = _cur.get('weather', [{}])[0].get('description', 'N/A')
                 _wind  = _cur.get('wind', {}).get('speed', 'N/A')
+
+                # ── Pronóstico 3 días (datos cada 3h → agrupar por día) ──
+                from collections import defaultdict
+                _day_data = defaultdict(list)
+                for _slot in w.get('forecast', {}).get('list', []):
+                    _day = _slot.get('dt_txt', '')[:10]
+                    _day_data[_day].append(_slot)
+
+                # Saltear el día de hoy (ya está en "actual"), tomar los 3 siguientes
+                _today_str = w.get('timestamp', '')[:10]
+                _forecast_days = [d for d in sorted(_day_data) if d > _today_str][:3]
+
+                _DIAS_ES = {
+                    'Monday': 'Lunes', 'Tuesday': 'Martes', 'Wednesday': 'Miércoles',
+                    'Thursday': 'Jueves', 'Friday': 'Viernes',
+                    'Saturday': 'Sábado', 'Sunday': 'Domingo',
+                }
+                _WEATHER_ES = {
+                    'clear sky': 'despejado ☀️', 'few clouds': 'algo nublado 🌤️',
+                    'scattered clouds': 'nublado parcial ⛅', 'broken clouds': 'muy nublado 🌥️',
+                    'overcast clouds': 'cubierto ☁️', 'light rain': 'lluvia leve 🌦️',
+                    'moderate rain': 'lluvia moderada 🌧️', 'heavy intensity rain': 'lluvia intensa 🌧️',
+                    'thunderstorm': 'tormenta ⛈️', 'drizzle': 'llovizna 🌦️',
+                    'snow': 'nieve 🌨️', 'mist': 'neblina 🌫️', 'fog': 'niebla 🌫️',
+                }
+
+                _forecast_lines = []
+                for _d in _forecast_days:
+                    _slots = _day_data[_d]
+                    _temps = [s['main']['temp'] for s in _slots]
+                    _descs = [s['weather'][0]['description'] for s in _slots]
+                    _tmin, _tmax = round(min(_temps)), round(max(_temps))
+                    # descripción más frecuente del día
+                    _desc_day = max(set(_descs), key=_descs.count)
+                    _desc_day_es = _WEATHER_ES.get(_desc_day, _desc_day.capitalize())
+                    # nombre del día en español
+                    import datetime as _dt
+                    _weekday = _dt.date.fromisoformat(_d).strftime('%A')
+                    _dia_es = _DIAS_ES.get(_weekday, _weekday)
+                    _forecast_lines.append(f"• **{_dia_es}**: {_tmin}–{_tmax}°C, {_desc_day_es}")
+
+                _forecast_block = "\n".join(_forecast_lines) if _forecast_lines else "Sin datos de pronóstico."
+
                 _reply = (
                     f"🌡 **Clima actual en Tigre**\n\n"
                     f"🌡 **{_temp}°C** — sensación {_feels}°C\n"
                     f"☁️ {str(_desc).capitalize()}\n"
                     f"💧 Humedad: {_hum}%\n"
-                    f"💨 Viento: {_wind} m/s"
+                    f"💨 Viento: {_wind} m/s\n\n"
+                    f"📅 **Pronóstico próximos 3 días**\n\n"
+                    f"{_forecast_block}"
                 )
             else:
                 _reply = "No tengo datos de clima disponibles en este momento. Intentá de nuevo en unos minutos."

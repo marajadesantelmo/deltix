@@ -25,6 +25,14 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
+# ── Control de acceso ─────────────────────────────────────────────────────────
+
+_pwd = st.text_input("🔒 Código de acceso", type="password", key="pwd")
+if _pwd != "nomellamescapibara":
+    if _pwd:
+        st.error("Código incorrecto.")
+    st.stop()
+
 # ── Paleta y estilos ──────────────────────────────────────────────────────────
 
 # Colores distintos para cada funcionalidad
