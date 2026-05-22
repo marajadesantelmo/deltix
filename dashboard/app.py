@@ -293,9 +293,9 @@ kpi(c6, "Tasa de error",
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# ── Fila 1: barras + dona + tablas ───────────────────────────────────────────
+# ── Fila 1: barras + tablas ──────────────────────────────────────────────────
 
-col_l, col_r, col_tabs = st.columns([3, 2, 2])
+col_l, col_tabs = st.columns([3, 2])
 
 with col_l:
     st.markdown("### Interacciones y usuarios únicos por día")
@@ -354,84 +354,6 @@ with col_l:
     )
     st.plotly_chart(fig, use_container_width=True)
 
-with col_r:
-    st.markdown("### Funcionalidades usadas · *por sesión*")
-
-    # Reclassify historical "quick" rows using keywords in the user message
-    _CLIMA_KW      = ['clima', 'temperatura', 'pronostico', 'pronóstico', 'lluvia',
-                      'tormenta', 'calor', 'frio', 'frío', 'nublado', 'el tiempo',
-                      'qué tiempo', 'que tiempo']
-    _MAREAS_KW     = ['mareas', 'marea', 'pleamar', 'bajamar', 'crecida',
-                      'inundacion', 'inundación', 'nivel del rio', 'nivel del río',
-                      'subio el rio', 'subió el río', 'bajo el rio', 'bajó el río']
-    _HIDRO_KW      = ['hidrografia', 'hidrografía']
-    _WINDGURU_KW   = ['windguru', 'viento']
-
-    def _reclassify_quick(row):
-        if row["response_type"] != "quick":
-            return row["response_type"]
-        msg = str(row["user_message"]).lower()
-        if any(k in msg for k in _HIDRO_KW):
-            return "hidrografia"
-        if any(k in msg for k in _MAREAS_KW):
-            return "mareas"
-        if any(k in msg for k in _CLIMA_KW):
-            return "clima"
-        if any(k in msg for k in _WINDGURU_KW):
-            return "windguru"
-        return "quick"
-
-    df_pie = df.copy()
-    df_pie["response_type"] = df_pie.apply(_reclassify_quick, axis=1)
-
-    # Contar sesiones únicas por feature (no mensajes individuales).
-    # Evita el sesgo de features multi-paso (colectivas, almaceneras)
-    # que generan varios mensajes por intención de usuario.
-    pie_counts = (
-        df_pie.drop_duplicates(subset=["session_id", "response_type"])
-              ["response_type"]
-              .value_counts()
-    )
-
-    type_map = {
-        "colectivas":   "🚢 Colectivas",
-        "clima":        "🌤️ Clima",
-        "mareas":       "🌊 Mareas",
-        "hidrografia":  "📡 Hidrografía",
-        "windguru":     "🌬️ WindGurú",
-        "quick":        "⚡ Clima/Mareas",   # fallback for unclassified historical rows
-        "agenda":       "📅 Agenda",
-        "memes":        "😂 Memes",
-        "llm":          "🤖 LLM",
-        "almaceneras":  "🛒 Almaceneras",
-        "social":       "💬 Social",
-        "llm_blocked":  "⚠️ LLM bloqueado",
-        "llm_error":    "❌ LLM error",
-    }
-    tc = (pie_counts
-          .rename(index=type_map)
-          .loc[lambda s: s.index.isin(type_map.values())]
-          .reset_index())
-    tc.columns = ["label", "count"]
-    colors = [FEATURE_COLORS.get(l, "#888") for l in tc["label"]]
-
-    fig2 = go.Figure(go.Pie(
-        labels=tc["label"], values=tc["count"],
-        marker=dict(colors=colors, line=dict(color="#0e1a0e", width=2)),
-        hole=0.45,
-        textinfo="percent",
-        textfont=dict(size=12, color="white"),
-        hovertemplate="<b>%{label}</b><br>%{value} sesiones (%{percent})<extra></extra>",
-    ))
-    fig2.update_layout(
-        paper_bgcolor=TRANSP,
-        margin=dict(l=0, r=0, t=10, b=0), height=260,
-        legend=dict(font=dict(size=11, color=TEXT), bgcolor=TRANSP,
-                    orientation="v", x=1, y=0.5),
-        hoverlabel=dict(bgcolor="#2a4a2a", font_color="#e8f5e2"),
-    )
-    st.plotly_chart(fig2, use_container_width=True)
-
 with col_tabs:
     # ── Tabla: Últimas conversaciones ─────────────────────────────────────────
     st.markdown("### Últimas conversaciones")
@@ -462,9 +384,9 @@ with col_tabs:
     })[["Fecha", "Msgs", "Usuarios"]]
     st.dataframe(daily_tbl, use_container_width=True, hide_index=True, height=175)
 
-# ── Fila 2: actividad horaria + top mensajes ─────────────────────────────────
+# ── Fila 2: actividad horaria + dona + top mensajes ──────────────────────────
 
-col_h, col_top = st.columns([3, 2])
+col_h, col_pie, col_top = st.columns([3, 2, 2])
 
 with col_h:
     st.markdown("### Actividad por hora del día")
@@ -503,6 +425,78 @@ with col_h:
         hoverlabel=dict(bgcolor="#1a2e1a", font_color="#e8f5e2"),
     )
     st.plotly_chart(fig3, use_container_width=True)
+
+with col_pie:
+    st.markdown("### Funcionalidades usadas · *por sesión*")
+
+    _CLIMA_KW      = ['clima', 'temperatura', 'pronostico', 'pronóstico', 'lluvia',
+                      'tormenta', 'calor', 'frio', 'frío', 'nublado', 'el tiempo',
+                      'qué tiempo', 'que tiempo']
+    _MAREAS_KW     = ['mareas', 'marea', 'pleamar', 'bajamar', 'crecida',
+                      'inundacion', 'inundación', 'nivel del rio', 'nivel del río',
+                      'subio el rio', 'subió el río', 'bajo el rio', 'bajó el río']
+    _HIDRO_KW      = ['hidrografia', 'hidrografía']
+    _WINDGURU_KW   = ['windguru', 'viento']
+
+    def _reclassify_quick(row):
+        if row["response_type"] != "quick":
+            return row["response_type"]
+        msg = str(row["user_message"]).lower()
+        if any(k in msg for k in _HIDRO_KW):
+            return "hidrografia"
+        if any(k in msg for k in _MAREAS_KW):
+            return "mareas"
+        if any(k in msg for k in _CLIMA_KW):
+            return "clima"
+        if any(k in msg for k in _WINDGURU_KW):
+            return "windguru"
+        return "quick"
+
+    df_pie = df.copy()
+    df_pie["response_type"] = df_pie.apply(_reclassify_quick, axis=1)
+    pie_counts = (
+        df_pie.drop_duplicates(subset=["session_id", "response_type"])
+              ["response_type"]
+              .value_counts()
+    )
+    type_map = {
+        "colectivas":   "🚢 Colectivas",
+        "clima":        "🌤️ Clima",
+        "mareas":       "🌊 Mareas",
+        "hidrografia":  "📡 Hidrografía",
+        "windguru":     "🌬️ WindGurú",
+        "quick":        "⚡ Clima/Mareas",
+        "agenda":       "📅 Agenda",
+        "memes":        "😂 Memes",
+        "llm":          "🤖 LLM",
+        "almaceneras":  "🛒 Almaceneras",
+        "social":       "💬 Social",
+        "llm_blocked":  "⚠️ LLM bloqueado",
+        "llm_error":    "❌ LLM error",
+    }
+    tc = (pie_counts
+          .rename(index=type_map)
+          .loc[lambda s: s.index.isin(type_map.values())]
+          .reset_index())
+    tc.columns = ["label", "count"]
+    colors = [FEATURE_COLORS.get(l, "#888") for l in tc["label"]]
+
+    fig2 = go.Figure(go.Pie(
+        labels=tc["label"], values=tc["count"],
+        marker=dict(colors=colors, line=dict(color="#0e1a0e", width=2)),
+        hole=0.45,
+        textinfo="percent",
+        textfont=dict(size=12, color="white"),
+        hovertemplate="<b>%{label}</b><br>%{value} sesiones (%{percent})<extra></extra>",
+    ))
+    fig2.update_layout(
+        paper_bgcolor=TRANSP,
+        margin=dict(l=0, r=0, t=10, b=0), height=280,
+        legend=dict(font=dict(size=11, color=TEXT), bgcolor=TRANSP,
+                    orientation="v", x=1, y=0.5),
+        hoverlabel=dict(bgcolor="#2a4a2a", font_color="#e8f5e2"),
+    )
+    st.plotly_chart(fig2, use_container_width=True)
 
 with col_top:
     st.markdown("### Top 10 mensajes de usuario")
