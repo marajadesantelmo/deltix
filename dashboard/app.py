@@ -206,7 +206,7 @@ period_str = f"{start.strftime('%d/%m/%Y')} → {end.strftime('%d/%m/%Y')}" if n
 
 def trend_html(current, previous, fmt=".0f", suffix=""):
     if previous == 0:
-        return '<span class="kpi-trend-neu">— sin ref.</span>'
+        return ""
     delta = current - previous
     pct   = delta / previous * 100
     arrow = "▲" if delta > 0 else "▼"
@@ -214,15 +214,16 @@ def trend_html(current, previous, fmt=".0f", suffix=""):
     return f'<span class="{cls}">{arrow} {abs(pct):.1f}% vs período anterior</span>'
 
 def kpi(col, label, value_str, sub="", trend_html_str="", icon="", accent="#5a9e47"):
-    icon_html = f'<div class="kpi-icon">{icon}</div>' if icon else ""
+    icon_html  = f'<div class="kpi-icon">{icon}</div>' if icon else ""
+    trend_html = (f'<div class="kpi-sep"></div><div style="min-height:1rem">{trend_html_str}</div>'
+                  if trend_html_str else "")
     col.markdown(f"""
     <div class="kpi-card" style="--kpi-accent:{accent}">
         {icon_html}
         <div class="kpi-label">{label}</div>
         <div class="kpi-value">{value_str}</div>
         <div class="kpi-sub">{sub}</div>
-        <div class="kpi-sep"></div>
-        <div style="min-height:1rem">{trend_html_str}</div>
+        {trend_html}
     </div>""", unsafe_allow_html=True)
 
 # ── Métricas ──────────────────────────────────────────────────────────────────
