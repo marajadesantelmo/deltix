@@ -89,7 +89,7 @@ SYSTEM_PROMPT = (
     "NUNCA inventes información: no alucines nombres de lanchas, cooperativas, almaceneras, horarios, "
     "precios ni datos de contacto que no estén en el contexto provisto. "
     "Si no tenés el dato, decí que no lo tenés y sugerí las palabras clave disponibles: "
-    "clima, mareas, hidrografia, windguru, colectivas, almaceneras, actividades. "
+    "clima, mareas, hidrografia, windguru, colectivas, almaceneras, actividades, emergencias. "
     "Sobre datos de contacto: si el usuario pide explícitamente el contacto, teléfono o WhatsApp "
     "de un emprendimiento, dalo siempre de forma directa y completa — nunca digas que está oculto "
     "ni que no podés compartirlo. Si el usuario solo pregunta qué servicios hay o qué hace un emprendimiento, "
@@ -143,6 +143,9 @@ KEYWORDS = {
     "lena":        ['leña', 'lena', 'quebracho', 'salamandra', 'ligustro', 'calefaccion',
                     'calefacción', 'estufa a leña', 'estufa a lena'],
     "memes":       ['meme', 'memes'],
+    "emergencias": ['emergencia', 'emergencias', 'urgencia', 'urgencias', 'bomberos', 'prefectura',
+                    'policia', 'policía', 'ambulancia', 'set tigre', 'quemas', 'incendio',
+                    'cot tigre', '107', '106', '100', '911'],
     "sublinor":    ['sublinor', 'imprenta'],
     "yoga":        ['yoga', 'iyengar'],
     # 'igarape delta' (2 palabras) se chequea ANTES que 'vivero' para evitar
@@ -225,6 +228,8 @@ def build_llm_context(user_input):
             context.append(f"Clima en Tigre: {temp}°C (sensación {feels}°C), {desc}, humedad {humidity}%, viento {wind} m/s")
     if any(k in text for k in KEYWORDS_NORM["tides"] + KEYWORDS_NORM["hidrografia"]):
         context.append(load_tides_text())
+    if any(k in text for k in KEYWORDS_NORM["emergencias"]):
+        context.append(load_rag_file("emergencias.txt"))
     if any(k in text for k in KEYWORDS_NORM["almacen"]):
         context.append(load_rag_file("almaceneras.txt"))
     if any(k in text for k in KEYWORDS_NORM["jilguero"]):
@@ -265,6 +270,7 @@ ALMACENERAS = {
     "Madreselva":      "🛒 *Madreselva* — Familia Bettiga\nMIÉRCOLES: Capitán arriba / Estudiante / Paicarabí\nJUEVES: Río Sarmiento / Espera / Cruz Colorada\nVIERNES: Paicarabí / Canal La Serna / Canal 4\n📞 1554709382",
     "Raquel N":        "🛒 *Raquel N* — Roberto Baraldo\nLUNES y SÁBADO: Río Sarmiento / Capitán / Arroyo La Horca\nMARTES y MIÉRCOLES: Río Paraná hasta Carabelas / Canal 5\n📞 1544981064",
     "Stella Maris":    "🛒 *Stella Maris* — Manuel Compagnucci\nVIERNES: Escobar / Paraná / Paycaraby / Estudiantes / Las Cañas\nSÁBADOS: Puerto Escobar / La Serna / Arroyo Chana / Felicaria\n📞 1562771474",
+    "Ondimar":         "🛒 *Ondimar*\n📞 11-62771474",
 }
 
 AGENDA_OPTIONS = {
@@ -369,7 +375,7 @@ def handle_almaceneras_flow(user_input):
             if _norm(name) in text_lower or text_lower in _norm(name):
                 session.pop('alm_flow', None)
                 session.modified = True
-                return {"reply": info, "images": [], "quick_replies": ["✏️ Sugerí una modificación"], "note": _alm_note}
+                return {"reply": info, "images": [], "quick_replies": ["✏️ Sugerí una modificación", "✏️ Sugerir horarios y recorridos"], "note": _alm_note}
         # Sin coincidencia — si es otro tema, liberar el flow
         if _is_different_topic(text_lower):
             session.pop('alm_flow', None)
@@ -988,20 +994,25 @@ SUGGESTIONS_LOG_PATH = os.path.join(BASE_DIR, "suggestions.csv")
 EMPRENDIMIENTOS_LOG_PATH = os.path.join(BASE_DIR, "emprendimientos.csv")
 DATA_REQUESTS_LOG_PATH = os.path.join(BASE_DIR, "data_requests.csv")
 
-def _save_suggestion(text):
+def _save_suggestion(text, nombre='', contacto=''):
     file_exists = os.path.isfile(SUGGESTIONS_LOG_PATH)
     with open(SUGGESTIONS_LOG_PATH, 'a', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
         if not file_exists:
-            writer.writerow(["timestamp", "suggestion"])
-        writer.writerow([datetime.now().isoformat(), text])
+            writer.writerow(["timestamp", "suggestion", "nombre", "contacto"])
+        writer.writerow([datetime.now().isoformat(), text, nombre, contacto])
 
-def _send_suggestion_email(text):
+def _send_suggestion_email(text, nombre='', contacto=''):
     msg = EmailMessage()
     msg['From'] = "marajadesantelmo@gmail.com"
     msg['To'] = "marajadesantelmo@gmail.com"
     msg['Subject'] = "💡 Nueva sugerencia en deltix.com.ar"
-    msg.set_content(f"Un usuario envió la siguiente sugerencia desde la web:\n\n{text}")
+    extra = ""
+    if nombre:
+        extra += f"\nNombre: {nombre}"
+    if contacto:
+        extra += f"\nContacto: {contacto}"
+    msg.set_content(f"Un usuario envió la siguiente sugerencia desde la web:\n\n{text}{extra}")
     server = smtplib.SMTP("smtp.gmail.com", 587)
     server.starttls()
     server.login("marajadesantelmo@gmail.com", gmail_token)
@@ -1096,11 +1107,13 @@ def data_request():
 def suggest():
     data = request.get_json()
     text = (data.get('text') or '').strip()
+    nombre = (data.get('nombre') or '').strip()
+    contacto = (data.get('contacto') or '').strip()
     if not text:
         return jsonify({'ok': False, 'error': 'Mensaje vacío'}), 400
-    _save_suggestion(text)
+    _save_suggestion(text, nombre, contacto)
     try:
-        _send_suggestion_email(text)
+        _send_suggestion_email(text, nombre, contacto)
     except Exception as e:
         print(f"Email error: {e}")
     return jsonify({'ok': True})

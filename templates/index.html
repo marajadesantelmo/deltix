@@ -730,6 +730,36 @@
         transition: border-color 0.2s;
       " onfocus="this.style.borderColor='rgba(0,255,65,0.5)'"
          onblur="this.style.borderColor='rgba(0,255,65,0.2)'"></textarea>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px;">
+        <div>
+          <label style="display:block; font-size:11px; margin-bottom:4px; color:rgba(0,255,65,0.55); letter-spacing:0.03em;">
+            Nombre <span style="color:rgba(0,255,65,0.4); font-style:italic;">(opcional)</span>
+          </label>
+          <input id="sugerencia-nombre" type="text" placeholder="Tu nombre..." style="
+            width: 100%; padding: 9px 12px; box-sizing: border-box;
+            background: rgba(0,255,65,0.04);
+            border: 1px solid rgba(0,255,65,0.18);
+            border-radius: 8px;
+            color: #d4edda; font-family: inherit; font-size: 13px;
+            outline: none; transition: border-color 0.2s;
+          " onfocus="this.style.borderColor='rgba(0,255,65,0.45)'"
+             onblur="this.style.borderColor='rgba(0,255,65,0.18)'">
+        </div>
+        <div>
+          <label style="display:block; font-size:11px; margin-bottom:4px; color:rgba(0,255,65,0.55); letter-spacing:0.03em;">
+            Contacto <span style="color:rgba(0,255,65,0.4); font-style:italic;">(opcional)</span>
+          </label>
+          <input id="sugerencia-contacto" type="text" placeholder="Email o teléfono..." style="
+            width: 100%; padding: 9px 12px; box-sizing: border-box;
+            background: rgba(0,255,65,0.04);
+            border: 1px solid rgba(0,255,65,0.18);
+            border-radius: 8px;
+            color: #d4edda; font-family: inherit; font-size: 13px;
+            outline: none; transition: border-color 0.2s;
+          " onfocus="this.style.borderColor='rgba(0,255,65,0.45)'"
+             onblur="this.style.borderColor='rgba(0,255,65,0.18)'">
+        </div>
+      </div>
       <div id="sugerencia-feedback" style="font-size:12px; min-height:18px; margin-top:6px; color:rgba(0,255,65,0.7);"></div>
       <button onclick="submitSugerencia()" style="
         margin-top: 14px; width: 100%;
@@ -744,6 +774,66 @@
          onmouseout="this.style.background='rgba(0,255,65,0.1)'">
         Enviar sugerencia
       </button>
+    </div>
+  </div>
+
+  <!-- Modal emergencias -->
+  <div id="modal-emergencias" class="hidden" style="
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  ">
+    <div style="
+      background: rgba(8,5,5,0.98);
+      border: 1px solid rgba(255,60,60,0.35);
+      border-radius: 20px;
+      padding: 26px 22px;
+      max-width: 440px; width: 100%;
+      box-shadow: 0 0 60px rgba(255,60,60,0.12);
+      max-height: 90vh; overflow-y: auto;
+    ">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
+        <span style="font-size:18px; font-weight:700; color:#fff;">🚨 Contactos de Emergencia</span>
+        <button onclick="document.getElementById('modal-emergencias').classList.add('hidden')"
+          style="background:none;border:none;color:rgba(212,237,218,0.4);font-size:20px;cursor:pointer;line-height:1;">✕</button>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:10px;">
+
+        <div style="background:rgba(255,60,60,0.08); border:1px solid rgba(255,60,60,0.25); border-radius:12px; padding:12px 14px;">
+          <div style="font-size:12px; color:rgba(255,120,120,0.8); font-weight:600; margin-bottom:6px; letter-spacing:0.05em;">SET — EMERGENCIAS MÉDICAS</div>
+          <div style="font-size:22px; font-weight:800; color:#ff6060; letter-spacing:0.05em;">107</div>
+          <div style="font-size:13px; color:rgba(212,200,200,0.8); margin-top:3px;">4512-9997 / 9998 / 9999</div>
+        </div>
+
+        <div style="background:rgba(255,140,0,0.08); border:1px solid rgba(255,140,0,0.25); border-radius:12px; padding:12px 14px;">
+          <div style="font-size:12px; color:rgba(255,180,80,0.8); font-weight:600; margin-bottom:6px; letter-spacing:0.05em;">BOMBEROS</div>
+          <div style="font-size:22px; font-weight:800; color:#ff8c00; letter-spacing:0.05em;">100</div>
+          <div style="font-size:13px; color:rgba(212,200,190,0.8); margin-top:3px;">4749-2222 · 4731-2222 · 4715-2222</div>
+        </div>
+
+        <div style="background:rgba(255,80,80,0.07); border:1px solid rgba(255,80,80,0.2); border-radius:12px; padding:12px 14px;">
+          <div style="font-size:12px; color:rgba(255,130,80,0.85); font-weight:600; margin-bottom:6px; letter-spacing:0.05em;">‼️ DENUNCIAS POR QUEMAS</div>
+          <div style="font-size:18px; font-weight:800; color:#ff7050; letter-spacing:0.03em;">0800-122-84473</div>
+          <div style="font-size:12px; color:rgba(212,200,190,0.65); margin-top:3px;">Línea gratuita</div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div style="background:rgba(60,100,255,0.07); border:1px solid rgba(60,100,255,0.22); border-radius:12px; padding:12px 14px;">
+            <div style="font-size:11px; color:rgba(120,160,255,0.8); font-weight:600; margin-bottom:5px; letter-spacing:0.05em;">POLICÍA / COT</div>
+            <div style="font-size:22px; font-weight:800; color:#6090ff; letter-spacing:0.05em;">911</div>
+            <div style="font-size:12px; color:rgba(200,210,230,0.7); margin-top:3px;">4580-5224</div>
+          </div>
+          <div style="background:rgba(0,200,180,0.07); border:1px solid rgba(0,200,180,0.22); border-radius:12px; padding:12px 14px;">
+            <div style="font-size:11px; color:rgba(80,220,200,0.8); font-weight:600; margin-bottom:5px; letter-spacing:0.05em;">PREFECTURA</div>
+            <div style="font-size:22px; font-weight:800; color:#00c8b4; letter-spacing:0.05em;">106</div>
+            <div style="font-size:12px; color:rgba(200,230,225,0.7); margin-top:3px;">4512-4903</div>
+          </div>
+        </div>
+
+      </div>
     </div>
   </div>
 
@@ -772,6 +862,7 @@
           <button class="chip" onclick="sendQuick('almaceneras')">🛒 Almaceneras</button>
           <button class="chip" onclick="sendQuick('agenda del rio')">🌿 Agenda del Río</button>
           <button class="chip" onclick="sendQuick('memes')">😄 Memes</button>
+          <button class="chip" onclick="document.getElementById('modal-emergencias').classList.remove('hidden')">🚨 Contactos emergencias</button>
         </div>
 
         <!-- Welcome (mobile only) -->
@@ -795,6 +886,7 @@
           <button class="chip" onclick="sendQuick('almaceneras')">🛒 Almaceneras</button>
           <button class="chip" onclick="sendQuick('agenda del rio')">🌿 Agenda del Río</button>
           <button class="chip" onclick="sendQuick('memes')">😄 Memes</button>
+          <button class="chip" onclick="document.getElementById('modal-emergencias').classList.remove('hidden')">🚨 Contactos emergencias</button>
           <button class="chip" onclick="document.getElementById('modal-aporte').classList.remove('hidden')">☕ Aportá</button>
           <button class="chip" onclick="document.getElementById('modal-sugerencia').classList.remove('hidden')">💡 Sugerí algo</button>
         </div>
@@ -821,6 +913,7 @@
           <button class="chip" onclick="sendQuick('almaceneras')">🛒 Almaceneras</button>
           <button class="chip" onclick="sendQuick('agenda del rio')">🌿 Agenda del Río</button>
           <button class="chip" onclick="sendQuick('memes')">😄 Memes</button>
+          <button class="chip" onclick="document.getElementById('modal-emergencias').classList.remove('hidden')">🚨 Contactos emergencias</button>
           <button class="chip" onclick="document.getElementById('modal-aporte').classList.remove('hidden')">☕ Aportá</button>
           <button class="chip" onclick="document.getElementById('modal-sugerencia').classList.remove('hidden')">💡 Sugerí algo</button>
         </div>
@@ -967,7 +1060,7 @@
         qrRow.style.paddingLeft = '40px';
         quickReplies.forEach(label => {
           const btn = document.createElement('button');
-          const isSuggest = label.includes('Sugerí una modificación') || label.includes('Sugeri una modificacion');
+          const isSuggest = label.includes('Suger');
           btn.className = 'qr-btn' + (isSuggest ? ' suggest-btn' : '');
           btn.textContent = label;
           btn.onclick = () => sendQuick(label);
@@ -1141,6 +1234,8 @@
     async function submitSugerencia() {
       const input = document.getElementById('sugerencia-input');
       const feedback = document.getElementById('sugerencia-feedback');
+      const nombre = document.getElementById('sugerencia-nombre').value.trim();
+      const contacto = document.getElementById('sugerencia-contacto').value.trim();
       const text = input.value.trim();
       if (!text) { feedback.textContent = 'Escribí algo antes de enviar.'; return; }
       feedback.textContent = 'Enviando...';
@@ -1148,12 +1243,14 @@
         const res = await fetch('/suggest', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ text })
+          body: JSON.stringify({ text, nombre, contacto })
         });
         const data = await res.json();
         if (data.ok) {
           feedback.textContent = '✓ ¡Gracias! Tu sugerencia fue enviada.';
           input.value = '';
+          document.getElementById('sugerencia-nombre').value = '';
+          document.getElementById('sugerencia-contacto').value = '';
           setTimeout(() => {
             document.getElementById('modal-sugerencia').classList.add('hidden');
             feedback.textContent = '';
