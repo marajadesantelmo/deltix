@@ -1,11 +1,13 @@
-const CACHE = 'deltix-v1';
-const PRECACHE = ['/', '/img/bot_icon.png'];
+const CACHE = 'deltix-v3';
+const STATIC_ASSETS = ['/img/bot_icon.png'];
 
+// Instalación: solo pre-cachear imágenes estáticas, nunca el HTML
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(PRECACHE)));
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(STATIC_ASSETS)));
   self.skipWaiting();
 });
 
+// Activación: eliminar cachés viejas
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
@@ -16,11 +18,31 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // Solo cachear GET, no las llamadas al chat
-  if (e.request.method !== 'GET' || e.request.url.includes('/chat')) {
+  const url = new URL(e.request.url);
+
+  // No interceptar POSTs ni llamadas al backend
+  if (e.request.method !== 'GET') return;
+  if (['/chat', '/suggest', '/join', '/data-request'].some(p => url.pathname.startsWith(p))) return;
+
+  // HTML (incluyendo '/') → siempre network-first, sin caché
+  if (url.pathname === '/' || url.pathname.endsWith('.html')) {
+    e.respondWith(
+      fetch(e.request).catch(() => caches.match(e.request))
+    );
     return;
   }
+
+  // Imágenes y estáticos → cache-first
   e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
+    caches.match(e.request).then(cached => {
+      if (cached) return cached;
+      return fetch(e.request).then(response => {
+        if (response && response.status === 200) {
+          const clone = response.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+        }
+        return response;
+      });
+    })
   );
 });
