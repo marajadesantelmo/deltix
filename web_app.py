@@ -142,6 +142,8 @@ KEYWORDS = {
     # calefacción/estufa agregados
     "lena":        ['leña', 'lena', 'quebracho', 'salamandra', 'ligustro', 'calefaccion',
                     'calefacción', 'estufa a leña', 'estufa a lena'],
+    "agua":        ['agua potable', 'agua a domicilio', 'agua muelle', 'bidones de agua',
+                    'bidon de agua', 'reparto de agua', 'agua a tu muelle'],
     "memes":       ['meme', 'memes'],
     "emergencias": ['emergencia', 'emergencias', 'urgencia', 'urgencias', 'bomberos', 'prefectura',
                     'policia', 'policía', 'ambulancia', 'set tigre', 'quemas', 'incendio',
@@ -247,7 +249,8 @@ def build_llm_context(user_input):
                      KEYWORDS_NORM["viajesvita"] + KEYWORDS_NORM["oscart"])
     _lena_ok = (any(k in text for k in KEYWORDS_NORM["lena"]) and
                 not any(k in text for k in KEYWORDS_NORM["interislena"]))
-    if any(k in text for k in _base_act_kws) or _lena_ok:
+    _agua_ok = any(k in text for k in KEYWORDS_NORM["agua"])
+    if any(k in text for k in _base_act_kws) or _lena_ok or _agua_ok:
         context.append(load_rag_file("actividades.txt"))
     return "\n\n".join(c for c in context if c)
 
@@ -286,6 +289,7 @@ AGENDA_OPTIONS = {
     "Nahuel Servicios":    "nahuel servicios",
     "Aguariba Anfibia":    "aguariba",
     "Leña a tu Muelle":    "leña muelle",
+    "Agua 💧":             "agua muelle bidones",
     "Sublinor Gráfica 🖨️":    "sublinor imprenta",
     "Yoga con Lau 🧘":        "yoga lau",
     "Igarapé Delta 🌿":       "igarape delta senderismo",
@@ -867,6 +871,12 @@ def detect_quick_response(user_input):
         return {
             "reply": "🪵 **Leña a tu Muelle — Gabriel**\n\nBolsas tamaño salamandra (10-12 kg)\n· Quebracho Colorado: $8.500\n· Ligustro: $7.500\n· Sauce: $6.500\n· Maderitas para prender: $3.000\n\nCompra mínima: 5 bolsas\nContacto: Gabriel — 1564584445",
             "images": ["/img/actividades_productos/gabi_lena.jpeg"]
+        }
+
+    if any(k in text for k in KEYWORDS_NORM["agua"]):
+        return {
+            "reply": "💧 **Agua a tu Muelle**\n\nReparto de agua potable en bidones de 10 litros directamente a tu muelle.\n\nInstagram: @gabygallo_gil\nContacto: 1164584445",
+            "images": []
         }
 
     return None
