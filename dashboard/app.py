@@ -101,6 +101,7 @@ footer { visibility: hidden; }
 
 ROOT           = Path(__file__).parent.parent
 CSV_PATH       = ROOT / "web_interactions.csv"
+TG_CSV_PATH    = ROOT / "tg_interactions.csv"
 TIMESTAMP_FILE = Path(__file__).parent / ".last_sync"
 SYNC_LOG       = Path(__file__).parent / "sync.log"
 
@@ -110,8 +111,8 @@ IS_CLOUD = not CSV_PATH.exists()
 
 @st.cache_data(ttl=3600)
 def load_data(pa_token: str = "", pa_user: str = "facundol") -> pd.DataFrame:
-    """Carga datos. Puro: no llama a st.* para compatibilidad con st.cache_data."""
-    if pa_token:   # cloud: descarga desde PythonAnywhere API
+    """Carga datos web. Puro: no llama a st.* para compatibilidad con st.cache_data."""
+    if pa_token:
         url = (
             f"https://www.pythonanywhere.com/api/v0/user/{pa_user}"
             f"/files/path/home/{pa_user}/deltix/web_interactions.csv"
@@ -119,25 +120,60 @@ def load_data(pa_token: str = "", pa_user: str = "facundol") -> pd.DataFrame:
         resp = requests.get(url, headers={"Authorization": f"Token {pa_token}"}, timeout=30)
         resp.raise_for_status()
         df = pd.read_csv(StringIO(resp.text), parse_dates=["timestamp"])
-    else:          # local: lee desde disco
+    else:
         df = pd.read_csv(str(CSV_PATH), parse_dates=["timestamp"])
-    # Los timestamps están en UTC; Argentina es UTC-3
     df["timestamp"] = df["timestamp"] - pd.Timedelta(hours=3)
     df["date"]    = df["timestamp"].dt.date
     df["hour"]    = df["timestamp"].dt.hour
     df["weekday"] = df["timestamp"].dt.day_name()
+    df["source"]  = "web"
     return df
 
-# Validar secretos y cargar datos (st.error/st.stop van FUERA de @st.cache_data)
+@st.cache_data(ttl=3600)
+def load_tg_data(pa_token: str = "", pa_user: str = "facundol") -> pd.DataFrame:
+    """Carga datos de Telegram. Devuelve DataFrame vacío si el archivo no existe aún."""
+    try:
+        if pa_token:
+            url = (
+                f"https://www.pythonanywhere.com/api/v0/user/{pa_user}"
+                f"/files/path/home/{pa_user}/deltix/tg_interactions.csv"
+            )
+            resp = requests.get(url, headers={"Authorization": f"Token {pa_token}"}, timeout=30)
+            if resp.status_code == 404:
+                return pd.DataFrame(columns=["timestamp","user_id","user_message","response_type","bot_reply","date","hour","weekday","source"])
+            resp.raise_for_status()
+            df = pd.read_csv(StringIO(resp.text), parse_dates=["timestamp"])
+        else:
+            if not TG_CSV_PATH.exists():
+                return pd.DataFrame(columns=["timestamp","user_id","user_message","response_type","bot_reply","date","hour","weekday","source"])
+            df = pd.read_csv(str(TG_CSV_PATH), parse_dates=["timestamp"])
+        df["timestamp"] = df["timestamp"] - pd.Timedelta(hours=3)
+        df["date"]    = df["timestamp"].dt.date
+        df["hour"]    = df["timestamp"].dt.hour
+        df["weekday"] = df["timestamp"].dt.day_name()
+        df["source"]  = "telegram"
+        # Normalizar: renombrar user_id → session_id para compatibilidad
+        if "user_id" in df.columns:
+            df = df.rename(columns={"user_id": "session_id"})
+        return df
+    except Exception as e:
+        print(f"TG data load error: {e}")
+        return pd.DataFrame(columns=["timestamp","user_id","user_message","response_type","bot_reply","date","hour","weekday","source"])
+
+# Validar secretos y cargar datos
 if IS_CLOUD:
     _pa_token = st.secrets.get("PA_API_TOKEN", "")
     _pa_user  = st.secrets.get("PA_USERNAME", "facundol")
     if not _pa_token:
         st.error("⚠️ Configurá `PA_API_TOKEN` en Streamlit Secrets (Settings → Secrets).")
         st.stop()
-    df_full = load_data(_pa_token, _pa_user)
+    df_full    = load_data(_pa_token, _pa_user)
+    df_tg_full = load_tg_data(_pa_token, _pa_user)
 else:
-    df_full = load_data()
+    df_full    = load_data()
+    df_tg_full = load_tg_data()
+
+TG_AVAILABLE = len(df_tg_full) > 0
 
 # ── Barra superior ────────────────────────────────────────────────────────────
 
@@ -197,6 +233,12 @@ if len(date_range) == 2:
 else:
     df = df_full.copy()
     start, end = min_date, max_date
+
+# Filtro Telegram con el mismo período
+if TG_AVAILABLE and len(df_tg_full):
+    df_tg = df_tg_full[(df_tg_full["date"] >= start) & (df_tg_full["date"] <= end)].copy()
+else:
+    df_tg = df_tg_full.copy() if TG_AVAILABLE else pd.DataFrame()
 
 # Período anterior (misma duración, para tendencias)
 n_days = max((end - start).days, 1)
@@ -1086,6 +1128,212 @@ df_sess = (
 df_sess["timestamp"] = df_sess["timestamp"].dt.strftime("%H:%M:%S")
 df_sess.columns = ["Hora", "Usuario", "Bot", "Tipo"]
 st.dataframe(df_sess, use_container_width=True, hide_index=True)
+
+# ── Telegram ─────────────────────────────────────────────────────────────────
+
+st.markdown("---")
+st.markdown("## 📱 Bot de Telegram")
+
+if not TG_AVAILABLE:
+    st.info("Aún no hay datos del bot de Telegram. Una vez que `tg_interactions.csv` se genere en PythonAnywhere, aparecerá aquí automáticamente.")
+else:
+    # ── KPIs Telegram ────────────────────────────────────────────────────────
+    tg_total     = len(df_tg)
+    tg_users     = df_tg["session_id"].nunique() if "session_id" in df_tg.columns else 0
+    tg_dau_serie = df_tg.groupby("date")["session_id"].nunique() if tg_users else pd.Series(dtype=float)
+    tg_avg_dau   = tg_dau_serie.mean() if len(tg_dau_serie) else 0
+    tg_llm_pct   = (df_tg["response_type"].isin(["llm","llm_error"]).sum() / tg_total * 100) if tg_total else 0
+    tg_sess_lens = df_tg.groupby("session_id").size() if tg_users else pd.Series(dtype=float)
+    tg_avg_len   = tg_sess_lens.mean() if len(tg_sess_lens) else 0
+
+    tk1, tk2, tk3, tk4, tk5 = st.columns(5)
+    kpi(tk1, "Mensajes TG",     f"{tg_total:,}".replace(",","."),  f"{n_days} días",         icon="📨", accent="#2b9fc4")
+    kpi(tk2, "Usuarios únicos", str(tg_users),                     "IDs distintos",          icon="👤", accent="#2b9fc4")
+    kpi(tk3, "Usuarios/día",    f"{tg_avg_dau:.1f}",               "DAU promedio",            icon="📅", accent="#2b9fc4")
+    kpi(tk4, "Msgs / usuario",  f"{tg_avg_len:.1f}",               "profundidad de sesión",  icon="💬", accent="#2b9fc4")
+    kpi(tk5, "Ratio LLM",       f"{tg_llm_pct:.1f}%",             "consultas al LLM",       icon="🤖", accent="#9b5fc0")
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # ── Comparativa Web vs Telegram por día ──────────────────────────────────
+    col_cmp, col_tgpie = st.columns([3, 2])
+
+    with col_cmp:
+        st.markdown("### Mensajes diarios: Web vs Telegram")
+        web_daily = df.groupby("date").size().reset_index(name="Web")
+        tg_daily  = df_tg.groupby("date").size().reset_index(name="Telegram")
+        cmp_daily = pd.merge(web_daily, tg_daily, on="date", how="outer").fillna(0).sort_values("date")
+        cmp_daily["date_str"] = cmp_daily["date"].astype(str)
+
+        fig_cmp = go.Figure()
+        fig_cmp.add_trace(go.Bar(
+            x=cmp_daily["date_str"], y=cmp_daily["Web"],
+            name="Web", marker=dict(color="#5a9e47", line=dict(width=0)),
+            hovertemplate="<b>%{x}</b><br>Web: %{y}<extra></extra>",
+        ))
+        fig_cmp.add_trace(go.Bar(
+            x=cmp_daily["date_str"], y=cmp_daily["Telegram"],
+            name="Telegram", marker=dict(color="#2b9fc4", line=dict(width=0)),
+            hovertemplate="<b>%{x}</b><br>Telegram: %{y}<extra></extra>",
+        ))
+        fig_cmp.update_layout(
+            barmode="group",
+            paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
+            margin=dict(l=0, r=0, t=10, b=0), height=280,
+            xaxis=dict(showgrid=False, color=TEXT, tickfont=dict(size=11)),
+            yaxis=dict(showgrid=True, gridcolor=GRID, color=TEXT, zeroline=False),
+            legend=dict(orientation="h", x=0, y=1.12, font=dict(color=TEXT, size=11), bgcolor=TRANSP),
+            hoverlabel=dict(bgcolor="#1a2e1a", font_color="#e8f5e2"),
+        )
+        st.plotly_chart(fig_cmp, use_container_width=True)
+
+    with col_tgpie:
+        st.markdown("### Funcionalidades TG · *por usuario*")
+        tg_type_counts = (
+            df_tg.drop_duplicates(subset=["session_id","response_type"])["response_type"]
+            .value_counts()
+        )
+        tg_type_map = {
+            "colectivas":  "🚢 Colectivas",
+            "mareas":      "🌊 Mareas",
+            "windguru":    "🌬️ WindGurú",
+            "hidrografia": "📡 Hidrografía",
+            "agenda":      "📅 Agenda",
+            "memes":       "😂 Memes",
+            "llm":         "🤖 LLM",
+            "almaceneras": "🛒 Almaceneras",
+            "social":      "💬 Social",
+            "llm_error":   "❌ LLM error",
+            "other":       "❓ Otro",
+        }
+        tg_tc = (
+            tg_type_counts.rename(index=tg_type_map)
+            .loc[lambda s: s.index.isin(tg_type_map.values())]
+            .reset_index()
+        )
+        tg_tc.columns = ["label", "count"]
+
+        # Agrupar < 2.5% en Otros
+        _tg_total_pie = tg_tc["count"].sum()
+        if _tg_total_pie > 0:
+            _tg_mask = (tg_tc["count"] / _tg_total_pie * 100) < 2.5
+            _tg_otros = int(tg_tc.loc[_tg_mask, "count"].sum())
+            tg_tc = tg_tc.loc[~_tg_mask].copy()
+            if _tg_otros > 0:
+                tg_tc = pd.concat([tg_tc, pd.DataFrame([{"label": "⬜ Otros", "count": _tg_otros}])], ignore_index=True)
+
+        tg_colors = [FEATURE_COLORS.get(l, "#888888") for l in tg_tc["label"]]
+        fig_tgpie = go.Figure(go.Pie(
+            labels=tg_tc["label"], values=tg_tc["count"],
+            marker=dict(colors=tg_colors, line=dict(color="#0e1a0e", width=2)),
+            hole=0.45,
+            textinfo="percent",
+            textfont=dict(size=12, color="white"),
+            hovertemplate="<b>%{label}</b><br>%{value} usuarios (%{percent})<extra></extra>",
+        ))
+        fig_tgpie.update_layout(
+            paper_bgcolor=TRANSP,
+            margin=dict(l=0, r=0, t=10, b=0), height=280,
+            legend=dict(font=dict(size=11, color=TEXT), bgcolor=TRANSP, orientation="v", x=1, y=0.5),
+            hoverlabel=dict(bgcolor="#2a4a2a", font_color="#e8f5e2"),
+        )
+        st.plotly_chart(fig_tgpie, use_container_width=True)
+
+    # ── Top mensajes Telegram + usuarios más activos ──────────────────────────
+    col_tgtop, col_tgusers = st.columns(2)
+
+    with col_tgtop:
+        st.markdown("### Top 10 mensajes en Telegram")
+        tg_top = (
+            df_tg["user_message"].str.strip().str.lower()
+            .value_counts().head(10).reset_index()
+        )
+        tg_top.columns = ["Mensaje", "Veces"]
+        fig_tgtop = go.Figure(go.Bar(
+            x=tg_top["Veces"][::-1], y=tg_top["Mensaje"][::-1],
+            orientation="h",
+            marker=dict(
+                color=tg_top["Veces"][::-1],
+                colorscale=[[0, "#1a4a5c"], [0.5, "#2b7fa0"], [1, "#4dc4e8"]],
+                line=dict(width=0),
+            ),
+            text=tg_top["Veces"][::-1], textposition="outside",
+            textfont=dict(color=TEXT, size=11),
+            hovertemplate="%{y}: %{x} veces<extra></extra>",
+        ))
+        fig_tgtop.update_layout(
+            paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
+            margin=dict(l=0, r=40, t=10, b=0), height=300,
+            xaxis=dict(showgrid=True, gridcolor=GRID, color=TEXT),
+            yaxis=dict(showgrid=False, color=TEXT, tickfont=dict(size=11)),
+            hoverlabel=dict(bgcolor="#1a2e3a", font_color="#e8f5e2"),
+        )
+        st.plotly_chart(fig_tgtop, use_container_width=True)
+
+    with col_tgusers:
+        st.markdown("### Usuarios más activos en Telegram")
+        tg_user_counts = (
+            df_tg.groupby("session_id").size()
+            .sort_values(ascending=False).head(10)
+            .reset_index()
+        )
+        tg_user_counts.columns = ["user_id", "mensajes"]
+        tg_user_counts["user_id"] = tg_user_counts["user_id"].astype(str).str[-6:]  # últimos 6 dígitos
+        fig_tgusers = go.Figure(go.Bar(
+            x=tg_user_counts["mensajes"][::-1],
+            y=("···" + tg_user_counts["user_id"])[::-1],
+            orientation="h",
+            marker=dict(
+                color=tg_user_counts["mensajes"][::-1],
+                colorscale=[[0, "#1a4a5c"], [0.5, "#2b7fa0"], [1, "#4dc4e8"]],
+                line=dict(width=0),
+            ),
+            text=tg_user_counts["mensajes"][::-1], textposition="outside",
+            textfont=dict(color=TEXT, size=11),
+            hovertemplate="Usuario %{y}: %{x} mensajes<extra></extra>",
+        ))
+        fig_tgusers.update_layout(
+            paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
+            margin=dict(l=0, r=40, t=10, b=0), height=300,
+            xaxis=dict(showgrid=True, gridcolor=GRID, color=TEXT),
+            yaxis=dict(showgrid=False, color=TEXT, tickfont=dict(size=11)),
+            hoverlabel=dict(bgcolor="#1a2e3a", font_color="#e8f5e2"),
+        )
+        st.plotly_chart(fig_tgusers, use_container_width=True)
+
+    # ── Actividad horaria Telegram ────────────────────────────────────────────
+    st.markdown("### Actividad por hora — Telegram")
+    tg_hourly = df_tg.groupby("hour").size().reindex(range(24), fill_value=0).reset_index()
+    tg_hourly.columns = ["hour", "count"]
+    tg_peak_h = int(tg_hourly.loc[tg_hourly["count"].idxmax(), "hour"]) if tg_total else 0
+    fig_tgh = go.Figure()
+    fig_tgh.add_trace(go.Scatter(
+        x=tg_hourly["hour"], y=tg_hourly["count"],
+        mode="lines+markers", fill="tozeroy",
+        fillcolor="rgba(43,159,196,0.15)",
+        line=dict(color="#4dc4e8", width=2.5, shape="spline"),
+        marker=dict(
+            color=["#e07a30" if h == tg_peak_h else "#2b9fc4" for h in tg_hourly["hour"]],
+            size=[10 if h == tg_peak_h else 5 for h in tg_hourly["hour"]],
+        ),
+        hovertemplate="<b>%{x}h</b>: %{y} msgs<extra></extra>",
+    ))
+    if tg_total:
+        fig_tgh.add_annotation(
+            x=tg_peak_h,
+            y=int(tg_hourly.loc[tg_hourly["hour"] == tg_peak_h, "count"].values[0]),
+            text=f"Pico: {tg_peak_h}h", showarrow=True, arrowhead=2,
+            font=dict(color="#e07a30", size=12), arrowcolor="#e07a30",
+            bgcolor="#1a2e1a", bordercolor="#e07a30", ay=-30,
+        )
+    fig_tgh.update_layout(
+        paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
+        margin=dict(l=0, r=0, t=10, b=0), height=220,
+        xaxis=dict(showgrid=False, color=TEXT, tickmode="linear", tick0=0, dtick=1),
+        yaxis=dict(showgrid=True, gridcolor=GRID, color=TEXT, zeroline=False),
+        hoverlabel=dict(bgcolor="#1a2e3a", font_color="#e8f5e2"),
+    )
+    st.plotly_chart(fig_tgh, use_container_width=True)
 
 # ── Footer ────────────────────────────────────────────────────────────────────
 

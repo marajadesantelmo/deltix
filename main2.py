@@ -2,8 +2,10 @@ from telegram.ext import ApplicationBuilder,  CommandHandler, ConversationHandle
 import pandas as pd
 import nest_asyncio
 import os
+import csv
 import asyncio
 import random
+from datetime import datetime
 from tokens import telegram_token
 from deltix_funciones import *
 from llm_connector import get_llm_response, create_conversation, get_db_connection
@@ -18,6 +20,59 @@ if os.path.exists('/home/facundol/deltix/'):
 else:
         base_path = ''
 user_experience_path = base_path + 'user_experience.csv'
+
+# ── Telegram interaction logging ──────────────────────────────────────────────
+TG_LOG_PATH = base_path + 'tg_interactions.csv'
+TG_LOG_HEADERS = ["timestamp", "user_id", "user_message", "response_type", "bot_reply"]
+
+# Maps each handler function name → response_type label (mirrors web_app.py types)
+HANDLER_RESPONSE_TYPES = {
+    "start":            "social",
+    "menu":             "social",
+    "cancel":           "social",
+    "de_nada":          "social",
+    "colaborar":        "social",
+    "suscribirme":      "social",
+    "desuscribirme":    "social",
+    "mensaje_trigger":  "social",
+    "mensajear":        "social",
+    "mareas":           "mareas",
+    "windguru":         "windguru",
+    "hidrografia":      "hidrografia",
+    "memes":            "memes",
+    "colectivas":       "colectivas",
+    "Jilguero":         "colectivas",
+    "Interislena":      "colectivas",
+    "LineasDelta":      "colectivas",
+    "almaceneras":      "almaceneras",
+    "almacenera_selected": "almaceneras",
+    "charlar":          "llm",
+    "llm_fallback":     "llm",
+    "amanita":          "agenda",
+    "alfareria":        "agenda",
+    "labusqueda":       "agenda",
+    "canaveralkayaks":  "agenda",
+    "charco_masajes":   "agenda",
+    "familia_islena":   "agenda",
+}
+
+def log_tg_interaction(user_id, user_message, response_type, bot_reply=""):
+    """Append one row to tg_interactions.csv (non-fatal on error)."""
+    try:
+        file_exists = os.path.isfile(TG_LOG_PATH)
+        with open(TG_LOG_PATH, 'a', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            if not file_exists:
+                writer.writerow(TG_LOG_HEADERS)
+            writer.writerow([
+                datetime.now().isoformat(),
+                str(user_id),
+                (user_message or '')[:300],
+                response_type,
+                (bot_reply or '')[:300],
+            ])
+    except Exception as e:
+        print(f"TG log error: {e}")
 
 def store_chat_message(phone_number, role, content):
     """Store a chat message in MySQL."""
@@ -96,30 +151,25 @@ async def tracked_reply(update, text, *args, **kwargs):
 
 # Update the llm_fallback handler to use tracked_reply
 async def llm_fallback(update, context):
-    user_id = update.effective_user.id
+    user_id    = update.effective_user.id
     user_input = update.message.text
-    
+
     # Create a task to send "Dejame pensar..." after 3 seconds
     thinking_message_task = asyncio.create_task(
         send_thinking_message_after_delay(update, context, 3)
     )
-    
+
     try:
-        # Get response from LLM (ensure this is awaited)
-        # Don't track the message here since it's already tracked by the handler wrapper
         llm_response = await asyncio.to_thread(get_llm_response, user_input, user_id)
-        
-        # Cancel the thinking message task if it hasn't been sent yet
         thinking_message_task.cancel()
-        
-        # Send the response back to the user and track it
         await tracked_reply(update, llm_response)
+        log_tg_interaction(user_id, user_input, "llm", llm_response)
     except Exception as e:
-        # Log the error and notify the user
         print(f"Error in LLM fallback: {e}")
-        await tracked_reply(update, "Lo siento, ocurrió un error al procesar tu consulta. Por favor, intentá más tarde.")
-    
-    # Return to the conversation handler state
+        err_msg = "Lo siento, ocurrió un error al procesar tu consulta. Por favor, intentá más tarde."
+        await tracked_reply(update, err_msg)
+        log_tg_interaction(user_id, user_input, "llm_error", err_msg)
+
     return ConversationHandler.END
 
 # Helper function to send "Dejame pensar..." after a delay
@@ -150,42 +200,50 @@ async def send_thinking_message_after_delay(update, context, delay_seconds):
 
 # Define the wrap_handler_with_tracking function (keep only one version)
 def wrap_handler_with_tracking(handler):
-    """Wrap a handler with message tracking functionality"""
+    """Wrap a handler with message tracking (MySQL) and CSV logging."""
     if isinstance(handler, (CommandHandler, MessageHandler)):
         original_callback = handler.callback
-        
+        rtype = HANDLER_RESPONSE_TYPES.get(original_callback.__name__, "other")
+
         async def wrapped_callback(update, context):
-            # Track user message exactly once
+            user_id  = update.effective_user.id if update.effective_user else "?"
+            user_msg = (update.message.text or "") if update.message else ""
+
+            # MySQL tracking (existing)
             if update.message and update.message.text:
-                user_id = update.effective_user.id
                 try:
-                    # Only track messages here, remove tracking from llm_connector.py
                     store_chat_message(user_id, "user", update.message.text)
                 except Exception as e:
                     print(f"Failed to store user message: {e}")
-            
+
             # Add tracked_reply to context for handlers to use
             context.tracked_reply = lambda text, *args, **kwargs: tracked_reply(update, text, *args, **kwargs)
-            
+
             # Call original handler
-            return await original_callback(update, context)
-        
+            result = await original_callback(update, context)
+
+            # CSV log (skip llm_fallback — it logs itself with the actual reply)
+            if rtype != "llm":
+                log_tg_interaction(user_id, user_msg, rtype)
+
+            return result
+
         handler.callback = wrapped_callback
-    
+
     elif isinstance(handler, ConversationHandler):
         # Wrap entry points
         for entry_point in handler.entry_points:
             wrap_handler_with_tracking(entry_point)
-        
+
         # Wrap state handlers
         for state, state_handlers in handler.states.items():
             for state_handler in state_handlers:
                 wrap_handler_with_tracking(state_handler)
-        
+
         # Wrap fallbacks
         for fallback in handler.fallbacks:
             wrap_handler_with_tracking(fallback)
-    
+
     return handler
 
 nest_asyncio.apply()
