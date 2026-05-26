@@ -552,7 +552,20 @@ with col_pie:
           .loc[lambda s: s.index.isin(type_map.values())]
           .reset_index())
     tc.columns = ["label", "count"]
-    colors = [FEATURE_COLORS.get(l, "#888") for l in tc["label"]]
+
+    # Agrupar categorías con menos de 2.5% en "Otros"
+    _total_pie = tc["count"].sum()
+    if _total_pie > 0:
+        _mask_otros = (tc["count"] / _total_pie * 100) < 2.5
+        _otros_sum  = int(tc.loc[_mask_otros, "count"].sum())
+        tc = tc.loc[~_mask_otros].copy()
+        if _otros_sum > 0:
+            tc = pd.concat(
+                [tc, pd.DataFrame([{"label": "⬜ Otros", "count": _otros_sum}])],
+                ignore_index=True,
+            )
+
+    colors = [FEATURE_COLORS.get(l, "#888888") for l in tc["label"]]
 
     fig2 = go.Figure(go.Pie(
         labels=tc["label"], values=tc["count"],
