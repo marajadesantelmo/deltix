@@ -132,6 +132,7 @@ KEYWORDS = {
     "masajes":     ['masaje', 'masajes', 'charco', 'thai'],
     # 'alimentos' removido — demasiado genérico
     "familia":     ['familia islena', 'familia isleña', 'dietetica', 'dietética', 'piojo isleno'],
+    "mimbre":      ['mimbre', 'cesteria', 'cestería', 'chiricote', 'canasta', 'canastas', 'tejido con plantas', 'mimbre del chiricote'],
     "frutales":    ['frutales', 'citricos', 'cítricos', 'limonero', 'naranjas', 'mandarina', 'planta frutal'],
     "dulceras":    ['dulceras', 'dulcera', 'dulceras del rio', 'reposteria', 'repostería'],
     "vivero":      ['vivero', 'tierra fertil', 'tierra fértil', 'compost', 'igarape', 'igarapé', 'huerta'],
@@ -242,11 +243,12 @@ def build_llm_context(user_input):
         context.append(load_rag_file("lineasdelta.txt"))
     _base_act_kws = (KEYWORDS_NORM["activities"] + KEYWORDS_NORM["amanita"] + KEYWORDS_NORM["alfareria"] +
                      KEYWORDS_NORM["labusqueda"] + KEYWORDS_NORM["kayaks"] + KEYWORDS_NORM["masajes"] +
-                     KEYWORDS_NORM["familia"] + KEYWORDS_NORM["frutales"] + KEYWORDS_NORM["dulceras"] +
-                     KEYWORDS_NORM["vivero"] + KEYWORDS_NORM["nahuel"] + KEYWORDS_NORM["aguariba"] +
-                     KEYWORDS_NORM["sublinor"] + KEYWORDS_NORM["yoga"] + KEYWORDS_NORM["igarapedelta"] +
-                     KEYWORDS_NORM["taxifletes"] + KEYWORDS_NORM["fletesmareaexpress"] +
-                     KEYWORDS_NORM["viajesvita"] + KEYWORDS_NORM["oscart"])
+                     KEYWORDS_NORM["familia"] + KEYWORDS_NORM["mimbre"] + KEYWORDS_NORM["frutales"] +
+                     KEYWORDS_NORM["dulceras"] + KEYWORDS_NORM["vivero"] + KEYWORDS_NORM["nahuel"] +
+                     KEYWORDS_NORM["aguariba"] + KEYWORDS_NORM["sublinor"] + KEYWORDS_NORM["yoga"] +
+                     KEYWORDS_NORM["igarapedelta"] + KEYWORDS_NORM["taxifletes"] +
+                     KEYWORDS_NORM["fletesmareaexpress"] + KEYWORDS_NORM["viajesvita"] +
+                     KEYWORDS_NORM["oscart"])
     _lena_ok = (any(k in text for k in KEYWORDS_NORM["lena"]) and
                 not any(k in text for k in KEYWORDS_NORM["interislena"]))
     _agua_ok = any(k in text for k in KEYWORDS_NORM["agua"])
@@ -294,6 +296,7 @@ AGENDA_OPTIONS = {
     "Yoga con Lau 🧘":        "yoga lau",
     "Igarapé Delta 🌿":       "igarape delta senderismo",
     "Lanchas Taxis y Fletes 🚤": "taxifletes traslado lancha",
+    "Mimbre del Chiricote 🧺":   "mimbre cesteria chiricote",
 }
 
 
@@ -788,6 +791,12 @@ def detect_quick_response(user_input):
         return {
             "reply": "🌾 **La Familia Isleña**\n\nAlimentos dietéticos, nutritivos y a buen precio\nHarinas, arroces, lentejas, porotos, frutos secos y más\nRepartos a tu muelle con envíos gratis todas las semanas\n\nPedidos al WhatsApp de Jorge (Piojo): 11 3046-6301",
             "images": ["/img/actividades_productos/familia_islena_flyer.jpg"]
+        }
+
+    if any(k in text for k in KEYWORDS_NORM["mimbre"]):
+        return {
+            "reply": "🧺 **Mimbre del Chiricote**\n\nCestería botánica\nCanastas, objetos y obras tejidas con plantas\n\nClases individuales y grupales\nAsesorías · Residencias\n\nInstagram: @mimbre.del.chiricote\nContacto: 1159749127",
+            "images": ["/img/actividades_productos/mimbre_del_chiricote.png"]
         }
 
     if any(k in text for k in KEYWORDS_NORM["frutales"]):

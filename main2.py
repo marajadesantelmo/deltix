@@ -53,7 +53,8 @@ HANDLER_RESPONSE_TYPES = {
     "labusqueda":       "agenda",
     "canaveralkayaks":  "agenda",
     "charco_masajes":   "agenda",
-    "familia_islena":   "agenda",
+    "familia_islena":        "agenda",
+    "mimbre_del_chiricote":  "agenda",
 }
 
 def log_tg_interaction(user_id, user_message, response_type, bot_reply=""):
@@ -274,6 +275,7 @@ if __name__ == '__main__':
         wrap_handler_with_tracking(CommandHandler('canaveralkayaks', canaveralkayaks)),
         wrap_handler_with_tracking(CommandHandler('charco_masajes', charco_masajes)),
         wrap_handler_with_tracking(CommandHandler('familia_islena', familia_islena)),
+        wrap_handler_with_tracking(CommandHandler('mimbre', mimbre_del_chiricote)),
     ]
     
     # Other handlers for message text with tracking
@@ -299,6 +301,7 @@ if __name__ == '__main__':
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Canaveralkayaks|canaveralkayaks|CANAVERALKAYAKS)$'), canaveralkayaks)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(masajes|charco|MASAJES)$'), charco_masajes)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(familia islena|familia_islena|FAMILIA ISLENA)$'), familia_islena)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(mimbre|Mimbre|MIMBRE|chiricote|mimbre del chiricote)$'), mimbre_del_chiricote)),
         # Handlers for words contained in messages
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bcharlar\b.*)'), charlar)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bmareas\b.*)'), mareas)),
@@ -327,6 +330,7 @@ if __name__ == '__main__':
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bcanaveralkayaks\b.*)'), canaveralkayaks)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bmasajes\b.*)'), charco_masajes)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bfamilia islena\b.*)'), familia_islena)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bchiricote\b.*)'), mimbre_del_chiricote)),
         # LLM como fallback
         MessageHandler(filters.TEXT, llm_fallback)
     ]

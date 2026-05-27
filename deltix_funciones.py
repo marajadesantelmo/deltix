@@ -46,6 +46,7 @@ labusqueda_path = base_path + 'actividades_productos/labusqueda.png'
 canaveral_path = base_path + 'actividades_productos/canaveralkayaks.png'
 charco_masajes_path = base_path + 'actividades_productos/charco_masajes.png'
 familia_islena_path = base_path + 'actividades_productos/familia_islena_flyer.jpg'
+mimbre_chiricote_path = base_path + 'actividades_productos/mimbre_del_chiricote.png'
 familia_islena_path1 = base_path + 'actividades_productos/familia_islena.jpg'
 familia_islena_path2 = base_path + 'actividades_productos/familia_islena2.jpg'
 
@@ -93,7 +94,8 @@ def generate_main_menu():
             "- <b>/labusqueda</b>   <i> espacio para ceremonias, hostal y mas</i>\n"
             "- <b>/canaveralkayaks</b>   <i> excursiones en kayak</i>\n"
             "- <b>/masajes</b>   <i> masaje thai</i>\n"
-            "- <b>/familia_islena</b>   <i> alimentos y dietetica natural</i>\n")
+            "- <b>/familia_islena</b>   <i> alimentos y dietetica natural</i>\n"
+            "- <b>/mimbre</b>   <i> cestería botánica con plantas</i>\n")
 
 main_menu_keyboard = ReplyKeyboardMarkup([["/windguru", "/mareas", "/hidrografia"],
                                           ["/colectivas", "/almaceneras", "/memes"],
@@ -314,6 +316,27 @@ async def familia_islena(update: Update, context: ContextTypes.DEFAULT_TYPE)-> N
     time.sleep(3)
     await context.bot.send_photo(chat_id, open(familia_islena_path1, "rb"))
     await context.bot.send_photo(chat_id, open(familia_islena_path2, "rb"))
+    return ConversationHandler.END
+
+async def mimbre_del_chiricote(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
+    '''
+    Respuesta cuando el usuario pide información de Mimbre del Chiricote
+    '''
+    chat_id = update.effective_chat.id
+    user = update.effective_user
+    await context.bot.send_photo(chat_id, open(mimbre_chiricote_path, "rb"))
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=(
+            "<b>Mimbre del Chiricote</b>\n\n"
+            "<i>Cestería botánica</i>\n"
+            "<i>Canastas, objetos y obras tejidas con plantas</i>\n\n"
+            "Clases individuales y grupales\n"
+            "Asesorías · Residencias\n\n"
+            "@mimbre.del.chiricote\n"
+            "Contacto: 1159749127"
+        ),
+        parse_mode='HTML')
     return ConversationHandler.END
 
 async def charlar(update: Update, context: ContextTypes.DEFAULT_TYPE):
