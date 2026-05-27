@@ -772,7 +772,7 @@ with col_llmr:
                    "llm":   g["response_type"].isin(["llm", "llm_blocked", "llm_error"]).sum(),
                }))
                .reindex(_all_dates_llm).fillna(0).reset_index())
-        g["pct"] = (g["llm"] / g["total"].replace(0, pd.NA) * 100).round(1)
+        g["pct"] = (g["llm"] / g["total"].replace(0, pd.NA) * 100).fillna(0).round(1)
         g["date_str"] = g["date"].astype(str)
         return g
 
