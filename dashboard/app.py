@@ -247,6 +247,17 @@ prev_start = prev_end - timedelta(days=n_days - 1)
 df_prev = df_full[
     (df_full["date"] >= prev_start) & (df_full["date"] <= prev_end)
 ].copy()
+if TG_AVAILABLE and len(df_tg_full):
+    df_tg_prev = df_tg_full[
+        (df_tg_full["date"] >= prev_start) & (df_tg_full["date"] <= prev_end)
+    ].copy()
+else:
+    df_tg_prev = pd.DataFrame()
+
+# ── DataFrames combinados (web + Telegram) ───────────────────────────────────
+df_combined      = pd.concat([df, df_tg], ignore_index=True)           if TG_AVAILABLE and not df_tg.empty      else df.copy()
+df_combined_prev = pd.concat([df_prev, df_tg_prev], ignore_index=True) if not df_tg_prev.empty                  else df_prev.copy()
+df_combined_full = pd.concat([df_full, df_tg_full], ignore_index=True) if TG_AVAILABLE and not df_tg_full.empty else df_full.copy()
 
 # ── Período activo ────────────────────────────────────────────────────────────
 
@@ -276,14 +287,19 @@ def kpi(col, label, value_str, sub="", trend_html_str="", icon="", accent="#5a9e
         {trend_html}
     </div>""", unsafe_allow_html=True)
 
-# ── Métricas ──────────────────────────────────────────────────────────────────
+# ── Métricas ─────────────────────────────────────────────────────────────────
+# Totales por fuente (para KPIs con desglose)
+total_web  = len(df)
+total_tg_n = len(df_tg) if TG_AVAILABLE and not df_tg.empty else 0
+total      = total_web + total_tg_n
+prev_total = len(df_combined_prev)
 
-total     = len(df)
-prev_total = len(df_prev)
-n_sess    = df["session_id"].nunique()
-prev_sess = df_prev["session_id"].nunique()
+n_sess_web = df["session_id"].nunique()
+n_sess_tg  = df_tg["session_id"].nunique() if TG_AVAILABLE and not df_tg.empty else 0
+n_sess     = n_sess_web + n_sess_tg
+prev_sess  = df_combined_prev["session_id"].nunique() if not df_combined_prev.empty else 0
 
-type_counts = df["response_type"].value_counts()
+type_counts = df_combined["response_type"].value_counts()
 llm_ok      = int(type_counts.get("llm", 0))
 llm_blocked = int(type_counts.get("llm_blocked", 0))
 llm_error   = int(type_counts.get("llm_error", 0))
@@ -291,43 +307,52 @@ total_llm   = llm_ok + llm_blocked + llm_error
 pct_llm     = total_llm / total * 100 if total else 0
 error_rate  = (llm_blocked + llm_error) / total * 100 if total else 0
 
-sess_lens    = df.groupby("session_id").size()
+sess_lens    = df_combined.groupby("session_id").size()
 avg_len      = sess_lens.mean() if len(sess_lens) else 0
 power_users  = int((sess_lens >= 10).sum())
 bounces      = int((sess_lens == 1).sum())
 bounce_pct   = bounces / n_sess * 100 if n_sess else 0
 
-# Usuarios activos únicos por día (session_id distintos por día)
-dau          = df.groupby("date")["session_id"].nunique()  # Daily Active Users
+# Usuarios activos únicos por día (session_id distintos por día) — combinado
+dau          = df_combined.groupby("date")["session_id"].nunique()
 avg_dau      = dau.mean() if len(dau) else 0
 max_dau      = int(dau.max()) if len(dau) else 0
-prev_dau     = df_prev.groupby("date")["session_id"].nunique().mean() if len(df_prev) else 0
+prev_dau     = df_combined_prev.groupby("date")["session_id"].nunique().mean() if not df_combined_prev.empty else 0
 
-prev_pct_llm = (df_prev["response_type"].isin(["llm","llm_blocked","llm_error"]).sum()
-                / len(df_prev) * 100) if len(df_prev) else 0
+prev_pct_llm = (df_combined_prev["response_type"].isin(["llm","llm_blocked","llm_error"]).sum()
+                / len(df_combined_prev) * 100) if not df_combined_prev.empty else 0
 
-# ── Métricas hoy / este mes (sobre df_full, independiente del filtro) ─────────
-_today       = df_full["date"].max()          # fecha más reciente del dataset
-_dau_full    = df_full.groupby("date")["session_id"].nunique()
-_msgs_daily  = df_full.groupby("date").size()
+# ── Métricas hoy / este mes (sobre datos completos, independiente del filtro) ─
+_today       = df_combined_full["date"].max()
+_dau_full    = df_combined_full.groupby("date")["session_id"].nunique()
+_msgs_daily  = df_combined_full.groupby("date").size()
 users_today  = int(_dau_full.get(_today, 0))
 msgs_today   = int(_msgs_daily.get(_today, 0))
-avg_dau_full = _dau_full.mean() if len(_dau_full) else 0
-avg_msgs_daily = _msgs_daily.mean() if len(_msgs_daily) else 0
+# desglose hoy: web + TG
+_msgs_daily_web = df_full.groupby("date").size()
+_msgs_daily_tg  = df_tg_full.groupby("date").size() if TG_AVAILABLE else pd.Series(dtype=int)
+msgs_today_web  = int(_msgs_daily_web.get(_today, 0))
+msgs_today_tg   = int(_msgs_daily_tg.get(_today, 0)) if len(_msgs_daily_tg) else 0
+avg_dau_full    = _dau_full.mean() if len(_dau_full) else 0
+avg_msgs_daily  = _msgs_daily.mean() if len(_msgs_daily) else 0
 
 _this_month  = _today.replace(day=1)
-df_month     = df_full[df_full["date"] >= _this_month]
-users_month  = int(df_month["session_id"].nunique())
-msgs_month   = int(len(df_month))
+df_month_combined = df_combined_full[df_combined_full["date"] >= _this_month]
+df_month_web = df_full[df_full["date"] >= _this_month]
+df_month_tg  = df_tg_full[df_tg_full["date"] >= _this_month] if TG_AVAILABLE else pd.DataFrame()
+users_month  = int(df_month_combined["session_id"].nunique())
+msgs_month   = int(len(df_month_combined))
+msgs_month_web = int(len(df_month_web))
+msgs_month_tg  = int(len(df_month_tg)) if not df_month_tg.empty else 0
 
-# Promedio mensual histórico
+# Promedio mensual histórico (combinado)
 _monthly = (
-    df_full.assign(month=df_full["date"].apply(lambda d: d.replace(day=1)))
+    df_combined_full.assign(month=df_combined_full["date"].apply(lambda d: d.replace(day=1)))
            .groupby("month")["session_id"].nunique()
 )
 avg_monthly  = _monthly.mean() if len(_monthly) else 0
 _msgs_monthly = (
-    df_full.assign(month=df_full["date"].apply(lambda d: d.replace(day=1)))
+    df_combined_full.assign(month=df_combined_full["date"].apply(lambda d: d.replace(day=1)))
            .groupby("month").size()
 )
 avg_msgs_monthly = _msgs_monthly.mean() if len(_msgs_monthly) else 0
@@ -363,12 +388,12 @@ _sep.markdown(
 
 kpi(c1, "Interacciones",
     f"{total:,}".replace(",", "."),
-    f"{n_sess} sesiones",
+    f"🌐 {total_web:,} · 📱 {total_tg_n:,}".replace(",", "."),
     trend_html(total, prev_total),
     icon="💬", accent="#5a9e47")
 kpi(c2, "Sesiones únicas",
     str(n_sess),
-    "conversaciones distintas",
+    f"🌐 {n_sess_web} · 📱 {n_sess_tg}",
     trend_html(n_sess, prev_sess),
     icon="🗂️", accent="#5a9e47")
 kpi(c3, "Usuarios/día (DAU)",
@@ -395,7 +420,7 @@ kpi(k1, "Usuarios hoy",
     icon="🟢", accent="#3b9dc4")
 kpi(k2, "Mensajes hoy",
     str(msgs_today),
-    f"prom. diario: {avg_msgs_daily:.0f}",
+    f"🌐 {msgs_today_web} · 📱 {msgs_today_tg}",
     icon="💬", accent="#3b9dc4")
 kpi(k3, "Usuarios este mes",
     str(users_month),
@@ -403,7 +428,7 @@ kpi(k3, "Usuarios este mes",
     icon="📅", accent="#5a9e47")
 kpi(k4, "Mensajes este mes",
     str(msgs_month),
-    f"prom. mensual: {avg_msgs_monthly:.0f}",
+    f"🌐 {msgs_month_web:,} · 📱 {msgs_month_tg:,}".replace(",", "."),
     icon="📊", accent="#5a9e47")
 
 st.markdown("<br>", unsafe_allow_html=True)
@@ -414,26 +439,42 @@ col_l, col_tabs = st.columns([3, 2])
 
 with col_l:
     st.markdown("### Interacciones y usuarios únicos por día")
-    daily_msgs = df.groupby("date").size().reset_index(name="interacciones")
-    daily_dau  = dau.reset_index()
+    _web_daily = df.groupby("date").size().reset_index(name="web")
+    _tg_daily  = (df_tg.groupby("date").size().reset_index(name="telegram")
+                  if TG_AVAILABLE and not df_tg.empty
+                  else pd.DataFrame(columns=["date", "telegram"]))
+    daily = (_web_daily
+             .merge(_tg_daily, on="date", how="outer")
+             .fillna(0)
+             .sort_values("date"))
+    daily["web"]      = daily["web"].astype(int)
+    daily["telegram"] = daily["telegram"].astype(int)
+    daily["interacciones"] = daily["web"] + daily["telegram"]
+    daily_dau = dau.reset_index()
     daily_dau.columns = ["date", "usuarios"]
-    daily = daily_msgs.merge(daily_dau, on="date", how="left")
+    daily = daily.merge(daily_dau, on="date", how="left").fillna(0)
     daily["date_str"] = daily["date"].astype(str)
 
     fig = go.Figure()
 
-    # Barras — interacciones (eje izquierdo)
+    # Barra Web — eje izquierdo
     fig.add_trace(go.Bar(
-        x=daily["date_str"], y=daily["interacciones"],
-        name="Interacciones",
-        marker=dict(
-            color=daily["interacciones"],
-            colorscale=[[0, "#2a5c1e"], [0.5, "#4a9e30"], [1, "#7ed957"]],
-            line=dict(width=0),
-        ),
+        x=daily["date_str"], y=daily["web"],
+        name="🌐 Web",
+        marker=dict(color="#5a9e47", line=dict(width=0)),
         yaxis="y1",
-        hovertemplate="<b>%{x}</b><br>%{y} interacciones<extra></extra>",
+        hovertemplate="<b>%{x}</b><br>🌐 Web: %{y}<extra></extra>",
     ))
+
+    # Barra Telegram — apilada
+    if TG_AVAILABLE:
+        fig.add_trace(go.Bar(
+            x=daily["date_str"], y=daily["telegram"],
+            name="📱 Telegram",
+            marker=dict(color="#2b9fc4", line=dict(width=0)),
+            yaxis="y1",
+            hovertemplate="<b>%{x}</b><br>📱 Telegram: %{y}<extra></extra>",
+        ))
 
     # Línea — usuarios únicos por día (eje derecho)
     fig.add_trace(go.Scatter(
@@ -447,6 +488,7 @@ with col_l:
     ))
 
     fig.update_layout(
+        barmode="stack",
         paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
         margin=dict(l=0, r=50, t=10, b=0), height=430,
         xaxis=dict(showgrid=False, color=TEXT, tickfont=dict(size=11)),
@@ -465,28 +507,33 @@ with col_l:
             bgcolor=TRANSP,
         ),
         hoverlabel=dict(bgcolor="#2a4a2a", font_color="#e8f5e2"),
-        barmode="overlay",
     )
     st.plotly_chart(fig, use_container_width=True)
 
 with col_tabs:
     # ── Tabla: Últimas conversaciones ─────────────────────────────────────────
     st.markdown("### Últimas conversaciones")
+    _src_icon = {"web": "🌐", "telegram": "📱"}
     ultimas = (
-        df.groupby("session_id")
-          .agg(fecha=("timestamp", "min"), mensajes=("user_message", "count"))
+        df_combined.groupby("session_id")
+          .agg(
+              fecha=("timestamp", "min"),
+              mensajes=("user_message", "count"),
+              source=("source", "first"),
+          )
           .sort_values("fecha", ascending=False)
           .head(15)
           .reset_index(drop=True)
     )
-    ultimas["Fecha"] = ultimas["fecha"].dt.strftime("%d/%m %H:%M")
-    ultimas = ultimas.rename(columns={"mensajes": "Msgs"})[["Fecha", "Msgs"]]
+    ultimas["Fecha"]  = ultimas["fecha"].dt.strftime("%d/%m %H:%M")
+    ultimas["Canal"]  = ultimas["source"].map(_src_icon).fillna("❓")
+    ultimas = ultimas.rename(columns={"mensajes": "Msgs"})[["Fecha", "Canal", "Msgs"]]
     st.dataframe(ultimas, use_container_width=True, hide_index=True, height=175)
 
     # ── Tabla: Interacciones diarias ──────────────────────────────────────────
     st.markdown("### Interacciones diarias")
     daily_tbl = (
-        daily[["date", "interacciones", "usuarios"]]
+        daily[["date", "web", "telegram", "interacciones", "usuarios"]]
         .sort_values("date", ascending=False)
         .copy()
     )
@@ -494,9 +541,11 @@ with col_tabs:
         lambda d: d.strftime("%d/%m/%Y") if hasattr(d, "strftime") else str(d)
     )
     daily_tbl = daily_tbl.rename(columns={
-        "interacciones": "Msgs",
+        "interacciones": "Total",
+        "web":           "🌐",
+        "telegram":      "📱",
         "usuarios":      "Usuarios",
-    })[["Fecha", "Msgs", "Usuarios"]]
+    })[["Fecha", "🌐", "📱", "Total", "Usuarios"]]
     st.dataframe(daily_tbl, use_container_width=True, hide_index=True, height=175)
 
 # ── Fila 2: actividad horaria + dona + top mensajes ──────────────────────────
@@ -505,25 +554,43 @@ col_h, col_pie, col_top = st.columns([3, 2, 2])
 
 with col_h:
     st.markdown("### Actividad por hora del día")
-    hourly = df.groupby("hour").size().reindex(range(24), fill_value=0).reset_index()
-    hourly.columns = ["hour", "count"]
-    peak_h = int(hourly.loc[hourly["count"].idxmax(), "hour"])
+    hourly_web = df.groupby("hour").size().reindex(range(24), fill_value=0).reset_index()
+    hourly_web.columns = ["hour", "count"]
+    hourly_tg  = (df_tg.groupby("hour").size().reindex(range(24), fill_value=0).reset_index()
+                  if TG_AVAILABLE and not df_tg.empty
+                  else pd.DataFrame({"hour": range(24), "count": [0]*24}))
+    hourly_tg.columns = ["hour", "count"]
+    # Peak sobre datos combinados
+    hourly_comb = hourly_web.copy()
+    hourly_comb["count"] = hourly_web["count"] + hourly_tg["count"]
+    peak_h = int(hourly_comb.loc[hourly_comb["count"].idxmax(), "hour"])
 
     fig3 = go.Figure()
+    # Área web (verde, fondo)
     fig3.add_trace(go.Scatter(
-        x=hourly["hour"], y=hourly["count"],
+        x=hourly_web["hour"], y=hourly_web["count"],
+        name="🌐 Web",
         mode="lines+markers",
         fill="tozeroy",
         fillcolor="rgba(90,158,71,0.18)",
         line=dict(color="#7ed957", width=2.5, shape="spline"),
-        marker=dict(
-            color=["#e07a30" if h == peak_h else "#5a9e47" for h in hourly["hour"]],
-            size=[10 if h == peak_h else 5 for h in hourly["hour"]],
-        ),
-        hovertemplate="<b>%{x}h</b>: %{y} msgs<extra></extra>",
+        marker=dict(color="#5a9e47", size=5),
+        hovertemplate="<b>%{x}h</b> Web: %{y}<extra></extra>",
     ))
+    # Línea Telegram (azul, encima)
+    if TG_AVAILABLE:
+        fig3.add_trace(go.Scatter(
+            x=hourly_tg["hour"], y=hourly_tg["count"],
+            name="📱 Telegram",
+            mode="lines+markers",
+            fill="tozeroy",
+            fillcolor="rgba(43,159,196,0.13)",
+            line=dict(color="#4dc4e8", width=2, shape="spline", dash="dot"),
+            marker=dict(color="#2b9fc4", size=5),
+            hovertemplate="<b>%{x}h</b> Telegram: %{y}<extra></extra>",
+        ))
     fig3.add_annotation(
-        x=peak_h, y=int(hourly.loc[hourly["hour"]==peak_h, "count"].values[0]),
+        x=peak_h, y=int(hourly_comb.loc[hourly_comb["hour"]==peak_h, "count"].values[0]),
         text=f"Pico: {peak_h}h",
         showarrow=True, arrowhead=2,
         font=dict(color="#e07a30", size=12),
@@ -534,15 +601,15 @@ with col_h:
     fig3.update_layout(
         paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
         margin=dict(l=0, r=0, t=10, b=0), height=280,
-        xaxis=dict(showgrid=False, color=TEXT, tickmode="linear",
-                   tick0=0, dtick=1),
+        xaxis=dict(showgrid=False, color=TEXT, tickmode="linear", tick0=0, dtick=1),
         yaxis=dict(showgrid=True, gridcolor=GRID, color=TEXT, zeroline=False),
+        legend=dict(orientation="h", x=0, y=1.1, font=dict(color=TEXT, size=11), bgcolor=TRANSP),
         hoverlabel=dict(bgcolor="#1a2e1a", font_color="#e8f5e2"),
     )
     st.plotly_chart(fig3, use_container_width=True)
 
 with col_pie:
-    st.markdown("### Funcionalidades usadas · *por sesión*")
+    st.markdown("### Funcionalidades usadas · *web + TG*")
 
     _CLIMA_KW      = ['clima', 'temperatura', 'pronostico', 'pronóstico', 'lluvia',
                       'tormenta', 'calor', 'frio', 'frío', 'nublado', 'el tiempo',
@@ -567,7 +634,7 @@ with col_pie:
             return "windguru"
         return "quick"
 
-    df_pie = df.copy()
+    df_pie = df_combined.copy()
     df_pie["response_type"] = df_pie.apply(_reclassify_quick, axis=1)
     pie_counts = (
         df_pie.drop_duplicates(subset=["session_id", "response_type"])
@@ -627,9 +694,9 @@ with col_pie:
     st.plotly_chart(fig2, use_container_width=True)
 
 with col_top:
-    st.markdown("### Top 10 mensajes de usuario")
+    st.markdown("### Top 10 mensajes · *web + TG*")
     top_msgs = (
-        df["user_message"].str.strip().str.lower()
+        df_combined["user_message"].str.strip().str.lower()
         .value_counts().head(10)
         .reset_index()
     )
@@ -663,7 +730,7 @@ with col_top:
 col3, col_llmr = st.columns([2, 3])
 
 with col3:
-    st.markdown("### Engagement por sesión")
+    st.markdown("### Engagement por sesión · *web + TG*")
     ranges_labels = ["1-2 msgs", "3-5 msgs", "6-10 msgs", "10+ msgs"]
     ranges_vals   = [0, 0, 0, 0]
     for l in sess_lens:
@@ -693,34 +760,57 @@ with col3:
     st.plotly_chart(fig4, use_container_width=True)
 
 with col_llmr:
-    st.markdown("### Evolución del ratio LLM por día")
-    _all_dates_llm = sorted(df["date"].unique())
-    daily_llm = (
-        df.groupby("date")
-          .apply(lambda g: pd.Series({
-              "total": len(g),
-              "llm":   g["response_type"].isin(["llm", "llm_blocked", "llm_error"]).sum(),
-          }))
-          .reindex(_all_dates_llm)
-          .fillna(0)
-          .reset_index()
-    )
-    daily_llm["pct"] = (daily_llm["llm"] / daily_llm["total"].replace(0, pd.NA) * 100).round(1)
-    daily_llm["date_str"] = daily_llm["date"].astype(str)
+    st.markdown("### Evolución del ratio LLM por día · *web + TG*")
+    _all_dates_llm = sorted(df_combined["date"].unique())
+
+    def _llm_ratio_series(source_df):
+        if source_df.empty:
+            return pd.DataFrame(columns=["date", "pct"])
+        g = (source_df.groupby("date")
+               .apply(lambda g: pd.Series({
+                   "total": len(g),
+                   "llm":   g["response_type"].isin(["llm", "llm_blocked", "llm_error"]).sum(),
+               }))
+               .reindex(_all_dates_llm).fillna(0).reset_index())
+        g["pct"] = (g["llm"] / g["total"].replace(0, pd.NA) * 100).round(1)
+        g["date_str"] = g["date"].astype(str)
+        return g
+
+    daily_llm_web = _llm_ratio_series(df)
+    daily_llm_tg  = _llm_ratio_series(df_tg) if TG_AVAILABLE and not df_tg.empty else pd.DataFrame()
+    daily_llm_comb = _llm_ratio_series(df_combined)
 
     fig_llmr = go.Figure()
-    # Área rellena
+    # Área combinada (fondo semitransparente)
     fig_llmr.add_trace(go.Scatter(
-        x=daily_llm["date_str"], y=daily_llm["pct"],
-        mode="lines+markers",
+        x=daily_llm_comb["date_str"], y=daily_llm_comb["pct"],
+        mode="lines",
         fill="tozeroy",
-        fillcolor="rgba(155,95,192,0.15)",
-        line=dict(color="#9b5fc0", width=2.5, shape="spline"),
-        marker=dict(color="#9b5fc0", size=7, line=dict(color="#0e1a0e", width=1.5)),
-        hovertemplate="<b>%{x}</b><br>%{y:.1f}% LLM<extra></extra>",
-        name="Ratio LLM",
+        fillcolor="rgba(155,95,192,0.10)",
+        line=dict(color="rgba(155,95,192,0.0)", width=0),
+        showlegend=False,
+        hoverinfo="skip",
     ))
-    # Línea de umbral saludable (15 %)
+    # Línea Web
+    fig_llmr.add_trace(go.Scatter(
+        x=daily_llm_web["date_str"], y=daily_llm_web["pct"],
+        mode="lines+markers",
+        line=dict(color="#7ed957", width=2, shape="spline"),
+        marker=dict(color="#7ed957", size=6, line=dict(color="#0e1a0e", width=1)),
+        hovertemplate="<b>%{x}</b><br>🌐 Web: %{y:.1f}%<extra></extra>",
+        name="🌐 Web",
+    ))
+    # Línea Telegram
+    if TG_AVAILABLE and not daily_llm_tg.empty:
+        fig_llmr.add_trace(go.Scatter(
+            x=daily_llm_tg["date_str"], y=daily_llm_tg["pct"],
+            mode="lines+markers",
+            line=dict(color="#4dc4e8", width=2, shape="spline", dash="dot"),
+            marker=dict(color="#4dc4e8", size=6, line=dict(color="#0e1a0e", width=1)),
+            hovertemplate="<b>%{x}</b><br>📱 Telegram: %{y:.1f}%<extra></extra>",
+            name="📱 Telegram",
+        ))
+    # Umbral 15 %
     fig_llmr.add_hline(
         y=15,
         line=dict(color="#e07a30", width=1.5, dash="dot"),
@@ -732,11 +822,8 @@ with col_llmr:
         paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
         margin=dict(l=0, r=0, t=10, b=0), height=220,
         xaxis=dict(showgrid=False, color=TEXT, tickfont=dict(size=11)),
-        yaxis=dict(
-            showgrid=True, gridcolor=GRID, color=TEXT,
-            zeroline=False, ticksuffix="%",
-        ),
-        legend=dict(font=dict(color=TEXT, size=11), bgcolor=TRANSP),
+        yaxis=dict(showgrid=True, gridcolor=GRID, color=TEXT, zeroline=False, ticksuffix="%"),
+        legend=dict(orientation="h", x=0, y=1.15, font=dict(color=TEXT, size=11), bgcolor=TRANSP),
         hoverlabel=dict(bgcolor="#2a4a2a", font_color="#e8f5e2"),
     )
     st.plotly_chart(fig_llmr, use_container_width=True)
@@ -749,10 +836,10 @@ st.markdown("## Patrones de uso")
 col_wd, col_br, col_errt = st.columns(3)
 
 with col_wd:
-    st.markdown("### Actividad por día de semana")
+    st.markdown("### Actividad por día de semana · *web + TG*")
     WEEKDAY_ORDER = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
     WEEKDAY_ES    = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"]
-    wd = (df["weekday"].value_counts()
+    wd = (df_combined["weekday"].value_counts()
           .reindex(WEEKDAY_ORDER, fill_value=0)
           .reset_index())
     wd.columns = ["weekday", "count"]
@@ -779,9 +866,9 @@ with col_wd:
     st.plotly_chart(fig_wd, use_container_width=True)
 
 with col_br:
-    st.markdown("### % de interacciones de un sólo mensaje")
+    st.markdown("### % de interacciones de un sólo mensaje · *web + TG*")
     daily_bounces = (
-        df.groupby(["date", "session_id"]).size()
+        df_combined.groupby(["date", "session_id"]).size()
           .reset_index(name="n")
           .assign(bounced=lambda x: (x["n"] == 1).astype(int))
           .groupby("date")
@@ -812,10 +899,10 @@ with col_br:
     st.plotly_chart(fig_br, use_container_width=True)
 
 with col_errt:
-    st.markdown("### Tendencia de errores diaria")
-    _all_dates = sorted(df["date"].unique())
+    st.markdown("### Tendencia de errores diaria · *web + TG*")
+    _all_dates = sorted(df_combined["date"].unique())
     daily_err = (
-        df[df["response_type"].isin(["llm_blocked", "llm_error"])]
+        df_combined[df_combined["response_type"].isin(["llm_blocked", "llm_error"])]
         .groupby("date").size()
         .reindex(_all_dates, fill_value=0)
         .reset_index()
@@ -848,8 +935,8 @@ st.markdown("## Análisis de flujos")
 col_col, col_div, col_comp = st.columns(3)
 
 with col_col:
-    st.markdown("### Desglose de colectivas")
-    col_msgs = df[df["response_type"] == "colectivas"]["user_message"].str.lower()
+    st.markdown("### Desglose de colectivas · *web + TG*")
+    col_msgs = df_combined[df_combined["response_type"] == "colectivas"]["user_message"].str.lower()
     line_counts = pd.Series({
         "Jilguero":     int(col_msgs.str.contains("jilguero", na=False).sum()),
         "Interisleña":  int(col_msgs.str.contains("interisle", na=False).sum()),
@@ -884,8 +971,8 @@ with col_col:
     st.plotly_chart(fig_col2, use_container_width=True)
 
 with col_div:
-    st.markdown("### Diversidad de features")
-    feat_div = (df.groupby("session_id")["response_type"]
+    st.markdown("### Diversidad de features · *web + TG*")
+    feat_div = (df_combined.groupby("session_id")["response_type"]
                   .nunique().reset_index(name="n_types"))
     feat_div["bucket"] = feat_div["n_types"].apply(
         lambda x: "1 tipo" if x == 1 else ("2 tipos" if x == 2 else "3+ tipos")
@@ -916,10 +1003,10 @@ with col_div:
     st.plotly_chart(fig_div, use_container_width=True)
 
 with col_comp:
-    st.markdown("### Completitud de flujos")
+    st.markdown("### Completitud de flujos · *web + TG*")
     _flow_rows = []
     for ft in ["colectivas", "almaceneras", "agenda"]:
-        s = df[df["response_type"] == ft].groupby("session_id").size()
+        s = df_combined[df_combined["response_type"] == ft].groupby("session_id").size()
         _flow_rows.append({
             "tipo": ft.capitalize(),
             "1 interacción": int((s == 1).sum()),
@@ -971,7 +1058,7 @@ with col_words:
         "cómo","como","cuál","cual","cuánto","cuanto",
     ])
     _word_freq: dict = {}
-    for _msg in df[df["response_type"] == "llm"]["user_message"].dropna():
+    for _msg in df_combined[df_combined["response_type"] == "llm"]["user_message"].dropna():
         for _w in _msg.lower().split():
             _w = _w.strip("¿?!.,;:()")
             if len(_w) > 2 and _w not in STOPWORDS_ES:
@@ -1005,9 +1092,9 @@ with col_words:
         st.info("Sin datos LLM en el período seleccionado.")
 
 with col_rlen:
-    st.markdown("### Longitud de respuesta por tipo")
+    st.markdown("### Longitud de respuesta por tipo · *web + TG*")
     avg_rlen = (
-        df.assign(reply_len=df["bot_reply"].str.len().fillna(0))
+        df_combined.assign(reply_len=df_combined["bot_reply"].str.len().fillna(0))
           .groupby("response_type")["reply_len"]
           .mean().round(0).astype(int)
           .sort_values()
@@ -1039,7 +1126,7 @@ with col_rlen:
 # ── Expanders de detalle ──────────────────────────────────────────────────────
 
 def detail_table(response_type: str, col_name: str):
-    sub = df[df["response_type"] == response_type]
+    sub = df_combined[df_combined["response_type"] == response_type]
     if sub.empty:
         st.info("Sin datos en el período seleccionado.")
         return
@@ -1067,22 +1154,23 @@ st.markdown("## Conversaciones")
 col_llm, col_err = st.columns(2)
 
 with col_llm:
-    st.markdown("### LLM")
+    st.markdown("### LLM · *web + TG*")
     df_llm = (
-        df[df["response_type"] == "llm"]
-        [["timestamp", "user_message", "bot_reply"]]
+        df_combined[df_combined["response_type"] == "llm"]
+        [["timestamp", "source", "user_message", "bot_reply"]]
         .sort_values("timestamp", ascending=False)
         .copy()
     )
     df_llm["timestamp"] = df_llm["timestamp"].dt.strftime("%d/%m %H:%M")
-    df_llm.columns = ["Fecha", "Usuario", "Bot"]
+    df_llm["source"]    = df_llm["source"].map({"web": "🌐", "telegram": "📱"}).fillna("❓")
+    df_llm.columns = ["Fecha", "Canal", "Usuario", "Bot"]
     st.dataframe(df_llm, use_container_width=True, height=420, hide_index=True)
 
 with col_err:
-    st.markdown("### Errores")
+    st.markdown("### Errores · *web + TG*")
     df_err = (
-        df[df["response_type"].isin(["llm_blocked", "llm_error"])]
-        [["timestamp", "user_message", "bot_reply", "response_type"]]
+        df_combined[df_combined["response_type"].isin(["llm_blocked", "llm_error"])]
+        [["timestamp", "source", "user_message", "bot_reply", "response_type"]]
         .sort_values("timestamp", ascending=False)
         .copy()
     )
@@ -1090,22 +1178,29 @@ with col_err:
         st.success("Sin errores en el período seleccionado.")
     else:
         df_err["timestamp"] = df_err["timestamp"].dt.strftime("%d/%m %H:%M")
-        df_err.columns = ["Fecha", "Usuario", "Bot", "Tipo"]
+        df_err["source"]    = df_err["source"].map({"web": "🌐", "telegram": "📱"}).fillna("❓")
+        df_err.columns = ["Fecha", "Canal", "Usuario", "Bot", "Tipo"]
         st.dataframe(df_err, use_container_width=True, height=420, hide_index=True)
 
 # ── Explorador de sesiones ───────────────────────────────────────────────────
 
 st.markdown("---")
-st.markdown("## Explorador de sesiones")
+st.markdown("## Explorador de sesiones · *web + TG*")
 
 sess_summary = (
-    df.groupby("session_id")
-      .agg(first_ts=("timestamp", "min"), n_msgs=("user_message", "count"))
+    df_combined.groupby("session_id")
+      .agg(
+          first_ts=("timestamp", "min"),
+          n_msgs=("user_message", "count"),
+          source=("source", "first"),
+      )
       .sort_values("first_ts", ascending=False)
       .reset_index()
 )
+_src_icon_map = {"web": "🌐", "telegram": "📱"}
 sess_summary["label"] = (
-    sess_summary["first_ts"].dt.strftime("%d/%m %H:%M")
+    sess_summary["source"].map(_src_icon_map).fillna("❓")
+    + " " + sess_summary["first_ts"].dt.strftime("%d/%m %H:%M")
     + "  —  " + sess_summary["session_id"]
     + "  (" + sess_summary["n_msgs"].astype(str) + " msgs)"
 )
@@ -1120,7 +1215,7 @@ selected_sid = sess_summary.loc[
 ].values[0]
 
 df_sess = (
-    df[df["session_id"] == selected_sid]
+    df_combined[df_combined["session_id"] == selected_sid]
     [["timestamp", "user_message", "bot_reply", "response_type"]]
     .sort_values("timestamp")
     .copy()
@@ -1129,15 +1224,14 @@ df_sess["timestamp"] = df_sess["timestamp"].dt.strftime("%H:%M:%S")
 df_sess.columns = ["Hora", "Usuario", "Bot", "Tipo"]
 st.dataframe(df_sess, use_container_width=True, hide_index=True)
 
-# ── Telegram ─────────────────────────────────────────────────────────────────
+# ── Detalle Telegram ──────────────────────────────────────────────────────────
 
 st.markdown("---")
-st.markdown("## 📱 Bot de Telegram")
+st.markdown("## 📱 Detalle Telegram")
 
 if not TG_AVAILABLE:
     st.info("Aún no hay datos del bot de Telegram. Una vez que `tg_interactions.csv` se genere en PythonAnywhere, aparecerá aquí automáticamente.")
 else:
-    # ── KPIs Telegram ────────────────────────────────────────────────────────
     tg_total     = len(df_tg)
     tg_users     = df_tg["session_id"].nunique() if "session_id" in df_tg.columns else 0
     tg_dau_serie = df_tg.groupby("date")["session_id"].nunique() if tg_users else pd.Series(dtype=float)
@@ -1146,98 +1240,12 @@ else:
     tg_sess_lens = df_tg.groupby("session_id").size() if tg_users else pd.Series(dtype=float)
     tg_avg_len   = tg_sess_lens.mean() if len(tg_sess_lens) else 0
 
-    tk1, tk2, tk3, tk4, tk5 = st.columns(5)
-    kpi(tk1, "Mensajes TG",     f"{tg_total:,}".replace(",","."),  f"{n_days} días",         icon="📨", accent="#2b9fc4")
-    kpi(tk2, "Usuarios únicos", str(tg_users),                     "IDs distintos",          icon="👤", accent="#2b9fc4")
-    kpi(tk3, "Usuarios/día",    f"{tg_avg_dau:.1f}",               "DAU promedio",            icon="📅", accent="#2b9fc4")
-    kpi(tk4, "Msgs / usuario",  f"{tg_avg_len:.1f}",               "profundidad de sesión",  icon="💬", accent="#2b9fc4")
-    kpi(tk5, "Ratio LLM",       f"{tg_llm_pct:.1f}%",             "consultas al LLM",       icon="🤖", accent="#9b5fc0")
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # ── Comparativa Web vs Telegram por día ──────────────────────────────────
-    col_cmp, col_tgpie = st.columns([3, 2])
-
-    with col_cmp:
-        st.markdown("### Mensajes diarios: Web vs Telegram")
-        web_daily = df.groupby("date").size().reset_index(name="Web")
-        tg_daily  = df_tg.groupby("date").size().reset_index(name="Telegram")
-        cmp_daily = pd.merge(web_daily, tg_daily, on="date", how="outer").fillna(0).sort_values("date")
-        cmp_daily["date_str"] = cmp_daily["date"].astype(str)
-
-        fig_cmp = go.Figure()
-        fig_cmp.add_trace(go.Bar(
-            x=cmp_daily["date_str"], y=cmp_daily["Web"],
-            name="Web", marker=dict(color="#5a9e47", line=dict(width=0)),
-            hovertemplate="<b>%{x}</b><br>Web: %{y}<extra></extra>",
-        ))
-        fig_cmp.add_trace(go.Bar(
-            x=cmp_daily["date_str"], y=cmp_daily["Telegram"],
-            name="Telegram", marker=dict(color="#2b9fc4", line=dict(width=0)),
-            hovertemplate="<b>%{x}</b><br>Telegram: %{y}<extra></extra>",
-        ))
-        fig_cmp.update_layout(
-            barmode="group",
-            paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
-            margin=dict(l=0, r=0, t=10, b=0), height=280,
-            xaxis=dict(showgrid=False, color=TEXT, tickfont=dict(size=11)),
-            yaxis=dict(showgrid=True, gridcolor=GRID, color=TEXT, zeroline=False),
-            legend=dict(orientation="h", x=0, y=1.12, font=dict(color=TEXT, size=11), bgcolor=TRANSP),
-            hoverlabel=dict(bgcolor="#1a2e1a", font_color="#e8f5e2"),
-        )
-        st.plotly_chart(fig_cmp, use_container_width=True)
-
-    with col_tgpie:
-        st.markdown("### Funcionalidades TG · *por usuario*")
-        tg_type_counts = (
-            df_tg.drop_duplicates(subset=["session_id","response_type"])["response_type"]
-            .value_counts()
-        )
-        tg_type_map = {
-            "colectivas":  "🚢 Colectivas",
-            "mareas":      "🌊 Mareas",
-            "windguru":    "🌬️ WindGurú",
-            "hidrografia": "📡 Hidrografía",
-            "agenda":      "📅 Agenda",
-            "memes":       "😂 Memes",
-            "llm":         "🤖 LLM",
-            "almaceneras": "🛒 Almaceneras",
-            "social":      "💬 Social",
-            "llm_error":   "❌ LLM error",
-            "other":       "❓ Otro",
-        }
-        tg_tc = (
-            tg_type_counts.rename(index=tg_type_map)
-            .loc[lambda s: s.index.isin(tg_type_map.values())]
-            .reset_index()
-        )
-        tg_tc.columns = ["label", "count"]
-
-        # Agrupar < 2.5% en Otros
-        _tg_total_pie = tg_tc["count"].sum()
-        if _tg_total_pie > 0:
-            _tg_mask = (tg_tc["count"] / _tg_total_pie * 100) < 2.5
-            _tg_otros = int(tg_tc.loc[_tg_mask, "count"].sum())
-            tg_tc = tg_tc.loc[~_tg_mask].copy()
-            if _tg_otros > 0:
-                tg_tc = pd.concat([tg_tc, pd.DataFrame([{"label": "⬜ Otros", "count": _tg_otros}])], ignore_index=True)
-
-        tg_colors = [FEATURE_COLORS.get(l, "#888888") for l in tg_tc["label"]]
-        fig_tgpie = go.Figure(go.Pie(
-            labels=tg_tc["label"], values=tg_tc["count"],
-            marker=dict(colors=tg_colors, line=dict(color="#0e1a0e", width=2)),
-            hole=0.45,
-            textinfo="percent",
-            textfont=dict(size=12, color="white"),
-            hovertemplate="<b>%{label}</b><br>%{value} usuarios (%{percent})<extra></extra>",
-        ))
-        fig_tgpie.update_layout(
-            paper_bgcolor=TRANSP,
-            margin=dict(l=0, r=0, t=10, b=0), height=280,
-            legend=dict(font=dict(size=11, color=TEXT), bgcolor=TRANSP, orientation="v", x=1, y=0.5),
-            hoverlabel=dict(bgcolor="#2a4a2a", font_color="#e8f5e2"),
-        )
-        st.plotly_chart(fig_tgpie, use_container_width=True)
+    st.markdown(
+        f'<p style="font-size:0.78rem;color:#5f9a5f;margin:0 0 8px">'
+        f'📊 {tg_total:,} mensajes · {tg_users} usuarios únicos · {tg_avg_dau:.1f} DAU · '
+        f'{tg_avg_len:.1f} msgs/usuario · {tg_llm_pct:.1f}% LLM</p>'.replace(",", "."),
+        unsafe_allow_html=True,
+    )
 
     # ── Top mensajes Telegram + usuarios más activos ──────────────────────────
     col_tgtop, col_tgusers = st.columns(2)
@@ -1278,7 +1286,7 @@ else:
             .reset_index()
         )
         tg_user_counts.columns = ["user_id", "mensajes"]
-        tg_user_counts["user_id"] = tg_user_counts["user_id"].astype(str).str[-6:]  # últimos 6 dígitos
+        tg_user_counts["user_id"] = tg_user_counts["user_id"].astype(str).str[-6:]
         fig_tgusers = go.Figure(go.Bar(
             x=tg_user_counts["mensajes"][::-1],
             y=("···" + tg_user_counts["user_id"])[::-1],
@@ -1300,40 +1308,6 @@ else:
             hoverlabel=dict(bgcolor="#1a2e3a", font_color="#e8f5e2"),
         )
         st.plotly_chart(fig_tgusers, use_container_width=True)
-
-    # ── Actividad horaria Telegram ────────────────────────────────────────────
-    st.markdown("### Actividad por hora — Telegram")
-    tg_hourly = df_tg.groupby("hour").size().reindex(range(24), fill_value=0).reset_index()
-    tg_hourly.columns = ["hour", "count"]
-    tg_peak_h = int(tg_hourly.loc[tg_hourly["count"].idxmax(), "hour"]) if tg_total else 0
-    fig_tgh = go.Figure()
-    fig_tgh.add_trace(go.Scatter(
-        x=tg_hourly["hour"], y=tg_hourly["count"],
-        mode="lines+markers", fill="tozeroy",
-        fillcolor="rgba(43,159,196,0.15)",
-        line=dict(color="#4dc4e8", width=2.5, shape="spline"),
-        marker=dict(
-            color=["#e07a30" if h == tg_peak_h else "#2b9fc4" for h in tg_hourly["hour"]],
-            size=[10 if h == tg_peak_h else 5 for h in tg_hourly["hour"]],
-        ),
-        hovertemplate="<b>%{x}h</b>: %{y} msgs<extra></extra>",
-    ))
-    if tg_total:
-        fig_tgh.add_annotation(
-            x=tg_peak_h,
-            y=int(tg_hourly.loc[tg_hourly["hour"] == tg_peak_h, "count"].values[0]),
-            text=f"Pico: {tg_peak_h}h", showarrow=True, arrowhead=2,
-            font=dict(color="#e07a30", size=12), arrowcolor="#e07a30",
-            bgcolor="#1a2e1a", bordercolor="#e07a30", ay=-30,
-        )
-    fig_tgh.update_layout(
-        paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
-        margin=dict(l=0, r=0, t=10, b=0), height=220,
-        xaxis=dict(showgrid=False, color=TEXT, tickmode="linear", tick0=0, dtick=1),
-        yaxis=dict(showgrid=True, gridcolor=GRID, color=TEXT, zeroline=False),
-        hoverlabel=dict(bgcolor="#1a2e3a", font_color="#e8f5e2"),
-    )
-    st.plotly_chart(fig_tgh, use_container_width=True)
 
 # ── Footer ────────────────────────────────────────────────────────────────────
 
