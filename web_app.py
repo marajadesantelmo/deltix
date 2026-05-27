@@ -796,7 +796,7 @@ def detect_quick_response(user_input):
     if any(k in text for k in KEYWORDS_NORM["mimbre"]):
         return {
             "reply": "🧺 **Mimbre del Chiricote**\n\nCestería botánica\nCanastas, objetos y obras tejidas con plantas\n\nClases individuales y grupales\nAsesorías · Residencias\n\nInstagram: @mimbre.del.chiricote\nContacto: 1159749127",
-            "images": ["/img/actividades_productos/mimbre_del_chiricote.png"]
+            "images": ["/img/actividades_productos/mimbre.png"]
         }
 
     if any(k in text for k in KEYWORDS_NORM["frutales"]):
