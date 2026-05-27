@@ -1198,6 +1198,7 @@ sess_summary = (
       .reset_index()
 )
 _src_icon_map = {"web": "🌐", "telegram": "📱"}
+sess_summary["session_id"] = sess_summary["session_id"].astype(str)
 sess_summary["label"] = (
     sess_summary["source"].map(_src_icon_map).fillna("❓")
     + " " + sess_summary["first_ts"].dt.strftime("%d/%m %H:%M")
