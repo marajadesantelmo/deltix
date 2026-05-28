@@ -415,12 +415,12 @@ _sep.markdown(
 
 kpi(c1, "Interacciones",
     f"{total:,}".replace(",", "."),
-    f"🌐 {total_web:,} · 📱 {total_tg_n:,}".replace(",", "."),
+    f"💻 {total_web:,} · ✈️ {total_tg_n:,}".replace(",", "."),
     trend_html(total, prev_total),
     icon="💬", accent="#5a9e47")
 kpi(c2, "Sesiones únicas",
     str(n_sess),
-    f"🌐 {n_sess_web} · 📱 {n_sess_tg}",
+    f"💻 {n_sess_web} · ✈️ {n_sess_tg}",
     trend_html(n_sess, prev_sess),
     icon="🗂️", accent="#5a9e47")
 kpi(c3, "Usuarios/día (DAU)",
@@ -447,7 +447,7 @@ kpi(k1, "Usuarios hoy",
     icon="🟢", accent="#3b9dc4")
 kpi(k2, "Mensajes hoy",
     str(msgs_today),
-    f"🌐 {msgs_today_web} · 📱 {msgs_today_tg}",
+    f"💻 {msgs_today_web} · ✈️ {msgs_today_tg}",
     icon="💬", accent="#3b9dc4")
 kpi(k3, "Usuarios este mes",
     str(users_month),
@@ -455,7 +455,7 @@ kpi(k3, "Usuarios este mes",
     icon="📅", accent="#5a9e47")
 kpi(k4, "Mensajes este mes",
     str(msgs_month),
-    f"🌐 {msgs_month_web:,} · 📱 {msgs_month_tg:,}".replace(",", "."),
+    f"💻 {msgs_month_web:,} · ✈️ {msgs_month_tg:,}".replace(",", "."),
     icon="📊", accent="#5a9e47")
 
 st.markdown("<br>", unsafe_allow_html=True)
@@ -487,20 +487,20 @@ with col_l:
     # Barra Web — eje izquierdo
     fig.add_trace(go.Bar(
         x=daily["date_str"], y=daily["web"],
-        name="🌐 Web",
+        name="💻 Web",
         marker=dict(color="#5a9e47", line=dict(width=0)),
         yaxis="y1",
-        hovertemplate="<b>%{x}</b><br>🌐 Web: %{y}<extra></extra>",
+        hovertemplate="<b>%{x}</b><br>💻 Web: %{y}<extra></extra>",
     ))
 
     # Barra Telegram — apilada
     if TG_AVAILABLE:
         fig.add_trace(go.Bar(
             x=daily["date_str"], y=daily["telegram"],
-            name="📱 Telegram",
+            name="✈️ Telegram",
             marker=dict(color="#2b9fc4", line=dict(width=0)),
             yaxis="y1",
-            hovertemplate="<b>%{x}</b><br>📱 Telegram: %{y}<extra></extra>",
+            hovertemplate="<b>%{x}</b><br>✈️ Telegram: %{y}<extra></extra>",
         ))
 
     # Línea — usuarios únicos por día (eje derecho)
@@ -540,7 +540,7 @@ with col_l:
 with col_tabs:
     # ── Tabla: Últimas conversaciones ─────────────────────────────────────────
     st.markdown("### Últimas conversaciones")
-    _src_icon = {"web": "🌐", "telegram": "📱"}
+    _src_icon = {"web": "💻", "telegram": "✈️"}
     ultimas = (
         df_combined.groupby("session_id")
           .agg(
@@ -569,10 +569,10 @@ with col_tabs:
     )
     daily_tbl = daily_tbl.rename(columns={
         "interacciones": "Total",
-        "web":           "🌐",
-        "telegram":      "📱",
+        "web":           "💻",
+        "telegram":      "✈️",
         "usuarios":      "Usuarios",
-    })[["Fecha", "🌐", "📱", "Total", "Usuarios"]]
+    })[["Fecha", "💻", "✈️", "Total", "Usuarios"]]
     st.dataframe(daily_tbl, use_container_width=True, hide_index=True, height=175)
 
 # ── Fila 2: actividad horaria + dona + top mensajes ──────────────────────────
@@ -596,7 +596,7 @@ with col_h:
     # Área web (verde, fondo)
     fig3.add_trace(go.Scatter(
         x=hourly_web["hour"], y=hourly_web["count"],
-        name="🌐 Web",
+        name="💻 Web",
         mode="lines+markers",
         fill="tozeroy",
         fillcolor="rgba(90,158,71,0.18)",
@@ -608,7 +608,7 @@ with col_h:
     if TG_AVAILABLE:
         fig3.add_trace(go.Scatter(
             x=hourly_tg["hour"], y=hourly_tg["count"],
-            name="📱 Telegram",
+            name="✈️ Telegram",
             mode="lines+markers",
             fill="tozeroy",
             fillcolor="rgba(43,159,196,0.13)",
@@ -824,8 +824,8 @@ with col_llmr:
         mode="lines+markers",
         line=dict(color="#7ed957", width=2, shape="spline"),
         marker=dict(color="#7ed957", size=6, line=dict(color="#0e1a0e", width=1)),
-        hovertemplate="<b>%{x}</b><br>🌐 Web: %{y:.1f}%<extra></extra>",
-        name="🌐 Web",
+        hovertemplate="<b>%{x}</b><br>💻 Web: %{y:.1f}%<extra></extra>",
+        name="💻 Web",
     ))
     # Línea Telegram
     if TG_AVAILABLE and not daily_llm_tg.empty:
@@ -834,8 +834,8 @@ with col_llmr:
             mode="lines+markers",
             line=dict(color="#4dc4e8", width=2, shape="spline", dash="dot"),
             marker=dict(color="#4dc4e8", size=6, line=dict(color="#0e1a0e", width=1)),
-            hovertemplate="<b>%{x}</b><br>📱 Telegram: %{y:.1f}%<extra></extra>",
-            name="📱 Telegram",
+            hovertemplate="<b>%{x}</b><br>✈️ Telegram: %{y:.1f}%<extra></extra>",
+            name="✈️ Telegram",
         ))
     # Umbral 15 %
     fig_llmr.add_hline(
@@ -1189,7 +1189,7 @@ with col_llm:
         .copy()
     )
     df_llm["timestamp"] = df_llm["timestamp"].dt.strftime("%d/%m %H:%M")
-    df_llm["source"]    = df_llm["source"].map({"web": "🌐", "telegram": "📱"}).fillna("❓")
+    df_llm["source"]    = df_llm["source"].map({"web": "💻", "telegram": "✈️"}).fillna("❓")
     df_llm.columns = ["Fecha", "Canal", "Usuario", "Bot"]
     st.dataframe(df_llm, use_container_width=True, height=420, hide_index=True)
 
@@ -1205,7 +1205,7 @@ with col_err:
         st.success("Sin errores en el período seleccionado.")
     else:
         df_err["timestamp"] = df_err["timestamp"].dt.strftime("%d/%m %H:%M")
-        df_err["source"]    = df_err["source"].map({"web": "🌐", "telegram": "📱"}).fillna("❓")
+        df_err["source"]    = df_err["source"].map({"web": "💻", "telegram": "✈️"}).fillna("❓")
         df_err.columns = ["Fecha", "Canal", "Usuario", "Bot", "Tipo"]
         st.dataframe(df_err, use_container_width=True, height=420, hide_index=True)
 
@@ -1224,7 +1224,7 @@ sess_summary = (
       .sort_values("first_ts", ascending=False)
       .reset_index()
 )
-_src_icon_map = {"web": "🌐", "telegram": "📱"}
+_src_icon_map = {"web": "💻", "telegram": "✈️"}
 sess_summary["session_id"] = sess_summary["session_id"].astype(str)
 sess_summary["label"] = (
     sess_summary["source"].map(_src_icon_map).fillna("❓")
@@ -1255,7 +1255,7 @@ st.dataframe(df_sess, use_container_width=True, hide_index=True)
 # ── Detalle Telegram ──────────────────────────────────────────────────────────
 
 st.markdown("---")
-st.markdown("## 📱 Detalle Telegram")
+st.markdown("## ✈️ Detalle Telegram")
 
 if not TG_AVAILABLE:
     st.info("Aún no hay datos del bot de Telegram. Una vez que `tg_interactions.csv` se genere en PythonAnywhere, aparecerá aquí automáticamente.")
