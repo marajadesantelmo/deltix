@@ -378,6 +378,7 @@ if __name__ == '__main__':
             ANSWER_almacenera_select: [MessageHandler(filters.TEXT, almacenera_selected)],
             ANSWER_colectivas: [MessageHandler(filters.TEXT, answer_colectivas)],
             ANSWER_suscribirme: [MessageHandler(filters.Regex(r'^(Mareas|mareas|Hidrografia|hidrografia|Windguru|windguru)$'), answer_suscribirme)],
+            ANSWER_agenda: [MessageHandler(filters.TEXT, answer_agenda)],
             ConversationHandler.TIMEOUT: [MessageHandler(filters.TEXT, timeout_handler),
                                           CommandHandler('start', timeout_handler),
                                           CommandHandler('menu', timeout_handler)],

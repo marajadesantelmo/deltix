@@ -299,7 +299,7 @@ def trend_html(current, previous, fmt=".0f", suffix=""):
     pct   = delta / previous * 100
     arrow = "▲" if delta > 0 else "▼"
     cls   = "kpi-trend-up" if delta >= 0 else "kpi-trend-down"
-    return f'<span class="{cls}">{arrow} {abs(pct):.1f}% vs período anterior</span>'
+    return f'<span class="{cls}">{arrow} {abs(pct):.1f}%</span>'
 
 def kpi(col, label, value_str, sub="", trend_html_str="", icon="", accent="#5a9e47"):
     icon_html  = f'<div class="kpi-icon">{icon}</div>' if icon else ""

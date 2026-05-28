@@ -16,7 +16,7 @@ if os.path.exists('/home/facundol/deltix/'):
 else:
         base_path = ''
 
-ANSWER_charlar, ANSWER_meme, ANSWER_colaborar, ANSWER_mensajear, ANSWER_informacion, ANSWER_mareas_suscribir, ANSWER_windguru_suscribir, ANSWER_desuscribir, ANSWER_meme2, ANSWER_charlar_windguru, ANSWER_colectivas, ANSWER_jilguero, ANSWER_interislena, ANSWER_lineasdelta, ANSWER_direction, ANSWER_schedule, ANSWER_almacenera_select, ANSWER_hidrografia_suscribir, ANSWER_suscribirme = range(19)
+ANSWER_charlar, ANSWER_meme, ANSWER_colaborar, ANSWER_mensajear, ANSWER_informacion, ANSWER_mareas_suscribir, ANSWER_windguru_suscribir, ANSWER_desuscribir, ANSWER_meme2, ANSWER_charlar_windguru, ANSWER_colectivas, ANSWER_jilguero, ANSWER_interislena, ANSWER_lineasdelta, ANSWER_direction, ANSWER_schedule, ANSWER_almacenera_select, ANSWER_hidrografia_suscribir, ANSWER_suscribirme, ANSWER_agenda = range(20)
 
 
 # Paths
@@ -49,6 +49,16 @@ familia_islena_path = base_path + 'actividades_productos/familia_islena_flyer.jp
 mimbre_chiricote_path = base_path + 'actividades_productos/mimbre.png'
 familia_islena_path1 = base_path + 'actividades_productos/familia_islena.jpg'
 familia_islena_path2 = base_path + 'actividades_productos/familia_islena2.jpg'
+frutales_path       = base_path + 'actividades_productos/frutales.png'
+dulceras_path       = base_path + 'actividades_productos/dulceras1.jpeg'
+vivero_path         = base_path + 'actividades_productos/vivero_isleno.jpeg'
+nahuel_path         = base_path + 'actividades_productos/nahuel.jpeg'
+aguariba_path       = base_path + 'actividades_productos/aguariba.png'
+yoga_path           = base_path + 'actividades_productos/yoga_con_lau.png'
+fletes_path         = base_path + 'actividades_productos/flete1.jpeg'
+vita_path           = base_path + 'actividades_productos/viajes.jpeg'
+oscart_path         = base_path + 'actividades_productos/viajes2.jpeg'
+lena_path           = base_path + 'actividades_productos/gabi_lena.jpeg'
 
 user_experience = pd.read_csv(user_experience_path)
 
@@ -183,55 +193,196 @@ async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
         parse_mode='HTML',
         reply_markup=main_menu_keyboard)
 
+AGENDA_KEYBOARD = ReplyKeyboardMarkup([
+    ["Amanita", "Alfarería"],
+    ["La Búsqueda", "Kayaks"],
+    ["Masajes", "Familia Isleña"],
+    ["Mimbre", "Frutales"],
+    ["Dulceras", "Vivero"],
+    ["Nahuel", "Aguariba"],
+    ["Leña", "Agua"],
+    ["Sublinor", "Yoga"],
+    ["Igarapé Delta", "Fletes"],
+    ["Viajes Vita", "Óscar T"],
+    ["Electricista"],
+], one_time_keyboard=True, resize_keyboard=True)
+
 async def agenda_rio(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    '''Envía la lista completa de la Agenda del Río.'''
-    chat_id = update.effective_chat.id
-    msg = (
-        "🌿 <b>Agenda del Río</b>\n\n"
-        "🚣 <b>Amanita</b> — Canoa Isleña\n"
-        "@amanitaturismodelta · 📞 1169959272\n\n"
-        "🏺 <b>Kutral Alfarería</b> — Talleres de barro\n"
-        "@kutralalfareria\n\n"
-        "🌙 <b>La Búsqueda</b> — Hostal y ceremonias\n"
-        "@labusqueda_cabanadelta · 📞 1150459556\n\n"
-        "🛶 <b>Cañaveral Kayaks</b> — Excursiones en kayak\n"
-        "linktr.ee/canaveralkayaks · 📞 1126961274\n\n"
-        "💆 <b>Masaje Thai</b> — Tres Bocas\n"
-        "@estecharco · 📞 1122541171\n\n"
-        "🥗 <b>La Familia Isleña</b> — Alimentos naturales\n"
-        "📞 11 3046-6301\n\n"
-        "🧺 <b>Mimbre del Chiricote</b> — Cestería botánica\n"
-        "@mimbre.del.chiricote · 📞 1159749127\n\n"
-        "🍋 <b>Planta Frutales</b> — Cítricas para islas y amarras\n"
-        "📞 116 369 0177\n\n"
-        "🍯 <b>Dulceras del Río</b> — Repostería artesanal\n"
-        "@dulcerasdelrio · 📞 11 5525 3829\n\n"
-        "🌱 <b>Vivero Isleño</b> — Cooperativa Igarapé Delta\n"
-        "📞 1159233663\n\n"
-        "🔧 <b>Nahuel Servicios</b> — Mantenimiento en el Delta\n"
-        "📞 11 5349 2653\n\n"
-        "🥬 <b>Aguariba Anfibia</b> — Producción agroecológica\n"
-        "@aguaribaanfibia\n\n"
-        "🪵 <b>Leña a tu Muelle</b> — Gabriel\n"
-        "📞 1564584445\n\n"
-        "💧 <b>Agua a tu Muelle</b>\n"
-        "📞 1164584445\n\n"
-        "🖨️ <b>Sublinor Gráfica</b> — Imprenta\n"
-        "@sublinorgrafica\n\n"
-        "🧘 <b>Yoga con Lau</b> — Iyengar en la isla\n"
-        "@lau_g_yoga · 📞 1130614215\n\n"
-        "🌿 <b>Igarapé Delta</b> — Excursiones y naturaleza\n"
-        "@igarapedelta · 📞 1159233663\n\n"
-        "⛵ <b>Fletes Marea Express</b>\n"
-        "📞 1168803724\n\n"
-        "⛵ <b>Viajes y Fletes Vita</b>\n"
-        "📞 1162564547 / 1163044895\n\n"
-        "⛵ <b>Óscar T</b> — Viajes y traslados 24hs\n"
-        "📞 1165012823 / 1131761412\n\n"
-        "⚡ <b>Electricista Gonzalo</b> — Urgencias 24hs\n"
-        "📞 +54 9 11 3642-5680"
+    '''Muestra el menú de la Agenda del Río con teclado de selección.'''
+    await update.message.reply_text(
+        "🌿 <b>Agenda del Río</b>\n\n¿Qué actividad o servicio te interesa?",
+        parse_mode='HTML',
+        reply_markup=AGENDA_KEYBOARD,
     )
-    await context.bot.send_message(chat_id=chat_id, text=msg, parse_mode='HTML')
+    return ANSWER_agenda
+
+async def answer_agenda(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    '''Responde con info + flyer según la actividad elegida.'''
+    chat_id = update.effective_chat.id
+    t = update.message.text.lower()
+
+    async def _photo_msg(path, text):
+        await context.bot.send_photo(chat_id, open(path, "rb"))
+        await context.bot.send_message(chat_id, text=text, parse_mode='HTML')
+
+    if 'amanita' in t:
+        await _photo_msg(amanita_path,
+            "<b>Amanita — Canoa Isleña</b>\n\n"
+            "<i>Paseos por el Delta del Paraná</i>\n"
+            "<i>Con Guía Bilingüe (opcional)</i>\n"
+            "<i>Servicio puerta a puerta (opcional)</i>\n\n"
+            "instagram.com/amanitaturismodelta\n"
+            "📞 1169959272")
+    elif 'alfarería' in t or 'alfareria' in t:
+        await _photo_msg(alfareria_path,
+            "<b>Kutral Alfarería</b>\n\n"
+            "<i>Encuentros con el barro</i>\n"
+            "<i>Talleres de alfarería</i>\n"
+            "<i>Experimentación y creación con arcilla</i>\n\n"
+            "instagram.com/kutralalfareria")
+    elif 'búsqueda' in t or 'busqueda' in t:
+        await _photo_msg(labusqueda_path,
+            "<b>La Búsqueda</b>\n\n"
+            "<i>Espacio para encuentros y ceremonias</i>\n"
+            "<i>Hostal en el Delta</i>\n"
+            "<i>Conexión con la naturaleza</i>\n\n"
+            "instagram.com/labusqueda_cabanadelta\n"
+            "📞 1150459556")
+    elif 'kayak' in t:
+        await _photo_msg(canaveral_path,
+            "<b>Cañaveral Kayaks</b>\n\n"
+            "<i>Excursiones en Kayak</i>\n"
+            "<i>Paseos con guía</i>\n"
+            "<i>Remadas nocturnas</i>\n\n"
+            "linktr.ee/canaveralkayaks\n"
+            "📞 1126961274")
+    elif 'masaje' in t:
+        await _photo_msg(charco_masajes_path,
+            "<b>Masaje Thai</b>\n\n"
+            "<i>en el Tres Bocas</i>\n"
+            "@estecharco\n"
+            "📞 1122541171")
+    elif 'familia' in t:
+        await _photo_msg(familia_islena_path,
+            "<b>La Familia Isleña</b>\n\n"
+            "<i>Alimentos dietéticos, nutritivos y a buen precio</i>\n"
+            "Harinas, arroces, lentejas, porotos, frutos secos y más\n"
+            "Repartos a tu muelle con envíos gratis todas las semanas\n\n"
+            "Pedidos al WhatsApp de Jorge (Piojo): 📞 11 3046-6301")
+    elif 'mimbre' in t:
+        await _photo_msg(mimbre_chiricote_path,
+            "<b>Mimbre del Chiricote</b>\n\n"
+            "<i>Cestería botánica</i>\n"
+            "<i>Canastas, objetos y obras tejidas con plantas</i>\n\n"
+            "Clases individuales y grupales · Asesorías · Residencias\n\n"
+            "@mimbre.del.chiricote · 📞 1159749127")
+    elif 'frutal' in t:
+        await _photo_msg(frutales_path,
+            "<b>Planta Frutales</b>\n\n"
+            "Venta de plantas cítricas para islas y amarras\n"
+            "Limoneros, Mandarinas, Naranjas, Kinotos, Pomelos y más\n\n"
+            "📞 116 369 0177")
+    elif 'dulcera' in t:
+        await _photo_msg(dulceras_path,
+            "<b>Dulceras del Río</b>\n\n"
+            "Productos dulces y repostería artesanal\n"
+            "Entregas los jueves en Amarras Hugo del Carril\n\n"
+            "@dulcerasdelrio · 📞 11 5525 3829")
+    elif 'vivero' in t:
+        await _photo_msg(vivero_path,
+            "<b>Vivero Isleño — Cooperativa Igarapé Delta</b>\n\n"
+            "\"Hacer huerta es terapia\"\n"
+            "Tierra Fértil y Compost Orgánico\n"
+            "Entrega en tu muelle — Zona Correa y San Antonio\n\n"
+            "📞 1159233663")
+    elif 'nahuel' in t:
+        await _photo_msg(nahuel_path,
+            "<b>Nahuel Servicios</b>\n\n"
+            "Trabajos para tu hogar y terreno en el Delta\n"
+            "· Poda en altura · Zanjas y movimiento de tierra\n"
+            "· Carpintería: decks, torres de agua, estructuras\n"
+            "· Limpieza de terrenos\n\n"
+            "📞 11 5349 2653")
+    elif 'aguariba' in t:
+        await _photo_msg(aguariba_path,
+            "<b>Aguariba Anfibia</b>\n\n"
+            "Producción agroecológica del Delta\n"
+            "Pedidos hasta el lunes 22hs para entrega el miércoles\n"
+            "40% de reintegro con CUENTA DNI 💳\n\n"
+            "aguaribaanfibia.com.ar · @aguaribaanfibia")
+    elif 'leña' in t or 'lena' in t:
+        await _photo_msg(lena_path,
+            "<b>Leña a tu Muelle — Gabriel</b>\n\n"
+            "Bolsas tamaño salamandra (10-12 kg)\n"
+            "· Quebracho Colorado · Ligustro · Sauce\n"
+            "· Maderitas para prender\n"
+            "Compra mínima: 5 bolsas\n\n"
+            "📞 1564584445")
+    elif 'agua' in t:
+        await context.bot.send_message(chat_id,
+            "<b>Agua a tu Muelle</b>\n\n"
+            "Reparto de agua potable en bidones de 10 litros a tu muelle\n\n"
+            "@gabygallo_gil · 📞 1164584445",
+            parse_mode='HTML')
+    elif 'sublinor' in t:
+        await context.bot.send_message(chat_id,
+            "<b>Sublinor Gráfica</b>\n\n"
+            "Imprenta en Acassuso y en el Delta del Tigre\n"
+            "Rompecabezas, posavasos, papelería, merchandising\n\n"
+            "@sublinorgrafica · sublinorgrafica@gmail.com",
+            parse_mode='HTML')
+    elif 'yoga' in t:
+        await _photo_msg(yoga_path,
+            "<b>Yoga con Lau</b>\n\n"
+            "Clases de Yoga Iyengar en la isla para adultxs\n"
+            "No se necesita experiencia previa\n\n"
+            "📅 Lunes 10 a 11:30hs\n"
+            "📅 Jueves 16:30 a 18hs\n"
+            "📍 Cabañas Mayuwausi — Arroyo Reyes\n\n"
+            "@lau_g_yoga · 📞 1130614215")
+    elif 'igarapé' in t or 'igarape' in t:
+        await context.bot.send_message(chat_id,
+            "<b>Igarapé Delta</b>\n\n"
+            "Excursiones de Navegación, Senderismo, Canotaje y Turismo Rural\n"
+            "Naturaleza · Cultura · Aventura — Delta Salvaje\n"
+            "Guía Local Isleño Naturalista\n\n"
+            "@igarapedelta · 📞 1159233663",
+            parse_mode='HTML')
+    elif 'flete' in t:
+        await _photo_msg(fletes_path,
+            "<b>Fletes Marea Express</b>\n\n"
+            "Fletes en lancha, transporte seguro por agua\n"
+            "Cargas de todo tipo: materiales, herramientas, mercadería\n"
+            "Zonas rurales, islas y barrios ribereños\n\n"
+            "📞 1168803724")
+    elif 'vita' in t:
+        await _photo_msg(vita_path,
+            "<b>Viajes y Fletes Vita</b>\n\n"
+            "Viajes y fletes en lancha por el Delta del Paraná\n\n"
+            "Claudio: 📞 1162564547\n"
+            "Valeria: 📞 1163044895")
+    elif 'óscar' in t or 'oscar' in t:
+        await _photo_msg(oscart_path,
+            "<b>Óscar T — Traslados y Paseos</b>\n\n"
+            "Viajes, traslados y paseos las 24 horas\n"
+            "Base en Arroyo Espera, Delta del Paraná\n\n"
+            "📞 1165012823 / 1131761412")
+    elif 'electricista' in t:
+        await context.bot.send_message(chat_id,
+            "⚡ <b>Electricista — Gonzalo</b>\n\n"
+            "Trabajos eléctricos monofásicos y trifásicos\n"
+            "Venta e instalación de kits fotovoltaicos\n"
+            "Electricidad naval · Mantenimiento eléctrico\n"
+            "🕐 Urgencias 24hs\n\n"
+            "📞 +54 9 11 3642-5680",
+            parse_mode='HTML')
+    else:
+        await update.message.reply_text(
+            "No encontré esa actividad. Usá el teclado para elegir 👇",
+            reply_markup=AGENDA_KEYBOARD,
+        )
+        return ANSWER_agenda
+
     return ConversationHandler.END
 
 async def amanita(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
