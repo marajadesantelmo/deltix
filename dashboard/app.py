@@ -430,11 +430,10 @@ kpi(c3, "Usuarios/día (DAU)",
     icon="👥", accent="#3b9dc4")
 kpi(c4, "Msgs / sesión",
     f"{avg_len:.1f}",
-    f"{power_users} power users (10+)",
+    f"{power_users} conversadores (10+)",
     icon="📈", accent="#5a9e47")
 kpi(c5, "Ratio LLM",
     f"{pct_llm:.1f}%",
-    "umbral saludable < 15%",
     trend_html(pct_llm, prev_pct_llm),
     icon="🤖", accent="#9b5fc0")
 kpi(c6, "Tasa de error",
