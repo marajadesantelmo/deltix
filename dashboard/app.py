@@ -130,6 +130,31 @@ def load_data(pa_token: str = "", pa_user: str = "facundol") -> pd.DataFrame:
     return df
 
 @st.cache_data(ttl=3600)
+def load_user_experience(pa_token: str = "", pa_user: str = "facundol") -> pd.DataFrame:
+    """Carga user_experience.csv con nombres de usuarios de Telegram."""
+    try:
+        if pa_token:
+            url = (
+                f"https://www.pythonanywhere.com/api/v0/user/{pa_user}"
+                f"/files/path/home/{pa_user}/deltix/user_experience.csv"
+            )
+            resp = requests.get(url, headers={"Authorization": f"Token {pa_token}"}, timeout=30)
+            if resp.status_code == 404:
+                return pd.DataFrame(columns=["User ID", "Username", "First Name", "Last Name"])
+            resp.raise_for_status()
+            df = pd.read_csv(StringIO(resp.text))
+        else:
+            ue_path = ROOT / "user_experience.csv"
+            if not ue_path.exists():
+                return pd.DataFrame(columns=["User ID", "Username", "First Name", "Last Name"])
+            df = pd.read_csv(str(ue_path))
+        df["User ID"] = df["User ID"].astype(str)
+        return df[["User ID", "Username", "First Name", "Last Name"]]
+    except Exception as e:
+        print(f"user_experience load error: {e}")
+        return pd.DataFrame(columns=["User ID", "Username", "First Name", "Last Name"])
+
+@st.cache_data(ttl=3600)
 def load_tg_data(pa_token: str = "", pa_user: str = "facundol") -> pd.DataFrame:
     """Carga datos de Telegram. Devuelve DataFrame vacío si el archivo no existe aún."""
     try:
@@ -167,11 +192,13 @@ if IS_CLOUD:
     if not _pa_token:
         st.error("⚠️ Configurá `PA_API_TOKEN` en Streamlit Secrets (Settings → Secrets).")
         st.stop()
-    df_full    = load_data(_pa_token, _pa_user)
-    df_tg_full = load_tg_data(_pa_token, _pa_user)
+    df_full       = load_data(_pa_token, _pa_user)
+    df_tg_full    = load_tg_data(_pa_token, _pa_user)
+    df_user_exp   = load_user_experience(_pa_token, _pa_user)
 else:
-    df_full    = load_data()
-    df_tg_full = load_tg_data()
+    df_full       = load_data()
+    df_tg_full    = load_tg_data()
+    df_user_exp   = load_user_experience()
 
 TG_AVAILABLE = len(df_tg_full) > 0
 
@@ -1287,10 +1314,31 @@ else:
             .reset_index()
         )
         tg_user_counts.columns = ["user_id", "mensajes"]
-        tg_user_counts["user_id"] = tg_user_counts["user_id"].astype(str).str[-6:]
+        tg_user_counts["user_id"] = tg_user_counts["user_id"].astype(str)
+
+        # Enriquecer con nombres desde user_experience.csv
+        def _display_name(uid):
+            row = df_user_exp[df_user_exp["User ID"] == uid]
+            if row.empty:
+                return "···" + uid[-6:]
+            fn = str(row["First Name"].values[0]).strip()
+            ln = str(row["Last Name"].values[0]).strip()
+            un = str(row["Username"].values[0]).strip()
+            if fn and fn != "nan":
+                name = fn
+                if ln and ln != "nan":
+                    name += " " + ln
+            elif un and un != "nan":
+                name = "@" + un
+            else:
+                name = "···" + uid[-6:]
+            return name
+
+        tg_user_counts["nombre"] = tg_user_counts["user_id"].apply(_display_name)
+
         fig_tgusers = go.Figure(go.Bar(
             x=tg_user_counts["mensajes"][::-1],
-            y=("···" + tg_user_counts["user_id"])[::-1],
+            y=tg_user_counts["nombre"][::-1],
             orientation="h",
             marker=dict(
                 color=tg_user_counts["mensajes"][::-1],
@@ -1299,7 +1347,7 @@ else:
             ),
             text=tg_user_counts["mensajes"][::-1], textposition="outside",
             textfont=dict(color=TEXT, size=11),
-            hovertemplate="Usuario %{y}: %{x} mensajes<extra></extra>",
+            hovertemplate="%{y}: %{x} mensajes<extra></extra>",
         ))
         fig_tgusers.update_layout(
             paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
