@@ -636,7 +636,7 @@ with col_h:
     st.plotly_chart(fig3, use_container_width=True)
 
 with col_pie:
-    st.markdown("### Funcionalidades usadas · *web + TG*")
+    st.markdown("### Funcionalidades usadas")
 
     _CLIMA_KW      = ['clima', 'temperatura', 'pronostico', 'pronóstico', 'lluvia',
                       'tormenta', 'calor', 'frio', 'frío', 'nublado', 'el tiempo',
@@ -721,7 +721,7 @@ with col_pie:
     st.plotly_chart(fig2, use_container_width=True)
 
 with col_top:
-    st.markdown("### Top 10 mensajes · *web + TG*")
+    st.markdown("### Top 10 mensajes")
     top_msgs = (
         df_combined["user_message"].str.strip().str.lower()
         .value_counts().head(10)
@@ -757,7 +757,7 @@ with col_top:
 col3, col_llmr = st.columns([2, 3])
 
 with col3:
-    st.markdown("### Engagement por sesión · *web + TG*")
+    st.markdown("### Engagement por sesión")
     ranges_labels = ["1-2 msgs", "3-5 msgs", "6-10 msgs", "10+ msgs"]
     ranges_vals   = [0, 0, 0, 0]
     for l in sess_lens:
@@ -787,7 +787,7 @@ with col3:
     st.plotly_chart(fig4, use_container_width=True)
 
 with col_llmr:
-    st.markdown("### Evolución del ratio LLM por día · *web + TG*")
+    st.markdown("### Evolución del ratio LLM por día")
     _all_dates_llm = sorted(df_combined["date"].unique())
 
     def _llm_ratio_series(source_df):
@@ -863,7 +863,7 @@ st.markdown("## Patrones de uso")
 col_wd, col_br, col_errt = st.columns(3)
 
 with col_wd:
-    st.markdown("### Actividad por día de semana · *web + TG*")
+    st.markdown("### Actividad por día de semana")
     WEEKDAY_ORDER = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
     WEEKDAY_ES    = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"]
     wd = (df_combined["weekday"].value_counts()
@@ -893,7 +893,7 @@ with col_wd:
     st.plotly_chart(fig_wd, use_container_width=True)
 
 with col_br:
-    st.markdown("### % de interacciones de un sólo mensaje · *web + TG*")
+    st.markdown("### % de interacciones de un sólo mensaje")
     daily_bounces = (
         df_combined.groupby(["date", "session_id"]).size()
           .reset_index(name="n")
@@ -926,7 +926,7 @@ with col_br:
     st.plotly_chart(fig_br, use_container_width=True)
 
 with col_errt:
-    st.markdown("### Tendencia de errores diaria · *web + TG*")
+    st.markdown("### Tendencia de errores diaria")
     _all_dates = sorted(df_combined["date"].unique())
     daily_err = (
         df_combined[df_combined["response_type"].isin(["llm_blocked", "llm_error"])]
@@ -962,7 +962,7 @@ st.markdown("## Análisis de flujos")
 col_col, col_div, col_comp = st.columns(3)
 
 with col_col:
-    st.markdown("### Desglose de colectivas · *web + TG*")
+    st.markdown("### Desglose de colectivas")
     col_msgs = df_combined[df_combined["response_type"] == "colectivas"]["user_message"].str.lower()
     line_counts = pd.Series({
         "Jilguero":     int(col_msgs.str.contains("jilguero", na=False).sum()),
@@ -998,7 +998,7 @@ with col_col:
     st.plotly_chart(fig_col2, use_container_width=True)
 
 with col_div:
-    st.markdown("### Diversidad de features · *web + TG*")
+    st.markdown("### Diversidad de features")
     feat_div = (df_combined.groupby("session_id")["response_type"]
                   .nunique().reset_index(name="n_types"))
     feat_div["bucket"] = feat_div["n_types"].apply(
@@ -1030,7 +1030,7 @@ with col_div:
     st.plotly_chart(fig_div, use_container_width=True)
 
 with col_comp:
-    st.markdown("### Completitud de flujos · *web + TG*")
+    st.markdown("### Completitud de flujos")
     _flow_rows = []
     for ft in ["colectivas", "almaceneras", "agenda"]:
         s = df_combined[df_combined["response_type"] == ft].groupby("session_id").size()
@@ -1119,7 +1119,7 @@ with col_words:
         st.info("Sin datos LLM en el período seleccionado.")
 
 with col_rlen:
-    st.markdown("### Longitud de respuesta por tipo · *web + TG*")
+    st.markdown("### Longitud de respuesta por tipo")
     avg_rlen = (
         df_combined.assign(reply_len=df_combined["bot_reply"].str.len().fillna(0))
           .groupby("response_type")["reply_len"]
@@ -1181,7 +1181,7 @@ st.markdown("## Conversaciones")
 col_llm, col_err = st.columns(2)
 
 with col_llm:
-    st.markdown("### LLM · *web + TG*")
+    st.markdown("### LLM")
     df_llm = (
         df_combined[df_combined["response_type"] == "llm"]
         [["timestamp", "source", "user_message", "bot_reply"]]
@@ -1194,7 +1194,7 @@ with col_llm:
     st.dataframe(df_llm, use_container_width=True, height=420, hide_index=True)
 
 with col_err:
-    st.markdown("### Errores · *web + TG*")
+    st.markdown("### Errores")
     df_err = (
         df_combined[df_combined["response_type"].isin(["llm_blocked", "llm_error"])]
         [["timestamp", "source", "user_message", "bot_reply", "response_type"]]
@@ -1212,7 +1212,7 @@ with col_err:
 # ── Explorador de sesiones ───────────────────────────────────────────────────
 
 st.markdown("---")
-st.markdown("## Explorador de sesiones · *web + TG*")
+st.markdown("## Explorador de sesiones")
 
 sess_summary = (
     df_combined.groupby("session_id")
