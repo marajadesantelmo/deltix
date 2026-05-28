@@ -251,7 +251,14 @@ def wrap_handler_with_tracking(handler):
 nest_asyncio.apply()
 
 if __name__ == '__main__':
-    application = ApplicationBuilder().token(telegram_token).build()
+    application = (
+        ApplicationBuilder()
+        .token(telegram_token)
+        .read_timeout(30)
+        .write_timeout(30)
+        .connect_timeout(30)
+        .build()
+    )
     
     # Define command handlers and wrap them with tracking
     command_handlers = [
