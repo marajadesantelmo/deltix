@@ -31,11 +31,7 @@ st.set_page_config(
 _AUTH_TOKEN = "capibara_ok"
 _AUTH_DAYS  = 30
 
-@st.cache_resource
-def _get_cookies():
-    return stx.CookieManager()
-
-_cookies = _get_cookies()
+_cookies = stx.CookieManager()
 
 if _cookies.get("deltix_auth") != _AUTH_TOKEN:
     _pwd = st.text_input("🔒 Código de acceso", type="password", key="pwd")
