@@ -12,7 +12,6 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
-import extra_streamlit_components as stx
 from io import StringIO
 from pathlib import Path
 from datetime import datetime, timedelta, date
@@ -28,16 +27,10 @@ st.set_page_config(
 
 # ── Control de acceso ─────────────────────────────────────────────────────────
 
-_AUTH_TOKEN = "capibara_ok"
-_AUTH_DAYS  = 30
-
-_cookies = stx.CookieManager()
-
-if _cookies.get("deltix_auth") != _AUTH_TOKEN:
+if not st.session_state.get("authenticated"):
     _pwd = st.text_input("🔒 Código de acceso", type="password", key="pwd")
     if _pwd == "nomellamescapibara":
-        _cookies.set("deltix_auth", _AUTH_TOKEN,
-                     expires_at=datetime.now() + timedelta(days=_AUTH_DAYS))
+        st.session_state["authenticated"] = True
         st.rerun()
     else:
         if _pwd:
