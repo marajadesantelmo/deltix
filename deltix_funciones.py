@@ -68,34 +68,19 @@ def generate_main_menu():
     '''
     Genera el menu principal
     Ese menu se ejecuta desde las funciones /start, /start2 y /menu
-    Las lineas comentadas del menu son proyectos e ideas de funcionalidades
-    para agregar a Deltix
     '''
     return ("- <b>/mareas </b>   <i> pronóstico de mareas INA &#9875</i>\n"
             "- <b>/hidrografia </b>   <i> mareas hidrografia</i>\n"
             "- <b>/windguru </b>   <i> pronóstico del clima de windgurú</i>\n"
             "- <b>/colectivas </b>   <i> horarios lanchas colectivas &#128337</i>\n"
+            "- <b>/agenda </b>   <i> agenda del río 🌿</i>\n"
             "- <b>/almaceneras </b>   <i> lanchas almaceneras &#128676</i>\n"
             "- <b>/memes </b>   <i> los memes más divertidos de la isla &#129315 </i>\n"
             "- <b>/suscribirme </b>   <i> suscribirte a mis envíos &#x1F989</i>\n"
-            # "- <b>/voy_y_vuelvo </b>   <i> compartir viajes desde y hacia a la isla</i>\n"
-            # "- <b>/notiDeltix </b>   <i> suscribirte al envío de info de interés sobre la isla</i>\n"
             "- <b>/charlar</b>   <i> charlar conmigo y suscribirte a mis envíos </i>\n"
             "- <b>/informacion </b>   <i> saber más sobre Deltix &#128057</i>\n"
             "- <b>/colaborar </b>   <i> hacer sugerencias o aportar</i>\n"
-            "- <b>/desuscribirme </b>   <i> darte de baja de mis envíos &#x1F989</i>\n"
-            #"- <b>/mensajear </b>   <i> mandarle un mensajito al equipo Deltix</i>"
-            "\n"
-            "\n"
-            "<b>Agenda del río</b>\n"
-            "\n"
-            "- <b>/amanita </b>   <i> paseos en canoa isleña</i>\n"
-            "- <b>/alfareria</b>   <i> encuentros con el barro</i>\n"
-            "- <b>/labusqueda</b>   <i> espacio para ceremonias, hostal y mas</i>\n"
-            "- <b>/canaveralkayaks</b>   <i> excursiones en kayak</i>\n"
-            "- <b>/masajes</b>   <i> masaje thai</i>\n"
-            "- <b>/familia_islena</b>   <i> alimentos y dietetica natural</i>\n"
-            "- <b>/mimbre</b>   <i> cestería botánica con plantas</i>\n")
+            "- <b>/desuscribirme </b>   <i> darte de baja de mis envíos &#x1F989</i>\n")
 
 main_menu_keyboard = ReplyKeyboardMarkup([["/windguru", "/mareas", "/hidrografia"],
                                           ["/colectivas", "/almaceneras", "/memes"],
@@ -197,6 +182,57 @@ async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
         text=generate_main_menu(),
         parse_mode='HTML',
         reply_markup=main_menu_keyboard)
+
+async def agenda_rio(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    '''Envía la lista completa de la Agenda del Río.'''
+    chat_id = update.effective_chat.id
+    msg = (
+        "🌿 <b>Agenda del Río</b>\n\n"
+        "🚣 <b>Amanita</b> — Canoa Isleña\n"
+        "@amanitaturismodelta · 📞 1169959272\n\n"
+        "🏺 <b>Kutral Alfarería</b> — Talleres de barro\n"
+        "@kutralalfareria\n\n"
+        "🌙 <b>La Búsqueda</b> — Hostal y ceremonias\n"
+        "@labusqueda_cabanadelta · 📞 1150459556\n\n"
+        "🛶 <b>Cañaveral Kayaks</b> — Excursiones en kayak\n"
+        "linktr.ee/canaveralkayaks · 📞 1126961274\n\n"
+        "💆 <b>Masaje Thai</b> — Tres Bocas\n"
+        "@estecharco · 📞 1122541171\n\n"
+        "🥗 <b>La Familia Isleña</b> — Alimentos naturales\n"
+        "📞 11 3046-6301\n\n"
+        "🧺 <b>Mimbre del Chiricote</b> — Cestería botánica\n"
+        "@mimbre.del.chiricote · 📞 1159749127\n\n"
+        "🍋 <b>Planta Frutales</b> — Cítricas para islas y amarras\n"
+        "📞 116 369 0177\n\n"
+        "🍯 <b>Dulceras del Río</b> — Repostería artesanal\n"
+        "@dulcerasdelrio · 📞 11 5525 3829\n\n"
+        "🌱 <b>Vivero Isleño</b> — Cooperativa Igarapé Delta\n"
+        "📞 1159233663\n\n"
+        "🔧 <b>Nahuel Servicios</b> — Mantenimiento en el Delta\n"
+        "📞 11 5349 2653\n\n"
+        "🥬 <b>Aguariba Anfibia</b> — Producción agroecológica\n"
+        "@aguaribaanfibia\n\n"
+        "🪵 <b>Leña a tu Muelle</b> — Gabriel\n"
+        "📞 1564584445\n\n"
+        "💧 <b>Agua a tu Muelle</b>\n"
+        "📞 1164584445\n\n"
+        "🖨️ <b>Sublinor Gráfica</b> — Imprenta\n"
+        "@sublinorgrafica\n\n"
+        "🧘 <b>Yoga con Lau</b> — Iyengar en la isla\n"
+        "@lau_g_yoga · 📞 1130614215\n\n"
+        "🌿 <b>Igarapé Delta</b> — Excursiones y naturaleza\n"
+        "@igarapedelta · 📞 1159233663\n\n"
+        "⛵ <b>Fletes Marea Express</b>\n"
+        "📞 1168803724\n\n"
+        "⛵ <b>Viajes y Fletes Vita</b>\n"
+        "📞 1162564547 / 1163044895\n\n"
+        "⛵ <b>Óscar T</b> — Viajes y traslados 24hs\n"
+        "📞 1165012823 / 1131761412\n\n"
+        "⚡ <b>Electricista Gonzalo</b> — Urgencias 24hs\n"
+        "📞 +54 9 11 3642-5680"
+    )
+    await context.bot.send_message(chat_id=chat_id, text=msg, parse_mode='HTML')
+    return ConversationHandler.END
 
 async def amanita(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
     '''
