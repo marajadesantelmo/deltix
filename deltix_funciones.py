@@ -627,43 +627,29 @@ async def memes(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         return ANSWER_meme
 
 async def answer_meme(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-        '''
-        Respuesta para enviar o no más memes después de haber mandado el 1ero
-        '''
-        chat_id=update.effective_chat.id
-        user_response = update.message.text.lower()
-        if user_response == 'si':
-            numero = random.randint(1, 56)
-            await context.bot.send_photo(chat_id, open(f"{memes_path}{numero}.png", "rb"))
-            await context.bot.send_message(chat_id,"Uno más?")
-            return ANSWER_meme2
-
-        if user_response == 'no':
-            await update.message.reply_text(
-                "Bueno... si querés podes elegir otra de las actividades para hacer conmigo",
-                reply_markup=ReplyKeyboardMarkup([["/charlar", "/mareas", "/memes"],
-                                                  ["/informacion", "/colaborar", "/desuscribirme"] ]))
-            return ConversationHandler.END
+        '''Envía otro meme tras el primero (respuesta afirmativa).'''
+        chat_id = update.effective_chat.id
+        numero = random.randint(1, 56)
+        await context.bot.send_photo(chat_id, open(f"{memes_path}{numero}.png", "rb"))
+        await context.bot.send_message(chat_id, "Uno más?")
+        return ANSWER_meme2
 
 async def answer_meme2(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-        '''
-        Respuesta para enviar o no más memes después de haber mandado otro
-        '''
-        chat_id=update.effective_chat.id
-        user_response = update.message.text.lower()
-        if user_response == 'si':
-            numero = random.randint(1, 56)
-            await context.bot.send_photo(chat_id, open(f"{memes_path}{numero}.png", "rb"))
-            time.sleep(5)
-            await context.bot.send_message(chat_id,"Te mando otro?")
-            return ANSWER_meme
+        '''Envía otro meme (respuesta afirmativa en ronda 2+).'''
+        chat_id = update.effective_chat.id
+        numero = random.randint(1, 56)
+        await context.bot.send_photo(chat_id, open(f"{memes_path}{numero}.png", "rb"))
+        time.sleep(5)
+        await context.bot.send_message(chat_id, "Te mando otro?")
+        return ANSWER_meme
 
-        if user_response == 'no':
-            await update.message.reply_text(
-                "Bueno... si querés podes elegir otra de las actividades para hacer conmigo",
-                reply_markup=ReplyKeyboardMarkup([["/charlar", "/mareas", "/memes"],
-                                                  ["/informacion", "/colaborar", "/desuscribirme"] ]))
-            return ConversationHandler.END
+async def answer_meme_fallback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+        '''Salida amigable del flujo de memes para cualquier respuesta no afirmativa.'''
+        await update.message.reply_text(
+            "Ok! 🦦 Si necesitás algo del Delta, preguntame cuando quieras.",
+            reply_markup=ReplyKeyboardMarkup([["/charlar", "/mareas", "/memes"],
+                                              ["/informacion", "/colaborar", "/desuscribirme"]]))
+        return ConversationHandler.END
 
 async def desuscribirme(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user = update.effective_user

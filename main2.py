@@ -225,7 +225,7 @@ def wrap_handler_with_tracking(handler):
 
             # CSV log (skip llm_fallback — it logs itself with the actual reply)
             if rtype != "llm":
-                log_tg_interaction(user_id, user_msg, rtype)
+                log_tg_interaction(user_id, user_msg, rtype, f"[{rtype}]")
 
             return result
 
@@ -343,8 +343,14 @@ if __name__ == '__main__':
         entry_points=handlers,
         states={
             ANSWER_charlar: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), answer_charlar)],
-            ANSWER_meme: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), answer_meme)],
-            ANSWER_meme2: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), answer_meme2)],
+            ANSWER_meme: [
+                MessageHandler(filters.Regex(r'(?i)\b(s[ií]|dale|otro|m[aá]s|claro|va|quiero|mand[aá])\b'), answer_meme),
+                MessageHandler(filters.TEXT, answer_meme_fallback),
+            ],
+            ANSWER_meme2: [
+                MessageHandler(filters.Regex(r'(?i)\b(s[ií]|dale|otro|m[aá]s|claro|va|quiero|mand[aá])\b'), answer_meme2),
+                MessageHandler(filters.TEXT, answer_meme_fallback),
+            ],
             ANSWER_colaborar: [MessageHandler(filters.Regex(r'^(Mensajear|mensajear|MENSAJEAR|Aportar|aportar|APORTAR)$'), answer_colaborar)],
             ANSWER_mareas_suscribir: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), mareas_suscribir)],
             ANSWER_windguru_suscribir: [MessageHandler(filters.Regex(r'^(Si|si|SI|No|no|NO)$'), windguru_suscribir)],

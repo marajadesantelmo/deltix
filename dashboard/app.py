@@ -1249,6 +1249,12 @@ df_sess = (
     .copy()
 )
 df_sess["timestamp"] = df_sess["timestamp"].dt.strftime("%H:%M:%S")
+# Si bot_reply está vacío, mostrar el tipo de respuesta como indicador
+df_sess["bot_reply"] = df_sess.apply(
+    lambda r: r["bot_reply"] if (r["bot_reply"] and r["bot_reply"] not in ("", "nan"))
+              else f"({r['response_type']})",
+    axis=1,
+)
 df_sess.columns = ["Hora", "Usuario", "Bot", "Tipo"]
 st.dataframe(df_sess, use_container_width=True, hide_index=True)
 

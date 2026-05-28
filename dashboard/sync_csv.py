@@ -36,50 +36,62 @@ if env_path.exists():
             val = val.strip().strip("'").strip('"')
             os.environ.setdefault(key.strip(), val)
 
-PA_USERNAME  = os.environ.get("PA_USERNAME", "facundol")
-PA_API_TOKEN = os.environ.get("PA_API_TOKEN", "")
-REMOTE_PATH  = f"/home/{PA_USERNAME}/deltix/web_interactions.csv"
-LOCAL_CSV    = Path(__file__).parent.parent / "web_interactions.csv"
+PA_USERNAME    = os.environ.get("PA_USERNAME", "facundol")
+PA_API_TOKEN   = os.environ.get("PA_API_TOKEN", "")
+ROOT           = Path(__file__).parent.parent
 TIMESTAMP_FILE = Path(__file__).parent / ".last_sync"
+
+FILES = [
+    ("web_interactions.csv",  ROOT / "web_interactions.csv"),
+    ("tg_interactions.csv",   ROOT / "tg_interactions.csv"),
+]
 
 # ── Descarga ──────────────────────────────────────────────────────────────────
 
-def download_csv() -> bool:
+def download_file(remote_name: str, local_path: Path, headers: dict) -> bool:
+    remote_path = f"/home/{PA_USERNAME}/deltix/{remote_name}"
+    url = f"https://www.pythonanywhere.com/api/v0/user/{PA_USERNAME}/files/path{remote_path}"
+    print(f"  Descargando {remote_name}...")
+    try:
+        resp = requests.get(url, headers=headers, timeout=30)
+    except requests.exceptions.RequestException as e:
+        print(f"  ERROR de red: {e}")
+        return False
+
+    if resp.status_code == 200:
+        local_path.write_bytes(resp.content)
+        lines = resp.content.count(b"\n")
+        print(f"  OK — {lines} filas → {local_path.name}")
+        return True
+    elif resp.status_code == 404:
+        print(f"  AVISO: {remote_name} no existe aún en el servidor (404).")
+        return True  # no es un error fatal
+    elif resp.status_code == 401:
+        print(f"  ERROR 401: Token inválido.")
+        return False
+    else:
+        print(f"  ERROR {resp.status_code}: {resp.text[:200]}")
+        return False
+
+
+def download_all() -> bool:
     if not PA_API_TOKEN:
         print("ERROR: PA_API_TOKEN no está configurado.")
         print("  Creá el archivo dashboard/.env con tu token de PythonAnywhere.")
         print("  Instrucciones: https://www.pythonanywhere.com/account/#api_token")
         return False
 
-    url = f"https://www.pythonanywhere.com/api/v0/user/{PA_USERNAME}/files/path{REMOTE_PATH}"
-    print(f"Descargando desde PythonAnywhere...")
-    print(f"  URL: {url}")
+    headers = {"Authorization": f"Token {PA_API_TOKEN}"}
+    print(f"Sincronizando desde PythonAnywhere ({PA_USERNAME})...")
 
-    try:
-        resp = requests.get(url, headers={"Authorization": f"Token {PA_API_TOKEN}"}, timeout=30)
-    except requests.exceptions.RequestException as e:
-        print(f"ERROR de red: {e}")
-        return False
+    results = [download_file(name, path, headers) for name, path in FILES]
 
-    if resp.status_code == 200:
-        LOCAL_CSV.write_bytes(resp.content)
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        TIMESTAMP_FILE.write_text(now, encoding="utf-8")
-        lines = resp.content.count(b"\n")
-        print(f"  OK — {lines} filas descargadas")
-        print(f"  Guardado en: {LOCAL_CSV}")
-        print(f"  Timestamp: {now}")
-        return True
-    elif resp.status_code == 401:
-        print("ERROR 401: Token inválido. Verificá PA_API_TOKEN en .env")
-    elif resp.status_code == 404:
-        print(f"ERROR 404: Archivo no encontrado en {REMOTE_PATH}")
-        print("  Verificá que el path sea correcto.")
-    else:
-        print(f"ERROR {resp.status_code}: {resp.text[:200]}")
-    return False
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    TIMESTAMP_FILE.write_text(now, encoding="utf-8")
+    print(f"  Timestamp: {now}")
+    return all(results)
 
 
 if __name__ == "__main__":
-    success = download_csv()
+    success = download_all()
     sys.exit(0 if success else 1)

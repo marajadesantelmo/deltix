@@ -177,3 +177,10 @@ Descripción: Viajes, traslados y paseos las 24 horas. Base en Arroyo Espera, De
 Tipo: Lancha taxi / Traslados / Paseos
 Contacto: 1165012823 / 1131761412
 
+---
+
+Nombre: Electricista - Gonzalo
+Descripción: Trabajos eléctricos monofásicos y trifásicos. Venta e instalación de kits fotovoltaicos. Electricidad naval. Mantenimiento eléctrico. Urgencias 24 hs.
+Tipo: Electricista / Servicio eléctrico
+Contacto: +54 9 11 3642-5680
+
