@@ -483,6 +483,19 @@ with col_l:
     daily_dau = dau.reset_index()
     daily_dau.columns = ["date", "usuarios"]
     daily = daily.merge(daily_dau, on="date", how="left").fillna(0)
+    # Sesiones únicas por canal
+    _sess_web = df.groupby("date")["session_id"].nunique().reset_index(name="sess_web")
+    _sess_tg  = (df_tg.groupby("date")["session_id"].nunique().reset_index(name="sess_tg")
+                 if TG_AVAILABLE and not df_tg.empty
+                 else pd.DataFrame(columns=["date", "sess_tg"]))
+    daily = (daily
+             .merge(_sess_web, on="date", how="left")
+             .merge(_sess_tg,  on="date", how="left")
+             .fillna(0))
+    daily["sess_web"] = daily["sess_web"].astype(int)
+    daily["sess_tg"]  = daily["sess_tg"].astype(int)
+    _total_sess = (daily["sess_web"] + daily["sess_tg"]).replace(0, 1)
+    daily["pct_tg"] = (daily["sess_tg"] / _total_sess * 100).round(1)
     daily["date_str"] = daily["date"].astype(str)
 
     fig = go.Figure()
@@ -563,19 +576,21 @@ with col_tabs:
     # ── Tabla: Interacciones diarias ──────────────────────────────────────────
     st.markdown("### Interacciones diarias")
     daily_tbl = (
-        daily[["date", "web", "telegram", "interacciones", "usuarios"]]
+        daily[["date", "web", "telegram", "interacciones", "sess_web", "sess_tg", "pct_tg"]]
         .sort_values("date", ascending=False)
         .copy()
     )
     daily_tbl["Fecha"] = daily_tbl["date"].apply(
         lambda d: d.strftime("%d/%m/%Y") if hasattr(d, "strftime") else str(d)
     )
+    daily_tbl["% ✈️"] = daily_tbl["pct_tg"].apply(lambda x: f"{x:.0f}%")
     daily_tbl = daily_tbl.rename(columns={
-        "interacciones": "Total",
-        "web":           "💻",
-        "telegram":      "✈️",
-        "usuarios":      "Usuarios",
-    })[["Fecha", "💻", "✈️", "Total", "Usuarios"]]
+        "interacciones": "Msgs total",
+        "web":           "Msgs 💻",
+        "telegram":      "Msgs ✈️",
+        "sess_web":      "Ses. 💻",
+        "sess_tg":       "Ses. ✈️",
+    })[["Fecha", "Msgs 💻", "Msgs ✈️", "Msgs total", "Ses. 💻", "Ses. ✈️", "% ✈️"]]
     st.dataframe(daily_tbl, use_container_width=True, hide_index=True, height=175)
 
 # ── Fila 2: actividad horaria + dona + top mensajes ──────────────────────────
