@@ -407,8 +407,8 @@ with _lbl_r:
 
 # ── KPI row única ─────────────────────────────────────────────────────────────
 
-c1, c2, c3, c4, c5, c6, _sep, k1, k2, k3, k4 = st.columns(
-    [1, 1, 1, 1, 1, 1, 0.06, 1, 1, 1, 1]
+c1, c2, c3, c4, c5, c6, c7, _sep, k1, k2, k3, k4 = st.columns(
+    [1, 1, 1, 1, 1, 1, 1, 0.06, 1, 1, 1, 1]
 )
 # Separador visual
 _sep.markdown(
@@ -444,6 +444,11 @@ kpi(c6, "Tasa de error",
     f"{error_rate:.2f}%",
     f"{llm_blocked} blocked + {llm_error} err.",
     icon="⚠️", accent="#e07a30")
+pct_tg_msgs = total_tg_n / total * 100 if total else 0
+kpi(c7, "% Telegram",
+    f"{pct_tg_msgs:.0f}%",
+    f"💬 {total_tg_n} msgs · 👥 {n_sess_tg} ses.",
+    icon="✈️", accent="#5a9e47")
 kpi(k1, "Usuarios hoy",
     str(users_today),
     f"prom. diario: {avg_dau_full:.1f}",
