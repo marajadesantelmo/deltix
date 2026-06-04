@@ -1261,11 +1261,12 @@ selected_sid = sess_summary.loc[
 ].values[0]
 
 df_sess = (
-    df_combined[df_combined["session_id"] == selected_sid]
-    [["timestamp", "user_message", "bot_reply", "response_type"]]
+    df_combined[df_combined["session_id"].astype(str) == selected_sid]
+    [["timestamp", "source", "user_message", "bot_reply", "response_type"]]
     .sort_values("timestamp")
     .copy()
 )
+df_sess["source"] = df_sess["source"].map({"web": "💻", "telegram": "✈️"}).fillna("❓")
 df_sess["timestamp"] = df_sess["timestamp"].dt.strftime("%H:%M:%S")
 # Si bot_reply está vacío, mostrar el tipo de respuesta como indicador
 df_sess["bot_reply"] = df_sess.apply(
@@ -1273,7 +1274,8 @@ df_sess["bot_reply"] = df_sess.apply(
               else f"({r['response_type']})",
     axis=1,
 )
-df_sess.columns = ["Hora", "Usuario", "Bot", "Tipo"]
+df_sess = df_sess.drop(columns=["response_type"])
+df_sess.columns = ["Hora", "Canal", "Usuario", "Bot"]
 st.dataframe(df_sess, use_container_width=True, hide_index=True)
 
 # ── Detalle Telegram ──────────────────────────────────────────────────────────
