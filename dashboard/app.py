@@ -7,6 +7,7 @@ Uso:
 """
 
 import os
+import json
 import requests
 import pandas as pd
 import plotly.express as px
@@ -228,9 +229,10 @@ with _col_brand:
 with _col_controls:
     _sub_date, _sub_btn = st.columns([4, 1])
     with _sub_date:
+        _default_start = max(min_date, date(2026, 5, 26))
         date_range = st.date_input(
             "Período",
-            value=(min_date, max_date),
+            value=(_default_start, max_date),
             min_value=min_date,
             max_value=max_date,
             label_visibility="collapsed",
@@ -1388,6 +1390,81 @@ else:
             hoverlabel=dict(bgcolor="#1a2e3a", font_color="#e8f5e2"),
         )
         st.plotly_chart(fig_tgusers, use_container_width=True)
+
+# ── Monitor de actualización ──────────────────────────────────────────────────
+
+def _monitor_fetch(rel_path, binary=False):
+    """Lee un archivo desde disco (local) o desde la API de PythonAnywhere (cloud)."""
+    if IS_CLOUD:
+        url = (f"https://www.pythonanywhere.com/api/v0/user/{_pa_user}"
+               f"/files/path/home/{_pa_user}/deltix/{rel_path}")
+        try:
+            r = requests.get(url, headers={"Authorization": f"Token {_pa_token}"}, timeout=20)
+            if r.status_code != 200:
+                return None
+            return r.content if binary else r.text
+        except Exception:
+            return None
+    else:
+        p = ROOT / rel_path
+        if not p.exists():
+            return None
+        return p.read_bytes() if binary else p.read_text(encoding="utf-8", errors="replace")
+
+st.markdown("---")
+with st.expander("🔍 Monitor de actualización", expanded=False):
+    _mc1, _mc2, _mc3, _mc4 = st.columns(4)
+
+    with _mc1:
+        st.markdown("<p style='font-size:0.75rem;font-weight:700;margin-bottom:4px'>🌊 Marea INA</p>",
+                    unsafe_allow_html=True)
+        _img = _monitor_fetch("marea.png", binary=True)
+        if _img:
+            st.image(_img, use_container_width=True)
+        else:
+            st.warning("No disponible", icon="⚠️")
+
+    with _mc2:
+        st.markdown("<p style='font-size:0.75rem;font-weight:700;margin-bottom:4px'>🌬️ WindGurú</p>",
+                    unsafe_allow_html=True)
+        _wg = _monitor_fetch("windguru.png", binary=True)
+        if _wg:
+            st.image(_wg, use_container_width=True)
+        else:
+            st.warning("No disponible", icon="⚠️")
+
+    with _mc3:
+        st.markdown("<p style='font-size:0.75rem;font-weight:700;margin-bottom:4px'>🌤️ Clima (JSON)</p>",
+                    unsafe_allow_html=True)
+        _wtxt = _monitor_fetch("rag/current_weather.json")
+        if _wtxt:
+            try:
+                _wj   = json.loads(_wtxt)
+                _ts   = _wj.get("timestamp", "?")
+                _main = _wj.get("data", {}).get("main", {})
+                _desc = (_wj.get("data", {}).get("weather") or [{}])[0].get("description", "?")
+                _wind = _wj.get("data", {}).get("wind", {}).get("speed", "?")
+                st.markdown(
+                    f"<p style='font-size:0.72rem;color:#7ab87a;margin:0'>🕐 {_ts}</p>"
+                    f"<p style='font-size:0.72rem;margin:2px 0'>🌡 <b>{_main.get('temp','?')}°C</b>"
+                    f" · {str(_desc).capitalize()}</p>"
+                    f"<p style='font-size:0.72rem;margin:2px 0'>💧 {_main.get('humidity','?')}% humedad"
+                    f" · 💨 {_wind} m/s</p>",
+                    unsafe_allow_html=True,
+                )
+            except Exception:
+                st.code(_wtxt[:300], language=None)
+        else:
+            st.warning("No disponible", icon="⚠️")
+
+    with _mc4:
+        st.markdown("<p style='font-size:0.75rem;font-weight:700;margin-bottom:4px'>🌊 Hidrografía (txt)</p>",
+                    unsafe_allow_html=True)
+        _htxt = _monitor_fetch("table_data.txt")
+        if _htxt and _htxt.strip():
+            st.code(_htxt.strip()[:500], language=None)
+        else:
+            st.warning("No disponible", icon="⚠️")
 
 # ── Footer ────────────────────────────────────────────────────────────────────
 
