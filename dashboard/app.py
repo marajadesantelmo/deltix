@@ -311,10 +311,10 @@ with st.expander("🔍 Monitor de actualización", expanded=True):
                 _desc = (_wj.get("data", {}).get("weather") or [{}])[0].get("description", "?")
                 _wind = _wj.get("data", {}).get("wind", {}).get("speed", "?")
                 st.markdown(
-                    f"<p style='font-size:0.72rem;color:#7ab87a;margin:0'>🕐 {_ts}</p>"
-                    f"<p style='font-size:0.72rem;margin:2px 0'>🌡 <b>{_main.get('temp','?')}°C</b>"
+                    f"<p style='font-size:0.85rem;color:#7ab87a;margin:0'>🕐 {_ts}</p>"
+                    f"<p style='font-size:1.15rem;margin:4px 0'>🌡 <b>{_main.get('temp','?')}°C</b>"
                     f" · {str(_desc).capitalize()}</p>"
-                    f"<p style='font-size:0.72rem;margin:2px 0'>💧 {_main.get('humidity','?')}% humedad"
+                    f"<p style='font-size:1rem;margin:4px 0'>💧 {_main.get('humidity','?')}% humedad"
                     f" · 💨 {_wind} m/s</p>",
                     unsafe_allow_html=True,
                 )
@@ -323,7 +323,7 @@ with st.expander("🔍 Monitor de actualización", expanded=True):
         else:
             st.warning("No disponible", icon="⚠️")
 
-        st.markdown("<p style='font-size:0.75rem;font-weight:700;margin:10px 0 4px'>🌊 San Fernando (txt)</p>",
+        st.markdown("<p style='font-size:0.75rem;font-weight:700;margin:10px 0 4px'>🌊 Hidrografía PNA</p>",
                     unsafe_allow_html=True)
         _htxt = _monitor_fetch("table_data.txt")
         if _htxt and _htxt.strip():
