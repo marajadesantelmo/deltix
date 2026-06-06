@@ -9,7 +9,8 @@ def get_weather(api_key, city):
     params = {
         'q': city,
         'appid': api_key,
-        'units': 'metric'
+        'units': 'metric',
+        'lang': 'es'
     }
     response = requests.get(base_url, params=params)
     if response.status_code == 200:
@@ -22,7 +23,8 @@ def get_forecast(api_key, city):
     params = {
         'q': city,
         'appid': api_key,
-        'units': 'metric'
+        'units': 'metric',
+        'lang': 'es'
     }
     response = requests.get(base_url, params=params)
     if response.status_code == 200:
