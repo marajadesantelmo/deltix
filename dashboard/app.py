@@ -279,7 +279,7 @@ def _monitor_fetch(rel_path, binary=False):
         return p.read_bytes() if binary else p.read_text(encoding="utf-8", errors="replace")
 
 with st.expander("🔍 Monitor de actualización", expanded=True):
-    _mc1, _mc2, _mc3, _mc4 = st.columns(4)
+    _mc1, _mc2, _mc3 = st.columns(3)
 
     with _mc1:
         st.markdown("<p style='font-size:0.75rem;font-weight:700;margin-bottom:4px'>🌊 Marea INA</p>",
@@ -300,7 +300,7 @@ with st.expander("🔍 Monitor de actualización", expanded=True):
             st.warning("No disponible", icon="⚠️")
 
     with _mc3:
-        st.markdown("<p style='font-size:0.75rem;font-weight:700;margin-bottom:4px'>🌤️ Clima (JSON)</p>",
+        st.markdown("<p style='font-size:0.75rem;font-weight:700;margin-bottom:4px'>🌤️ Clima</p>",
                     unsafe_allow_html=True)
         _wtxt = _monitor_fetch("rag/current_weather.json")
         if _wtxt:
@@ -323,8 +323,7 @@ with st.expander("🔍 Monitor de actualización", expanded=True):
         else:
             st.warning("No disponible", icon="⚠️")
 
-    with _mc4:
-        st.markdown("<p style='font-size:0.75rem;font-weight:700;margin-bottom:4px'>🌊 Hidrografía (txt)</p>",
+        st.markdown("<p style='font-size:0.75rem;font-weight:700;margin:10px 0 4px'>🌊 San Fernando (txt)</p>",
                     unsafe_allow_html=True)
         _htxt = _monitor_fetch("table_data.txt")
         if _htxt and _htxt.strip():
