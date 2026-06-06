@@ -1040,8 +1040,11 @@
 
       images.forEach(src => {
         const img = document.createElement('img');
-        img.src = src; img.alt = ''; img.className = 'chat-image';
-        img.onclick = () => window.open(src, '_blank');
+        // Cache-busting para imágenes dinámicas (se actualizan en el servidor)
+        const isDynamic = src.includes('marea') || src.includes('windguru');
+        const imgSrc = isDynamic ? src + '?v=' + Date.now() : src;
+        img.src = imgSrc; img.alt = ''; img.className = 'chat-image';
+        img.onclick = () => window.open(imgSrc, '_blank');
         col.appendChild(img);
       });
 

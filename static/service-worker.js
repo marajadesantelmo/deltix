@@ -1,5 +1,8 @@
-const CACHE = 'deltix-v3';
+const CACHE = 'deltix-v4';
 const STATIC_ASSETS = ['/img/bot_icon.png'];
+
+// Imágenes dinámicas que se actualizan en el servidor — nunca cachear
+const DYNAMIC_IMGS = ['/img/marea.png', '/img/windguru.png'];
 
 // Instalación: solo pre-cachear imágenes estáticas, nunca el HTML
 self.addEventListener('install', e => {
@@ -32,7 +35,13 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // Imágenes y estáticos → cache-first
+  // Imágenes dinámicas (marea, windguru) → siempre red, nunca caché
+  if (DYNAMIC_IMGS.some(p => url.pathname === p)) {
+    e.respondWith(fetch(e.request));
+    return;
+  }
+
+  // Imágenes estáticas y demás → cache-first
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
