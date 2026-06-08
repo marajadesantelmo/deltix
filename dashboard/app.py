@@ -548,7 +548,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 col_l, col_tabs = st.columns([3, 2])
 
 with col_l:
-    st.markdown("### Interacciones y usuarios únicos por día")
+    st.markdown("### Usuarios únicos por día")
     _web_daily = df.groupby("date").size().reset_index(name="web")
     _tg_daily  = (df_tg.groupby("date").size().reset_index(name="telegram")
                   if TG_AVAILABLE and not df_tg.empty
@@ -580,49 +580,42 @@ with col_l:
 
     fig = go.Figure()
 
-    # Barra Web — eje izquierdo
+    # Barra Web — sesiones únicas web
     fig.add_trace(go.Bar(
-        x=daily["date_str"], y=daily["web"],
+        x=daily["date_str"], y=daily["sess_web"],
         name="💻 Web",
         marker=dict(color="#5a9e47", line=dict(width=0)),
-        yaxis="y1",
-        hovertemplate="<b>%{x}</b><br>💻 Web: %{y}<extra></extra>",
+        hovertemplate="<b>%{x}</b><br>💻 Web: %{y} usuarios<extra></extra>",
     ))
 
-    # Barra Telegram — apilada
+    # Barra Telegram — sesiones únicas Telegram
     if TG_AVAILABLE:
         fig.add_trace(go.Bar(
-            x=daily["date_str"], y=daily["telegram"],
+            x=daily["date_str"], y=daily["sess_tg"],
             name="✈️ Telegram",
             marker=dict(color="#2b9fc4", line=dict(width=0)),
-            yaxis="y1",
-            hovertemplate="<b>%{x}</b><br>✈️ Telegram: %{y}<extra></extra>",
+            hovertemplate="<b>%{x}</b><br>✈️ Telegram: %{y} usuarios<extra></extra>",
         ))
 
-    # Línea — usuarios únicos por día (eje derecho)
+    # Línea — total usuarios únicos (suma de ambos canales)
+    daily["sess_total"] = daily["sess_web"] + daily["sess_tg"]
     fig.add_trace(go.Scatter(
-        x=daily["date_str"], y=daily["usuarios"],
-        name="Usuarios únicos",
+        x=daily["date_str"], y=daily["sess_total"],
+        name="Total",
         mode="lines+markers",
-        line=dict(color="#e0a020", width=2.5, shape="spline"),
+        line=dict(color="#e0a020", width=2.5, shape="spline", dash="dot"),
         marker=dict(color="#e0a020", size=7, line=dict(color="#0e1a0e", width=1.5)),
-        yaxis="y2",
-        hovertemplate="<b>%{x}</b><br>%{y} usuarios únicos<extra></extra>",
+        hovertemplate="<b>%{x}</b><br>Total: %{y} usuarios<extra></extra>",
     ))
 
     fig.update_layout(
-        barmode="stack",
+        barmode="group",
         paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
-        margin=dict(l=0, r=50, t=10, b=0), height=430,
+        margin=dict(l=0, r=10, t=10, b=0), height=430,
         xaxis=dict(showgrid=False, color=TEXT, tickfont=dict(size=11)),
         yaxis=dict(
-            title="Interacciones", title_font=dict(color="#7ed957", size=11),
-            showgrid=True, gridcolor=GRID, color="#7ed957", zeroline=False,
-        ),
-        yaxis2=dict(
-            title="Usuarios únicos", title_font=dict(color="#e0a020", size=11),
-            overlaying="y", side="right",
-            color="#e0a020", zeroline=False, showgrid=False,
+            title="Usuarios únicos", title_font=dict(color="#7ed957", size=11),
+            showgrid=True, gridcolor=GRID, color="#7ed957", zeroline=False, rangemode="tozero",
         ),
         legend=dict(
             orientation="h", x=0, y=1.08,
@@ -1047,7 +1040,7 @@ with col_errt:
         paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
         margin=dict(l=0, r=0, t=10, b=0), height=240,
         xaxis=dict(showgrid=False, color=TEXT),
-        yaxis=dict(showgrid=True, gridcolor=GRID, color=TEXT, zeroline=False),
+        yaxis=dict(showgrid=True, gridcolor=GRID, color=TEXT, zeroline=False, rangemode="tozero"),
         hoverlabel=dict(bgcolor="#2a4a2a", font_color="#e8f5e2"),
     )
     st.plotly_chart(fig_errt, use_container_width=True)
