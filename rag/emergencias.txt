@@ -1,33 +1,126 @@
 Contactos de Emergencia - Delta del Paraná
 
-EMERGENCIAS MÉDICAS (SET - Sistema de Emergencias Tigre)
+=== NÚMEROS DE EMERGENCIA RÁPIDOS ===
+Emergencias médicas (SAME):    107
+Prefectura Naval (náutica):    106
+Policía:                       911
+Bomberos:                      100
+Defensa Civil:                 103
+VHF Canal 16: emergencia náutica internacional
+VHF Canal 68: hospitales de islas de San Fernando
+
+
+=== EMERGENCIAS MÉDICAS ===
+
+SET (Sistema de Emergencias Tigre)
 Teléfono: 107
 Directo: 4512-9997 / 4512-9998 / 4512-9999
+Cubre todo el territorio de Tigre incluyendo las islas, con lanchas ambulancia y catamarán sanitario.
+Respuesta en no más de 15 minutos en emergencias.
 
-BOMBEROS
-Emergencias: 100
-Cuartel Tigre: 4749-2222
-Otros: 4731-2222 / 4715-2222
+EMEF San Fernando (Emergencias Médicas en Islas)
+Línea gratuita 24hs: 0800-888-3633
+SAME: 107
+Cuenta con cuatro lanchas ambulancia que circulan entre los hospitales de islas.
+Equipadas con desfibrilador, oxígeno y medicación de emergencias adultos y pediátrica.
 
-DENUNCIAS POR QUEMAS
+
+=== HOSPITALES DE ISLAS (San Fernando) — GUARDIA 24 HORAS ===
+
+Hospital Municipal Dr. Oscar do Porto
+Ubicación: Río Paraná de las Palmas y Río Carabelas, 2da Sección de Islas
+Teléfono: 11-2632-1175
+Servicios: Guardia 24hs, pediatría, obstetricia, cardiología, psicología, odontología, traumatología, UTI
+VHF Canal 68
+
+Hospital Municipal Dr. René Favaloro
+Ubicación: Río Paraná Mini y Canal 4, 2da Sección de Islas
+Teléfono: 11-2632-0172
+Servicios: Guardia 24hs, pediatría, odontología, psicología, cardiología, obstetricia, farmacia
+VHF Canal 68
+
+Hospital Municipal Dr. Ramón Carrillo
+Ubicación: Río Paraná Mini y Arroyo Chañá, 3ra Sección de Islas
+Teléfono: 11-2631-8811
+Servicios: Guardia 24hs, pediatría, odontología, psicología, cardiología, obstetricia, farmacia
+VHF Canal 68
+
+
+=== CENTROS DE SALUD / SALITAS EN LAS ISLAS ===
+
+Centro de Salud Absalón Rojas (Islas San Fernando)
+Ubicación: Arroyo Felicaria, 2da Sección de Islas
+Teléfono: 11-2754-0109 (también VHF Canal 68)
+Horario: Lunes a Viernes 9:00 a 15:00
+Servicios: Medicina general, pediatría, odontología, psicología, trabajo social, enfermería, farmacia, vacunación.
+Centro de referencia IRAB (infecciones respiratorias agudas bajas).
+
+CAFyS Río Carapachay (Islas Tigre)
+Ubicación: Río Carapachay 900, Islas de Tigre
+Teléfono: 4728-0056
+WhatsApp: +54 9 11 2178-6191
+Horario: Lunes a Viernes 8:00 a 17:00
+
+CAFyS Río Capitán (Islas Tigre) — 24 HORAS
+Ubicación: Río Capitán y Río Toro, Islas de Tigre
+Teléfono: 4728-0525
+WhatsApp: 11-6860-7325
+Horario: 24 horas (con guardia nocturna y lanchas ambulancia propias)
+
+Catamarán Sanitario de Tigre
+Recorre el delta mensualmente ofreciendo medicina general, odontología, psicología y entrega de medicamentos para enfermos crónicos.
+Los calendarios mensuales se publican en tigre.gob.ar
+
+
+=== PREFECTURA NAVAL ARGENTINA ===
+Emergencias náuticas: 106 (desde cualquier teléfono) / *106 (desde celular)
+Canal de emergencia por radio: VHF Canal 16
+
+Prefectura Tigre (Zona Delta): 4512-4905 / 4512-4100
+Destacamento Canal San Fernando: 4512-4003
+Subprefectura Martín García: 4728-2816 / 4728-2330
+Destacamento Reforzado Dique Luján: 4728-0306
+Denuncias irregularidades a bordo (gratuito): 0800-444-0436
+
+
+=== BOMBEROS VOLUNTARIOS ===
+
+Bomberos Voluntarios de Tigre
+Emergencias: 4749-2222
+Dirección: Pedro Guareschi 462, Tigre
+
+Bomberos Voluntarios de San Fernando
+Emergencias: 4725-2222
+Dirección: Juan Carlos Reguera 1449, San Fernando
+
+Emergencias general: 100
+
+
+=== DEFENSA CIVIL ===
+
+Defensa Civil Tigre
+Emergencias: 103
+Teléfono directo: 5288-3411
+COT (Centro de Operaciones Tigre): 5288-3400
+Monitorea en tiempo real la altura de ríos y arroyos del delta.
+
+Defensa Civil San Fernando
+Emergencias: 103
+Teléfono: 4746-2630
+
+
+=== POLICÍA / SEGURIDAD DE ISLAS ===
+Emergencias: 911
+COT Tigre: 911
+
+Dirección de Seguridad de Islas (Provincia de Buenos Aires)
+Sede Central (Paraná de las Palmas y Río Carapachay): 4728-0041
+Puesto Dársena (Lavalle 733, Tigre): 4580-5224
+Puesto Río Capitán: 4728-1885
+Puesto Río Paraná Mini: 4728-1883
+Puesto Arroyo Borches: 4728-1884
+
+
+=== DENUNCIAS POR QUEMAS / INCENDIOS ===
 0800-122-84473 (línea gratuita)
 Usar ante quemas ilegales de pastizales o incendios en humedales.
-
-COT (Centro de Operaciones Tigre)
-Teléfono: 911
-
-POLICÍA
-Emergencias: 911
-Puesto Dársena (Tigre): 4580-5224
-Cuartel Central (Paraná de las Palmas y Río Carapachay): 4728-0041
-Destacamento Río Capitán: 4728-1885
-Destacamento Río Paraná Mini: 4728-1883
-Destacamento Arroyo Borches: 4728-1884
-Destacamento Camino Isleño (Escobar): 03489-460521
-Destacamento Canal Alem (Campana): 03489-460523
-Destacamento Canal Irigoyen (Zárate): 03487-450914
-Destacamento Los Laureles (San Pedro): 0221-154204628
-
-PREFECTURA NAVAL ARGENTINA
-Emergencias: 106
-Directo: 4512-4903

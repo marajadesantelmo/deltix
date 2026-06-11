@@ -89,7 +89,7 @@ SYSTEM_PROMPT = (
     "NUNCA inventes información: no alucines nombres de lanchas, cooperativas, almaceneras, horarios, "
     "precios ni datos de contacto que no estén en el contexto provisto. "
     "Si no tenés el dato, decí que no lo tenés y sugerí las palabras clave disponibles: "
-    "clima, mareas, hidrografia, windguru, colectivas, almaceneras, actividades, emergencias. "
+    "clima, mareas, hidrografia, windguru, colectivas, almaceneras, actividades, emergencias, escuelas. "
     "Sobre datos de contacto: si el usuario pide explícitamente el contacto, teléfono o WhatsApp "
     "de un emprendimiento, dalo siempre de forma directa y completa — nunca digas que está oculto "
     "ni que no podés compartirlo. Si el usuario solo pregunta qué servicios hay o qué hace un emprendimiento, "
@@ -151,7 +151,15 @@ KEYWORDS = {
     "memes":       ['meme', 'memes'],
     "emergencias": ['emergencia', 'emergencias', 'urgencia', 'urgencias', 'bomberos', 'prefectura',
                     'policia', 'policía', 'ambulancia', 'set tigre', 'quemas', 'incendio',
-                    'cot tigre', '107', '106', '100', '911'],
+                    'cot tigre', '107', '106', '100', '911',
+                    'hospital', 'hospitales', 'salud', 'salita', 'cafys', 'sanitario', 'sanitaria',
+                    'same', 'medico', 'médico', 'medica', 'médica', 'doctor', 'enfermeria', 'enfermería',
+                    'defensa civil', 'catamaran sanitario', 'catamarán sanitario',
+                    'do porto', 'favaloro', 'carrillo', 'absalon rojas', 'carapachay salud',
+                    'rio capitan salud'],
+    "escuelas":    ['escuela', 'escuelas', 'colegio', 'colegios', 'primaria', 'secundaria',
+                    'jardin de infantes', 'jardín de infantes', 'jardin infantes', 'educacion',
+                    'educación', 'sobral', 'cens', 'tecnica isla', 'técnica isla'],
     "sublinor":    ['sublinor', 'imprenta'],
     "yoga":        ['yoga', 'iyengar'],
     # 'igarape delta' (2 palabras) se chequea ANTES que 'vivero' para evitar
@@ -236,6 +244,8 @@ def build_llm_context(user_input):
         context.append(load_tides_text())
     if any(k in text for k in KEYWORDS_NORM["emergencias"]):
         context.append(load_rag_file("emergencias.txt"))
+    if any(k in text for k in KEYWORDS_NORM["escuelas"]):
+        context.append(load_rag_file("escuelas.txt"))
     if any(k in text for k in KEYWORDS_NORM["almacen"]):
         context.append(load_rag_file("almaceneras.txt"))
     if any(k in text for k in KEYWORDS_NORM["jilguero"]):
