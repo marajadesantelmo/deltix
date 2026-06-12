@@ -105,7 +105,14 @@ KEYWORDS = {
                     'crecida', 'inundacion', 'inundación', 'nivel del rio', 'nivel del río',
                     'subio el rio', 'subió el río', 'bajo el rio', 'bajó el río'],
     # 'naval' removido — demasiado genérico
-    "hidrografia": ['hidrografia', 'hidrografía'],
+    "hidrografia": ['hidrografia', 'hidrografía',
+                    'altura del rio', 'altura del río', 'altura rio', 'altura río',
+                    'altura actual', 'nivel actual', 'nivel rio', 'nivel río',
+                    'nivel del parana', 'nivel del paraná', 'nivel del rio', 'nivel del río',
+                    'altura san fernando', 'nivel san fernando',
+                    'como esta el rio', 'cómo está el río', 'como esta el río',
+                    'subio el rio', 'subió el río', 'bajo el río', 'bajo el rio',
+                    'rio alto', 'río alto', 'crecida del rio', 'crecida del río'],
     "agenda":      ['agenda', 'actividades', 'emprendimientos', 'agenda del rio', 'agenda del río'],
     # 'viento' mantenido aquí (único lugar), 'wind' removido — inglés innecesario
     "windguru":    ['windguru', 'viento'],
