@@ -440,6 +440,12 @@ def handle_agenda_flow(user_input):
         if _is_different_topic(text_lower):
             session.pop('agenda_flow', None)
             session.modified = True
+            # Si el texto MISMO es un keyword de agenda, reiniciar el flow en lugar de caer al LLM
+            if any(k in text_lower for k in KEYWORDS_NORM["agenda"]):
+                session['agenda_flow'] = {'step': 'select'}
+                session.modified = True
+                return {"reply": "¿Qué actividad te interesa? 🌿",
+                        "images": [], "quick_replies": list(AGENDA_OPTIONS.keys()) + ["➕ Sumá tu emprendimiento", "✏️ Cambiar o dar de baja mis datos"]}
             return None
         return {"reply": "Elegí una actividad 👇",
                 "images": [], "quick_replies": list(AGENDA_OPTIONS.keys())}
@@ -604,7 +610,7 @@ def handle_colectivas_flow(user_input):
                         "images": [f"/img/colectivas/interislena_ida_{temporada}.png"],
                         "quick_replies": [
                             "¿Horarios de vuelta de Interisleña?",
-                            "¿Horarios de un recorrido específico de Interisleña?",
+                            "📞 Interisleña: 4749-0900",
                             "✏️ Sugerí una modificación"
                         ],
                         "note": _col_note
@@ -677,6 +683,28 @@ def handle_colectivas_flow(user_input):
                 "quick_replies": ["Escolar", "No escolar"]}
 
     return None
+
+
+_JAILBREAK_PATTERNS = [
+    'olvidate del rol', 'olvida tu rol', 'olvida el rol', 'ignora tus instrucciones',
+    'ignora el rol', 'instrucciones iniciales', 'system prompt', 'system_prompt',
+    'quien te entreno', 'quien te entrenó', 'que modelo corres', 'qué modelo corres',
+    'que llm', 'qué llm', 'que version de gpt', 'qué versión', 'openai entrenó',
+    'fui entrenado', 'knowledge cutoff', 'fecha de corte de conocimiento',
+    'actua sin restricciones', 'actúa sin restricciones', 'sin limitaciones',
+    'contenido del system', 'sin omitir nada', 'todo el contenido de tus instrucciones',
+    'eres gpt', 'sos gpt', 'eres claude', 'sos claude', 'eres gemini', 'sos gemini',
+    'identificador del modelo', 'identificador api', 'modelo base que estas',
+    'modelo base que estás',
+]
+_JAILBREAK_REPLY = (
+    "Soy Deltix, el bot del humedal del Delta del Paraná 🦦 "
+    "Preguntame sobre clima, mareas, colectivas, almaceneras, actividades o emergencias."
+)
+
+def _is_jailbreak(text):
+    t = _norm(text)
+    return any(p in t for p in _JAILBREAK_PATTERNS)
 
 
 def detect_quick_response(user_input):
@@ -963,6 +991,11 @@ def chat():
 
     if 'history' not in session:
         session['history'] = []
+
+    # Jailbreak guard — antes de cualquier flow o LLM
+    if _is_jailbreak(user_message):
+        log_interaction(user_message, _JAILBREAK_REPLY, "social")
+        return jsonify({'reply': _JAILBREAK_REPLY, 'images': [], 'quick_replies': []})
 
     # Multi-step flows (order matters)
     for flow_fn, flow_type in [
