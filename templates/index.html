@@ -308,6 +308,7 @@
       .chips { display: flex; }
       .header-mobile-hide { display: none !important; }
       .mobile-welcome { display: flex !important; }
+      .footer-desktop-only { display: none !important; }
     }
     .chip {
       background: rgba(0,255,65,0.06);
@@ -1158,7 +1159,7 @@
     }
   </script>
 
-  <!-- Footer — contacto + telegram (mobile y desktop) -->
+  <!-- Footer — PyMeTech + contacto (desktop only) + Telegram (siempre) -->
   <div id="footer-contacto" style="
     background: rgba(3,12,3,0.9);
     border-top: 1px solid rgba(0,255,65,0.06);
@@ -1169,21 +1170,52 @@
     gap: 16px;
     flex-shrink: 0;
   ">
-    <a href="mailto:marajadesantelmo@gmail.com" style="
-      font-size: 11px; color: rgba(0,255,65,0.3);
-      text-decoration: none; font-family: 'JetBrains Mono', monospace;
-    " onmouseover="this.style.color='rgba(0,255,65,0.6)'"
-       onmouseout="this.style.color='rgba(0,255,65,0.3)'">
-      ✉️ Contactar al equipo Deltix ↗
-    </a>
-    <span style="color: rgba(0,255,65,0.15); font-size: 11px;">|</span>
+    <!-- Oculto en mobile via .footer-desktop-only -->
+    <div class="footer-desktop-only" style="display: flex; align-items: center; gap: 16px;">
+      <a href="https://pymetech.com.ar" target="_blank" rel="noopener" style="
+        display: flex; align-items: center; gap: 5px;
+        font-size: 11px; color: rgba(190,150,255,0.55);
+        text-decoration: none; font-family: 'JetBrains Mono', monospace;
+        background: rgba(100,60,200,0.13);
+        border: 1px solid rgba(140,90,255,0.15);
+        border-radius: 4px;
+        padding: 2px 7px;
+      " onmouseover="this.style.color='rgba(200,170,255,0.85)'"
+         onmouseout="this.style.color='rgba(190,150,255,0.55)'">
+        <svg width="13" height="13" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="pmg" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#7C3AED"/>
+              <stop offset="100%" stop-color="#3B82F6"/>
+            </linearGradient>
+          </defs>
+          <rect width="32" height="32" rx="8" fill="url(#pmg)"/>
+          <path d="M9 16 L14 21 L23 11" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+        Contactanos · bots a medida ↗
+      </a>
+      <span style="color: rgba(0,255,65,0.15); font-size: 11px;">|</span>
+      <a href="mailto:marajadesantelmo@gmail.com" style="
+        font-size: 11px; color: rgba(0,255,65,0.3);
+        text-decoration: none; font-family: 'JetBrains Mono', monospace;
+      " onmouseover="this.style.color='rgba(0,255,65,0.6)'"
+         onmouseout="this.style.color='rgba(0,255,65,0.3)'">
+        ✉️ Contactar al equipo Deltix ↗
+      </a>
+      <span style="color: rgba(0,255,65,0.15); font-size: 11px;">|</span>
+    </div>
+    <!-- Telegram: siempre visible -->
     <a href="https://t.me/deltix_del_humedal_bot" target="_blank" rel="noopener" style="
       display: flex; align-items: center; gap: 5px;
       font-size: 11px; color: rgba(0,255,65,0.3);
       text-decoration: none; font-family: 'JetBrains Mono', monospace;
     " onmouseover="this.style.color='rgba(0,255,65,0.6)'"
        onmouseout="this.style.color='rgba(0,255,65,0.3)'">
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.88 13.47l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.834.95z"/></svg>
+      <svg width="13" height="13" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="12" fill="#29B6F6"/>
+        <path d="M5.5 11.5 L18.5 6.5 L15.5 17.5 L11.5 14 L8.5 16.5 L9 12.5 Z" fill="white"/>
+        <path d="M9 12.5 L11.5 14 L15.5 17.5 L12.5 11" fill="#B3E5FC"/>
+      </svg>
       Chatear en Telegram ↗
     </a>
   </div>
