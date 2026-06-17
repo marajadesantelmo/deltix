@@ -107,7 +107,15 @@ try:
     with open("/home/facundol/deltix/table_data.txt", "w", encoding="utf-8") as f:
         f.write(table_text)
 
-    log(f"Hidrografía OK — {len(san_fernando_data)} filas de San Fernando.")
+    # Buscar texto de validez (aparece antes de la tabla en la página)
+    validity_text = ""
+    for tag in soup.find_all(string=lambda t: t and "VALIDO" in t.upper() and "DESDE" in t.upper()):
+        validity_text = " ".join(tag.split())
+        break
+    with open("/home/facundol/deltix/validity.txt", "w", encoding="utf-8") as f:
+        f.write(validity_text)
+
+    log(f"Hidrografía OK — {len(san_fernando_data)} filas de San Fernando. Validez: '{validity_text}'")
 
 except Exception as e:
     log(f"ERROR Hidrografía: {e}\n{traceback.format_exc()}")

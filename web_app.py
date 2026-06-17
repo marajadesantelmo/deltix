@@ -221,6 +221,15 @@ def load_tides_text():
         return ""
 
 
+def load_validity_text():
+    try:
+        with open(os.path.join(BASE_DIR, "validity.txt"), 'r', encoding='utf-8') as f:
+            text = f.read().strip()
+        return text.lower() if text else ""
+    except Exception:
+        return ""
+
+
 def format_hidrografia():
     try:
         with open(os.path.join(BASE_DIR, "table_data.txt"), 'r', encoding='utf-8') as f:
@@ -807,7 +816,11 @@ def detect_quick_response(user_input):
         # else: pregunta natural ("¿Va a hacer calor mañana?") → cae al LLM con contexto
 
     if any(k in text for k in KEYWORDS_NORM["hidrografia"]):
-        return {"reply": format_hidrografia(), "images": [], "quick_replies": [], "type": "hidrografia"}
+        validity = load_validity_text()
+        resp = {"reply": format_hidrografia(), "images": [], "quick_replies": [], "type": "hidrografia"}
+        if validity:
+            resp["note"] = validity
+        return resp
 
     if any(k in text for k in KEYWORDS_NORM["tides"]) and not any(k in text for k in KEYWORDS_NORM["fletesmareaexpress"]):
         return {"reply": "Acá tenés el pronóstico de mareas del INA 🌊",
