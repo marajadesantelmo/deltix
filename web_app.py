@@ -440,10 +440,10 @@ def handle_agenda_flow(user_input):
 
     if agenda and agenda.get('step') == 'select':
         for label, query in AGENDA_OPTIONS.items():
-            # Ignorar palabras de 3 letras o menos (ej. "del", "rio", "lau")
-            # para evitar falsos positivos por substring (ej. "del" dentro de "delta")
+            # Word boundary matching para evitar falsos positivos por substring
+            # (ej. "delta" dentro de "deltafix", "del" dentro de "delta")
             words = [w for w in query.split() if len(w) >= 4]
-            if words and any(w in text_lower for w in words):
+            if words and any(re.search(r'\b' + re.escape(w) + r'\b', text_lower) for w in words):
                 session.pop('agenda_flow', None)
                 session.modified = True
                 return detect_quick_response(query)
