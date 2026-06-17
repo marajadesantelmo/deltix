@@ -177,6 +177,13 @@ KEYWORDS = {
     "viajesvita":         ['viajes vita', 'vita delta', 'fletes vita'],
     "oscart":             ['oscar t', 'oscar traslados', 'arroyo espera viajes'],
     "taxifletes":         ['taxifletes', 'taxi fletes', 'lancha taxi', 'traslado isla', 'flete isla'],
+    "deltafix":           ['deltafix', 'reparacion de celular', 'reparación de celular', 'reparacion celular',
+                           'reparación celular', 'celular roto', 'arreglo de celular', 'arreglo celular'],
+    "fletesnauticos":     ['fletes nauticos', 'fletes náuticos', 'ulises fletes', 'ulises nautico', 'ulises náutico'],
+    "mecanica":           ['mecanica nautica', 'mecánica náutica', 'angel cenizo', 'cenizo mecanica',
+                           'motor fuera de borda', 'fuera de borda', 'service motor', 'mecanica motor',
+                           'mecánica motor', 'motosierra', 'motocierra', 'motoguadana', 'motoguadaña',
+                           'cuatriciclo', 'cuatriciclos', 'gasolero', 'gasoleros'],
 }
 
 def _norm(s):
@@ -268,7 +275,8 @@ def build_llm_context(user_input):
                      KEYWORDS_NORM["aguariba"] + KEYWORDS_NORM["sublinor"] + KEYWORDS_NORM["yoga"] +
                      KEYWORDS_NORM["igarapedelta"] + KEYWORDS_NORM["taxifletes"] +
                      KEYWORDS_NORM["fletesmareaexpress"] + KEYWORDS_NORM["viajesvita"] +
-                     KEYWORDS_NORM["oscart"])
+                     KEYWORDS_NORM["oscart"] + KEYWORDS_NORM["deltafix"] +
+                     KEYWORDS_NORM["fletesnauticos"] + KEYWORDS_NORM["mecanica"])
     _lena_ok = (any(k in text for k in KEYWORDS_NORM["lena"]) and
                 not any(k in text for k in KEYWORDS_NORM["interislena"]))
     _agua_ok = any(k in text for k in KEYWORDS_NORM["agua"])
@@ -319,6 +327,8 @@ AGENDA_OPTIONS = {
     "Lanchas Taxis y Fletes 🚤": "taxifletes traslado lancha",
     "Mimbre del Chiricote 🧺":   "mimbre cesteria chiricote",
     "Electricista ⚡":            "electricista gonzalo",
+    "Deltafix 📱":               "deltafix reparacion celular",
+    "Mecánica Náutica ⚙️":       "mecanica nautica angel cenizo",
 }
 
 
@@ -905,6 +915,18 @@ def detect_quick_response(user_input):
             "images": []
         }
 
+    if any(k in text for k in KEYWORDS_NORM["deltafix"]):
+        return {
+            "reply": "📱 **Deltafix**\n\nReparación de celulares\n\nInstagram: @Deltafix_reparaciones\nContacto: 1138989959",
+            "images": []
+        }
+
+    if any(k in text for k in KEYWORDS_NORM["mecanica"]):
+        return {
+            "reply": "⚙️ **Mecánica Náutica Angel Cenizo**\n\nReparación de motores fuera de borda, service y mantenimientos\nMotosierra, cuatriciclos, gasoleros, motoguadañas\nMecánica en general\n\nContacto: 1133798303",
+            "images": []
+        }
+
     # Servicios individuales de transporte — chequeados ANTES del menú taxifletes
     if any(k in text for k in KEYWORDS_NORM["fletesmareaexpress"]):
         return {
@@ -924,12 +946,18 @@ def detect_quick_response(user_input):
             "images": ["/img/actividades_productos/viajes2.jpeg"]
         }
 
+    if any(k in text for k in KEYWORDS_NORM["fletesnauticos"]):
+        return {
+            "reply": "🚤 **Fletes Náuticos — Ulises**\n\nSoluciones para el transporte en general\nMudanzas, materiales de construcción, todo lo que entre lo llevamos\n\nInstagram: @Ulisesfletesnauticos\nContacto: 1136462808",
+            "images": []
+        }
+
     # Menú Lanchas Taxis y Fletes (submenu con sub-chips)
     if any(k in text for k in KEYWORDS_NORM["taxifletes"]):
         return {
             "reply": "🚤 **Lanchas Taxis y Fletes**\n\n¿Cuál servicio buscás?",
             "images": [],
-            "quick_replies": ["Fletes Marea Express 🚢", "Viajes Vita 🚤", "Óscar T Traslados ⛵"]
+            "quick_replies": ["Fletes Náuticos Ulises 🚤", "Fletes Marea Express 🚢", "Viajes Vita 🚤", "Óscar T Traslados ⛵"]
         }
 
     if any(k in text for k in KEYWORDS_NORM["lena"]) and not any(k in text for k in KEYWORDS_NORM["interislena"]):
