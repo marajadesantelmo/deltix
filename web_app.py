@@ -280,6 +280,7 @@ def build_llm_context(user_input):
 # ── Almaceneras data ──────────────────────────────────────────────────────────
 
 ALMACENERAS = {
+    "Carmencita":      "🛒 *Carmencita*\nLUNES y SÁBADOS: Angostura / Espera / Cruz Colorada\nMARTES: Paraná Miní / Paraná Guazú / Naranjo / Merlo\nMIÉRCOLES: Río Manzano / Barca / Barquita\n📞 11 6158-8380",
     "Nilda Alicia":    "🛒 *Nilda Alicia* (Anita) — Miguel Machado\nMARTES, VIERNES: Río Sarmiento / Río San Antonio\nMIÉRCOLES, SÁBADO: Río Capitán / Rama Negra / Arroyo Toro\n📞 1557490961",
     "Cachito":         "🛒 *Cachito* — Aníbal Isea\nLUN, MIÉ, VIE, SÁB: Río Carapachay hasta el 500\nDOMINGO: Río Carapachay hasta Angostura\n📞 11 6572-1030",
     "Elsa María":      "🛒 *Elsa María* — Mayorista\n📞 1565548280",
