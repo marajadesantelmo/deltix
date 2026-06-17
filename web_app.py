@@ -10,7 +10,7 @@ import time
 from collections import defaultdict
 from email.message import EmailMessage
 from datetime import datetime
-from flask import Flask, request, jsonify, render_template, session, send_from_directory
+from flask import Flask, request, jsonify, render_template, session, send_from_directory, make_response
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from openai import OpenAI
@@ -991,7 +991,11 @@ def _history_add(user_msg, bot_reply):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    resp = make_response(render_template('index.html'))
+    resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    resp.headers['Pragma'] = 'no-cache'
+    resp.headers['Expires'] = '0'
+    return resp
 
 
 @app.route('/img/<path:filename>')
@@ -1008,6 +1012,9 @@ def manifest():
 def service_worker():
     resp = send_from_directory(os.path.join(BASE_DIR, 'static'), 'service-worker.js')
     resp.headers['Service-Worker-Allowed'] = '/'
+    # El service worker nunca debe cachearse — el navegador necesita comparar
+    # byte-a-byte si cambió para detectar actualizaciones
+    resp.headers['Cache-Control'] = 'no-store, max-age=0'
     return resp
 
 
