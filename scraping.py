@@ -107,10 +107,23 @@ try:
     with open("/home/facundol/deltix/table_data.txt", "w", encoding="utf-8") as f:
         f.write(table_text)
 
-    # Buscar texto de validez (aparece antes de la tabla en la página)
+    # Buscar texto de validez (aparece antes de la tabla en la página).
+    # El nodo de texto puede contener solo "VALIDO DESDE LAS" mientras que la fecha/hora
+    # está en elementos hermanos dentro del mismo contenedor — por eso subimos al parent.
     validity_text = ""
     for tag in soup.find_all(string=lambda t: t and "VALIDO" in t.upper() and "DESDE" in t.upper()):
-        validity_text = " ".join(tag.split())
+        el = tag.parent
+        for _ in range(5):
+            txt = " ".join(el.get_text(separator=" ").split())
+            if ("HASTA" in txt.upper() or any(c.isdigit() for c in txt)) and len(txt) < 250:
+                validity_text = txt
+                break
+            if el.parent and len(" ".join(el.parent.get_text(separator=" ").split())) < 300:
+                el = el.parent
+            else:
+                break
+        if not validity_text:
+            validity_text = " ".join(tag.split())
         break
     with open("/home/facundol/deltix/validity.txt", "w", encoding="utf-8") as f:
         f.write(validity_text)
