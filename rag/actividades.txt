@@ -184,3 +184,26 @@ Descripción: Trabajos eléctricos monofásicos y trifásicos. Venta e instalaci
 Tipo: Electricista / Servicio eléctrico
 Contacto: +54 9 11 3642-5680
 
+---
+
+Nombre: Fletes Náuticos Ulises
+Descripción: Soluciones para el transporte en general por el Delta del Paraná. Mudanzas, materiales de construcción, todo lo que entre lo llevamos.
+Tipo: Fletes / Transporte en lancha
+Instagram: @Ulisesfletesnauticos
+Contacto: 1136462808
+
+---
+
+Nombre: Mecánica Náutica Angel Cenizo
+Descripción: Reparación de motores fuera de borda, service y mantenimientos. Motosierra, cuatriciclos, gasoleros, motoguadañas. Mecánica en general.
+Tipo: Mecánica / Servicio técnico náutico
+Contacto: 1133798303
+
+---
+
+Nombre: Deltafix
+Descripción: Reparación de celulares en el Delta del Paraná.
+Tipo: Reparación de celulares / Tecnología
+Instagram: @Deltafix_reparaciones
+Contacto: 1138989959
+
