@@ -407,9 +407,18 @@ def _is_different_topic(text):
         KEYWORDS_NORM["weather"] + KEYWORDS_NORM["tides"] + KEYWORDS_NORM["hidrografia"] +
         KEYWORDS_NORM["agenda"] + KEYWORDS_NORM["windguru"] + KEYWORDS_NORM["jilguero"] +
         KEYWORDS_NORM["interislena"] + KEYWORDS_NORM["lineasdelta"] + KEYWORDS_NORM["colectivas"] +
-        KEYWORDS_NORM["memes"]
+        KEYWORDS_NORM["memes"] + KEYWORDS_NORM["taxifletes"] + KEYWORDS_NORM["fletesnauticos"] +
+        KEYWORDS_NORM["fletesmareaexpress"] + KEYWORDS_NORM["viajesvita"] + KEYWORDS_NORM["oscart"]
     )
     return any(k in text for k in other_kws)
+
+
+def _is_taxiflete(text):
+    """True si el texto pide un taxi/flete náutico (tiene prioridad sobre 'lancha' genérico)."""
+    taxiflete_kws = (KEYWORDS_NORM["taxifletes"] + KEYWORDS_NORM["fletesnauticos"] +
+                     KEYWORDS_NORM["fletesmareaexpress"] + KEYWORDS_NORM["viajesvita"] +
+                     KEYWORDS_NORM["oscart"])
+    return any(k in text for k in taxiflete_kws)
 
 
 def handle_almaceneras_flow(user_input):
@@ -680,7 +689,7 @@ def handle_colectivas_flow(user_input):
                 }
 
     # ── Inicio del flujo desde cero ──
-    if any(k in text for k in KEYWORDS_NORM["colectivas"]):
+    if any(k in text for k in KEYWORDS_NORM["colectivas"]) and not _is_taxiflete(text):
         session['col'] = {'step': 'linea'}
         session.modified = True
         return {"reply": "¿Qué línea de colectiva querés consultar? 🚢", "images": [],
