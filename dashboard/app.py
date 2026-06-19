@@ -666,61 +666,87 @@ with col_tabs:
     })[["Fecha", "Msgs 💻", "Msgs ✈️", "Msgs total", "Ses. 💻", "Ses. ✈️", "% ✈️"]]
     st.dataframe(daily_tbl, use_container_width=True, hide_index=True, height=175)
 
-# ── Fila 2: Explorador de conversaciones ─────────────────────────────────────
+# ── Fila 2: Conversaciones recientes + usuarios Telegram ─────────────────────
 
-st.markdown("---")
-st.markdown("## Explorador de conversaciones")
+col_conv, col_tgusers = st.columns([3, 2])
 
-sess_summary = (
-    df_combined.groupby("session_id")
-      .agg(
-          first_ts=("timestamp", "min"),
-          n_msgs=("user_message", "count"),
-          source=("source", "first"),
-      )
-      .sort_values("first_ts", ascending=False)
-      .reset_index()
-)
-_src_icon_map = {"web": "💻", "telegram": "✈️"}
-sess_summary["session_id"] = sess_summary["session_id"].astype(str)
-sess_summary["label"] = (
-    sess_summary["source"].map(_src_icon_map).fillna("❓")
-    + " " + sess_summary["first_ts"].dt.strftime("%d/%m %H:%M")
-    + "  —  " + sess_summary["session_id"]
-    + "  (" + sess_summary["n_msgs"].astype(str) + " msgs)"
-)
+with col_conv:
+    df_conv = (
+        df_combined[["timestamp", "source", "user_message", "bot_reply", "response_type"]]
+        .sort_values("timestamp", ascending=False)
+        .head(200)
+        .copy()
+    )
+    df_conv["source"] = df_conv["source"].map({"web": "💻", "telegram": "✈️"}).fillna("❓")
+    df_conv["timestamp"] = df_conv["timestamp"].dt.strftime("%d/%m %H:%M")
+    # Si bot_reply está vacío, mostrar el tipo de respuesta como indicador
+    df_conv["bot_reply"] = df_conv.apply(
+        lambda r: r["bot_reply"] if (r["bot_reply"] and r["bot_reply"] not in ("", "nan"))
+                  else f"({r['response_type']})",
+        axis=1,
+    )
+    df_conv = df_conv.drop(columns=["response_type"])
+    df_conv.columns = ["Fecha", "Canal", "Usuario", "Bot"]
+    st.dataframe(df_conv, use_container_width=True, hide_index=True, height=520)
 
-selected_label = st.selectbox(
-    "Seleccioná una sesión",
-    options=sess_summary["label"].tolist(),
-    index=0,
-)
-selected_sid = sess_summary.loc[
-    sess_summary["label"] == selected_label, "session_id"
-].values[0]
+with col_tgusers:
+    st.markdown("### Usuarios más activos en Telegram")
+    if TG_AVAILABLE and not df_tg.empty:
+        tg_user_counts = (
+            df_tg.groupby("session_id").size()
+            .sort_values(ascending=False).head(20)
+            .reset_index()
+        )
+        tg_user_counts.columns = ["user_id", "mensajes"]
+        tg_user_counts["user_id"] = tg_user_counts["user_id"].astype(str)
 
-df_sess = (
-    df_combined[df_combined["session_id"].astype(str) == selected_sid]
-    [["timestamp", "source", "user_message", "bot_reply", "response_type"]]
-    .sort_values("timestamp")
-    .copy()
-)
-df_sess["source"] = df_sess["source"].map({"web": "💻", "telegram": "✈️"}).fillna("❓")
-df_sess["timestamp"] = df_sess["timestamp"].dt.strftime("%H:%M:%S")
-# Si bot_reply está vacío, mostrar el tipo de respuesta como indicador
-df_sess["bot_reply"] = df_sess.apply(
-    lambda r: r["bot_reply"] if (r["bot_reply"] and r["bot_reply"] not in ("", "nan"))
-              else f"({r['response_type']})",
-    axis=1,
-)
-df_sess = df_sess.drop(columns=["response_type"])
-df_sess.columns = ["Hora", "Canal", "Usuario", "Bot"]
-# Altura fija (~10 filas de conversación) con scroll
-st.dataframe(df_sess, use_container_width=True, hide_index=True, height=385)
+        # Enriquecer con nombres desde user_experience.csv
+        def _display_name(uid):
+            row = df_user_exp[df_user_exp["User ID"] == uid]
+            if row.empty:
+                return "···" + uid[-6:]
+            fn = str(row["First Name"].values[0]).strip()
+            ln = str(row["Last Name"].values[0]).strip()
+            un = str(row["Username"].values[0]).strip()
+            if fn and fn != "nan":
+                name = fn
+                if ln and ln != "nan":
+                    name += " " + ln
+            elif un and un != "nan":
+                name = "@" + un
+            else:
+                name = "···" + uid[-6:]
+            return name
 
-# ── Fila 3: actividad horaria + dona + top mensajes ──────────────────────────
+        tg_user_counts["nombre"] = tg_user_counts["user_id"].apply(_display_name)
 
-col_h, col_pie, col_top = st.columns([3, 2, 2])
+        fig_tgusers = go.Figure(go.Bar(
+            x=tg_user_counts["mensajes"][::-1],
+            y=tg_user_counts["nombre"][::-1],
+            orientation="h",
+            marker=dict(
+                color=tg_user_counts["mensajes"][::-1],
+                colorscale=[[0, "#1a4a5c"], [0.5, "#2b7fa0"], [1, "#4dc4e8"]],
+                line=dict(width=0),
+            ),
+            text=tg_user_counts["mensajes"][::-1], textposition="outside",
+            textfont=dict(color=TEXT, size=11),
+            hovertemplate="%{y}: %{x} mensajes<extra></extra>",
+        ))
+        fig_tgusers.update_layout(
+            paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
+            margin=dict(l=0, r=40, t=10, b=0), height=520,
+            xaxis=dict(showgrid=True, gridcolor=GRID, color=TEXT),
+            yaxis=dict(showgrid=False, color=TEXT, tickfont=dict(size=11)),
+            hoverlabel=dict(bgcolor="#1a2e3a", font_color="#e8f5e2"),
+        )
+        st.plotly_chart(fig_tgusers, use_container_width=True)
+    else:
+        st.info("Aún no hay datos del bot de Telegram.")
+
+# ── Fila 3: actividad horaria + dona ─────────────────────────────────────────
+
+col_h, col_pie = st.columns([3, 2])
 
 with col_h:
     st.markdown("### Actividad por hora del día")
@@ -863,10 +889,14 @@ with col_pie:
     )
     st.plotly_chart(fig2, use_container_width=True)
 
-with col_top:
-    st.markdown("### Top 10 mensajes")
+# ── Fila 3b: Top 10 mensajes web + Telegram ──────────────────────────────────
+
+col_topweb, col_toptg = st.columns(2)
+
+with col_topweb:
+    st.markdown("### Top 10 mensajes (web)")
     top_msgs = (
-        df_combined["user_message"].str.strip().str.lower()
+        df["user_message"].str.strip().str.lower()
         .value_counts().head(10)
         .reset_index()
     )
@@ -888,12 +918,43 @@ with col_top:
     ))
     fig5.update_layout(
         paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
-        margin=dict(l=0, r=40, t=10, b=0), height=280,
+        margin=dict(l=0, r=40, t=10, b=0), height=300,
         xaxis=dict(showgrid=True, gridcolor=GRID, color=TEXT),
         yaxis=dict(showgrid=False, color=TEXT, tickfont=dict(size=11)),
         hoverlabel=dict(bgcolor="#2a4a2a", font_color="#e8f5e2"),
     )
     st.plotly_chart(fig5, use_container_width=True)
+
+with col_toptg:
+    st.markdown("### Top 10 mensajes en Telegram")
+    if TG_AVAILABLE and not df_tg.empty:
+        tg_top = (
+            df_tg["user_message"].str.strip().str.lower()
+            .value_counts().head(10).reset_index()
+        )
+        tg_top.columns = ["Mensaje", "Veces"]
+        fig_tgtop = go.Figure(go.Bar(
+            x=tg_top["Veces"][::-1], y=tg_top["Mensaje"][::-1],
+            orientation="h",
+            marker=dict(
+                color=tg_top["Veces"][::-1],
+                colorscale=[[0, "#1a4a5c"], [0.5, "#2b7fa0"], [1, "#4dc4e8"]],
+                line=dict(width=0),
+            ),
+            text=tg_top["Veces"][::-1], textposition="outside",
+            textfont=dict(color=TEXT, size=11),
+            hovertemplate="%{y}: %{x} veces<extra></extra>",
+        ))
+        fig_tgtop.update_layout(
+            paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
+            margin=dict(l=0, r=40, t=10, b=0), height=300,
+            xaxis=dict(showgrid=True, gridcolor=GRID, color=TEXT),
+            yaxis=dict(showgrid=False, color=TEXT, tickfont=dict(size=11)),
+            hoverlabel=dict(bgcolor="#1a2e3a", font_color="#e8f5e2"),
+        )
+        st.plotly_chart(fig_tgtop, use_container_width=True)
+    else:
+        st.info("Aún no hay datos del bot de Telegram.")
 
 # ── Fila 4: engagement + ratio LLM diario ────────────────────────────────────
 
@@ -1351,112 +1412,6 @@ with col_err:
         df_err["source"]    = df_err["source"].map({"web": "💻", "telegram": "✈️"}).fillna("❓")
         df_err.columns = ["Fecha", "Canal", "Usuario", "Bot", "Tipo"]
         st.dataframe(df_err, use_container_width=True, height=420, hide_index=True)
-
-# ── Detalle Telegram ──────────────────────────────────────────────────────────
-
-st.markdown("---")
-st.markdown("## ✈️ Detalle Telegram")
-
-if not TG_AVAILABLE:
-    st.info("Aún no hay datos del bot de Telegram. Una vez que `tg_interactions.csv` se genere en PythonAnywhere, aparecerá aquí automáticamente.")
-else:
-    tg_total     = len(df_tg)
-    tg_users     = df_tg["session_id"].nunique() if "session_id" in df_tg.columns else 0
-    tg_dau_serie = df_tg.groupby("date")["session_id"].nunique() if tg_users else pd.Series(dtype=float)
-    tg_avg_dau   = tg_dau_serie.mean() if len(tg_dau_serie) else 0
-    tg_llm_pct   = (df_tg["response_type"].isin(["llm","llm_error"]).sum() / tg_total * 100) if tg_total else 0
-    tg_sess_lens = df_tg.groupby("session_id").size() if tg_users else pd.Series(dtype=float)
-    tg_avg_len   = tg_sess_lens.mean() if len(tg_sess_lens) else 0
-
-    st.markdown(
-        f'<p style="font-size:0.78rem;color:#5f9a5f;margin:0 0 8px">'
-        f'📊 {tg_total:,} mensajes · {tg_users} usuarios únicos · {tg_avg_dau:.1f} DAU · '
-        f'{tg_avg_len:.1f} msgs/usuario · {tg_llm_pct:.1f}% LLM</p>'.replace(",", "."),
-        unsafe_allow_html=True,
-    )
-
-    # ── Top mensajes Telegram + usuarios más activos ──────────────────────────
-    col_tgtop, col_tgusers = st.columns(2)
-
-    with col_tgtop:
-        st.markdown("### Top 10 mensajes en Telegram")
-        tg_top = (
-            df_tg["user_message"].str.strip().str.lower()
-            .value_counts().head(10).reset_index()
-        )
-        tg_top.columns = ["Mensaje", "Veces"]
-        fig_tgtop = go.Figure(go.Bar(
-            x=tg_top["Veces"][::-1], y=tg_top["Mensaje"][::-1],
-            orientation="h",
-            marker=dict(
-                color=tg_top["Veces"][::-1],
-                colorscale=[[0, "#1a4a5c"], [0.5, "#2b7fa0"], [1, "#4dc4e8"]],
-                line=dict(width=0),
-            ),
-            text=tg_top["Veces"][::-1], textposition="outside",
-            textfont=dict(color=TEXT, size=11),
-            hovertemplate="%{y}: %{x} veces<extra></extra>",
-        ))
-        fig_tgtop.update_layout(
-            paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
-            margin=dict(l=0, r=40, t=10, b=0), height=300,
-            xaxis=dict(showgrid=True, gridcolor=GRID, color=TEXT),
-            yaxis=dict(showgrid=False, color=TEXT, tickfont=dict(size=11)),
-            hoverlabel=dict(bgcolor="#1a2e3a", font_color="#e8f5e2"),
-        )
-        st.plotly_chart(fig_tgtop, use_container_width=True)
-
-    with col_tgusers:
-        st.markdown("### Usuarios más activos en Telegram")
-        tg_user_counts = (
-            df_tg.groupby("session_id").size()
-            .sort_values(ascending=False).head(10)
-            .reset_index()
-        )
-        tg_user_counts.columns = ["user_id", "mensajes"]
-        tg_user_counts["user_id"] = tg_user_counts["user_id"].astype(str)
-
-        # Enriquecer con nombres desde user_experience.csv
-        def _display_name(uid):
-            row = df_user_exp[df_user_exp["User ID"] == uid]
-            if row.empty:
-                return "···" + uid[-6:]
-            fn = str(row["First Name"].values[0]).strip()
-            ln = str(row["Last Name"].values[0]).strip()
-            un = str(row["Username"].values[0]).strip()
-            if fn and fn != "nan":
-                name = fn
-                if ln and ln != "nan":
-                    name += " " + ln
-            elif un and un != "nan":
-                name = "@" + un
-            else:
-                name = "···" + uid[-6:]
-            return name
-
-        tg_user_counts["nombre"] = tg_user_counts["user_id"].apply(_display_name)
-
-        fig_tgusers = go.Figure(go.Bar(
-            x=tg_user_counts["mensajes"][::-1],
-            y=tg_user_counts["nombre"][::-1],
-            orientation="h",
-            marker=dict(
-                color=tg_user_counts["mensajes"][::-1],
-                colorscale=[[0, "#1a4a5c"], [0.5, "#2b7fa0"], [1, "#4dc4e8"]],
-                line=dict(width=0),
-            ),
-            text=tg_user_counts["mensajes"][::-1], textposition="outside",
-            textfont=dict(color=TEXT, size=11),
-            hovertemplate="%{y}: %{x} mensajes<extra></extra>",
-        ))
-        fig_tgusers.update_layout(
-            paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
-            margin=dict(l=0, r=40, t=10, b=0), height=300,
-            xaxis=dict(showgrid=True, gridcolor=GRID, color=TEXT),
-            yaxis=dict(showgrid=False, color=TEXT, tickfont=dict(size=11)),
-            hoverlabel=dict(bgcolor="#1a2e3a", font_color="#e8f5e2"),
-        )
-        st.plotly_chart(fig_tgusers, use_container_width=True)
 
 # ── Footer ────────────────────────────────────────────────────────────────────
 
