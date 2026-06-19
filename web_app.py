@@ -113,6 +113,15 @@ KEYWORDS = {
                     'como esta el rio', 'cómo está el río', 'como esta el río',
                     'subio el rio', 'subió el río', 'bajo el río', 'bajo el rio',
                     'rio alto', 'río alto', 'crecida del rio', 'crecida del río'],
+    # Preguntas interpretativas de nivel del agua — NO disparan respuesta directa,
+    # van al LLM con la tabla de hidrografía + hora actual para una respuesta conversacional
+    "nivelrio":    ['va a subir', 'va a bajar', 'empezar a subir', 'empieza a subir',
+                    'va a empezar a subir', 'esta subiendo', 'está subiendo',
+                    'esta bajando', 'está bajando', 'sigue bajando', 'sigue subiendo',
+                    'sube el agua', 'baja el agua', 'sube el rio', 'sube el río',
+                    'cuando sube', 'cuándo sube', 'cuando baja', 'cuándo baja',
+                    'va a crecer', 'agua baja', 'agua alta', 'el agua esta', 'el agua está',
+                    'esta baja', 'está baja', 'esta alta', 'está alta'],
     "agenda":      ['agenda', 'actividades', 'emprendimientos', 'agenda del rio', 'agenda del río'],
     # 'viento' mantenido aquí (único lugar), 'wind' removido — inglés innecesario
     "windguru":    ['windguru', 'viento'],
@@ -268,8 +277,18 @@ def build_llm_context(user_input):
             desc = current.get('weather', [{}])[0].get('description', 'N/A')
             wind = current.get('wind', {}).get('speed', 'N/A')
             context.append(f"Clima en Tigre: {temp}°C (sensación {feels}°C), {desc}, humedad {humidity}%, viento {wind} m/s")
-    if any(k in text for k in KEYWORDS_NORM["tides"] + KEYWORDS_NORM["hidrografia"]):
-        context.append(load_tides_text())
+    if any(k in text for k in KEYWORDS_NORM["tides"] + KEYWORDS_NORM["hidrografia"] + KEYWORDS_NORM["nivelrio"]):
+        tides = load_tides_text()
+        if tides:
+            ahora = datetime.now().strftime("%d/%m/%Y a las %H:%M hs")
+            context.append(
+                f"Datos de mareas para San Fernando (Hidrografía Naval). Hora actual: {ahora}. "
+                "PLEAMAR = marea alta: el agua sube hasta esa hora; después empieza a bajar. "
+                "BAJAMAR = marea baja: el agua baja hasta esa hora; después empieza a subir. "
+                "Compará la hora actual con esta tabla para decir si el agua está subiendo o bajando "
+                "ahora y a qué hora será la próxima pleamar o bajamar. No inventes alturas ni horarios "
+                "que no estén en la tabla:\n" + tides
+            )
     if any(k in text for k in KEYWORDS_NORM["emergencias"]):
         context.append(load_rag_file("emergencias.txt"))
     if any(k in text for k in KEYWORDS_NORM["escuelas"]):
