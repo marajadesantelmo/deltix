@@ -666,7 +666,59 @@ with col_tabs:
     })[["Fecha", "Msgs 💻", "Msgs ✈️", "Msgs total", "Ses. 💻", "Ses. ✈️", "% ✈️"]]
     st.dataframe(daily_tbl, use_container_width=True, hide_index=True, height=175)
 
-# ── Fila 2: actividad horaria + dona + top mensajes ──────────────────────────
+# ── Fila 2: Explorador de conversaciones ─────────────────────────────────────
+
+st.markdown("---")
+st.markdown("## Explorador de conversaciones")
+
+sess_summary = (
+    df_combined.groupby("session_id")
+      .agg(
+          first_ts=("timestamp", "min"),
+          n_msgs=("user_message", "count"),
+          source=("source", "first"),
+      )
+      .sort_values("first_ts", ascending=False)
+      .reset_index()
+)
+_src_icon_map = {"web": "💻", "telegram": "✈️"}
+sess_summary["session_id"] = sess_summary["session_id"].astype(str)
+sess_summary["label"] = (
+    sess_summary["source"].map(_src_icon_map).fillna("❓")
+    + " " + sess_summary["first_ts"].dt.strftime("%d/%m %H:%M")
+    + "  —  " + sess_summary["session_id"]
+    + "  (" + sess_summary["n_msgs"].astype(str) + " msgs)"
+)
+
+selected_label = st.selectbox(
+    "Seleccioná una sesión",
+    options=sess_summary["label"].tolist(),
+    index=0,
+)
+selected_sid = sess_summary.loc[
+    sess_summary["label"] == selected_label, "session_id"
+].values[0]
+
+df_sess = (
+    df_combined[df_combined["session_id"].astype(str) == selected_sid]
+    [["timestamp", "source", "user_message", "bot_reply", "response_type"]]
+    .sort_values("timestamp")
+    .copy()
+)
+df_sess["source"] = df_sess["source"].map({"web": "💻", "telegram": "✈️"}).fillna("❓")
+df_sess["timestamp"] = df_sess["timestamp"].dt.strftime("%H:%M:%S")
+# Si bot_reply está vacío, mostrar el tipo de respuesta como indicador
+df_sess["bot_reply"] = df_sess.apply(
+    lambda r: r["bot_reply"] if (r["bot_reply"] and r["bot_reply"] not in ("", "nan"))
+              else f"({r['response_type']})",
+    axis=1,
+)
+df_sess = df_sess.drop(columns=["response_type"])
+df_sess.columns = ["Hora", "Canal", "Usuario", "Bot"]
+# Altura fija (~10 filas de conversación) con scroll
+st.dataframe(df_sess, use_container_width=True, hide_index=True, height=385)
+
+# ── Fila 3: actividad horaria + dona + top mensajes ──────────────────────────
 
 col_h, col_pie, col_top = st.columns([3, 2, 2])
 
@@ -843,7 +895,7 @@ with col_top:
     )
     st.plotly_chart(fig5, use_container_width=True)
 
-# ── Fila 3: engagement + ratio LLM diario ────────────────────────────────────
+# ── Fila 4: engagement + ratio LLM diario ────────────────────────────────────
 
 col3, col_llmr = st.columns([2, 3])
 
@@ -1299,57 +1351,6 @@ with col_err:
         df_err["source"]    = df_err["source"].map({"web": "💻", "telegram": "✈️"}).fillna("❓")
         df_err.columns = ["Fecha", "Canal", "Usuario", "Bot", "Tipo"]
         st.dataframe(df_err, use_container_width=True, height=420, hide_index=True)
-
-# ── Explorador de sesiones ───────────────────────────────────────────────────
-
-st.markdown("---")
-st.markdown("## Explorador de sesiones")
-
-sess_summary = (
-    df_combined.groupby("session_id")
-      .agg(
-          first_ts=("timestamp", "min"),
-          n_msgs=("user_message", "count"),
-          source=("source", "first"),
-      )
-      .sort_values("first_ts", ascending=False)
-      .reset_index()
-)
-_src_icon_map = {"web": "💻", "telegram": "✈️"}
-sess_summary["session_id"] = sess_summary["session_id"].astype(str)
-sess_summary["label"] = (
-    sess_summary["source"].map(_src_icon_map).fillna("❓")
-    + " " + sess_summary["first_ts"].dt.strftime("%d/%m %H:%M")
-    + "  —  " + sess_summary["session_id"]
-    + "  (" + sess_summary["n_msgs"].astype(str) + " msgs)"
-)
-
-selected_label = st.selectbox(
-    "Seleccioná una sesión",
-    options=sess_summary["label"].tolist(),
-    index=0,
-)
-selected_sid = sess_summary.loc[
-    sess_summary["label"] == selected_label, "session_id"
-].values[0]
-
-df_sess = (
-    df_combined[df_combined["session_id"].astype(str) == selected_sid]
-    [["timestamp", "source", "user_message", "bot_reply", "response_type"]]
-    .sort_values("timestamp")
-    .copy()
-)
-df_sess["source"] = df_sess["source"].map({"web": "💻", "telegram": "✈️"}).fillna("❓")
-df_sess["timestamp"] = df_sess["timestamp"].dt.strftime("%H:%M:%S")
-# Si bot_reply está vacío, mostrar el tipo de respuesta como indicador
-df_sess["bot_reply"] = df_sess.apply(
-    lambda r: r["bot_reply"] if (r["bot_reply"] and r["bot_reply"] not in ("", "nan"))
-              else f"({r['response_type']})",
-    axis=1,
-)
-df_sess = df_sess.drop(columns=["response_type"])
-df_sess.columns = ["Hora", "Canal", "Usuario", "Bot"]
-st.dataframe(df_sess, use_container_width=True, hide_index=True)
 
 # ── Detalle Telegram ──────────────────────────────────────────────────────────
 
