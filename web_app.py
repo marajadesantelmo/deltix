@@ -128,7 +128,10 @@ KEYWORDS = {
     "almacen":     ['almacen', 'almacén', 'almacenera', 'almaceneras',
                     'delivery', 'provisiones', 'mercaderia', 'mercadería', 'abastecimiento'],
     "activities":  ['actividades', 'emprendimientos', 'qué hacer', 'que hacer', 'qué visitar',
-                    'que visitar', 'paseos', 'experiencias', 'turismo', 'recorrido'],
+                    'que visitar', 'paseos', 'experiencias', 'turismo', 'recorrido',
+                    'puedo hacer', 'para hacer', 'hay para hacer', 'planes', 'que plan',
+                    'este finde', 'el finde', 'fin de semana', 'este finde en la isla',
+                    'que hay en la isla', 'qué hay en la isla', 'visitar la isla'],
     # 'canoa' sola removida — demasiado genérica
     "amanita":     ['amanita', 'paseo en canoa', 'excursion canoa', 'excursión canoa', 'canoa isleña'],
     # 'barro' removido — muy común en contexto del delta (barro/lodo)
