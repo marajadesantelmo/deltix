@@ -198,6 +198,9 @@ KEYWORDS = {
                            'motor fuera de borda', 'fuera de borda', 'service motor', 'mecanica motor',
                            'mecánica motor', 'motosierra', 'motocierra', 'motoguadana', 'motoguadaña',
                            'cuatriciclo', 'cuatriciclos', 'gasolero', 'gasoleros'],
+    "residuoteca":        ['residuoteca', 'la residuoteca', 'residuos', 'gestion de residuos',
+                           'gestión de residuos', 'reciclaje', 'reciclado', 'educacion ambiental',
+                           'educación ambiental'],
 }
 
 def _norm(s):
@@ -309,7 +312,8 @@ def build_llm_context(user_input):
                      KEYWORDS_NORM["igarapedelta"] + KEYWORDS_NORM["taxifletes"] +
                      KEYWORDS_NORM["fletesmareaexpress"] + KEYWORDS_NORM["viajesvita"] +
                      KEYWORDS_NORM["oscart"] + KEYWORDS_NORM["deltafix"] +
-                     KEYWORDS_NORM["fletesnauticos"] + KEYWORDS_NORM["mecanica"])
+                     KEYWORDS_NORM["fletesnauticos"] + KEYWORDS_NORM["mecanica"] +
+                     KEYWORDS_NORM["residuoteca"])
     _lena_ok = (any(k in text for k in KEYWORDS_NORM["lena"]) and
                 not any(k in text for k in KEYWORDS_NORM["interislena"]))
     _agua_ok = any(k in text for k in KEYWORDS_NORM["agua"])
@@ -362,6 +366,7 @@ AGENDA_OPTIONS = {
     "Electricista ⚡":            "electricista gonzalo",
     "Deltafix 📱":               "deltafix reparacion celular",
     "Mecánica Náutica ⚙️":       "mecanica nautica angel cenizo",
+    "La Residuoteca ♻️":         "residuoteca residuos",
 }
 
 
@@ -970,6 +975,12 @@ def detect_quick_response(user_input):
     if any(k in text for k in KEYWORDS_NORM["mecanica"]):
         return {
             "reply": "⚙️ **Mecánica Náutica Angel Cenizo**\n\nReparación de motores fuera de borda, service y mantenimientos\nMotosierra, cuatriciclos, gasoleros, motoguadañas\nMecánica en general\n\nContacto: 1133798303",
+            "images": []
+        }
+
+    if any(k in text for k in KEYWORDS_NORM["residuoteca"]):
+        return {
+            "reply": "♻️ **La Residuoteca**\n\nAbordamos la problemática de los residuos a través de la investigación, educación y gestión.\n\nInstagram: @la_residuoteca\nWeb: residuoteca.org\nContacto: Contacto@residuoteca.org",
             "images": []
         }
 

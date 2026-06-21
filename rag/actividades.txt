@@ -225,3 +225,11 @@ Tipo: Reparación de celulares / Tecnología
 Instagram: @Deltafix_reparaciones
 Contacto: 1138989959
 
+---
+
+Nombre: La Residuoteca
+Descripción: Abordamos la problemática de los residuos a través de la investigación, educación y gestión.
+Tipo: Educación Ambiental / Gestión de residuos
+Instagram: @la_residuoteca / residuoteca.org
+Contacto: Contacto@residuoteca.org
+
