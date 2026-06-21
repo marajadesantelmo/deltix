@@ -207,6 +207,28 @@ else:
 
 TG_AVAILABLE = len(df_tg_full) > 0
 
+
+def tg_display_name(uid):
+    """Nombre legible de un usuario de Telegram desde user_experience.csv.
+    Usa First/Last Name, luego @Username, y como último recurso ···+últimos 6 dígitos."""
+    uid = str(uid)
+    row = df_user_exp[df_user_exp["User ID"] == uid]
+    if row.empty:
+        return "···" + uid[-6:]
+    fn = str(row["First Name"].values[0]).strip()
+    ln = str(row["Last Name"].values[0]).strip()
+    un = str(row["Username"].values[0]).strip()
+    if fn and fn != "nan":
+        name = fn
+        if ln and ln != "nan":
+            name += " " + ln
+    elif un and un != "nan":
+        name = "@" + un
+    else:
+        name = "···" + uid[-6:]
+    return name
+
+
 # ── Barra superior ────────────────────────────────────────────────────────────
 
 min_date = df_full["date"].min()
@@ -672,10 +694,16 @@ col_conv, col_tgusers = st.columns([3, 2])
 
 with col_conv:
     df_conv = (
-        df_combined[["timestamp", "source", "response_type", "user_message", "bot_reply"]]
+        df_combined[["timestamp", "source", "session_id", "response_type", "user_message", "bot_reply"]]
         .sort_values("timestamp", ascending=False)
         .head(200)
         .copy()
+    )
+    # Usuario: nombre del usuario si es Telegram, user_id (session_id) si es web
+    df_conv["usuario"] = df_conv.apply(
+        lambda r: tg_display_name(r["session_id"]) if r["source"] == "telegram"
+                  else str(r["session_id"]),
+        axis=1,
     )
     df_conv["source"] = df_conv["source"].map({"web": "💻", "telegram": "✈️"}).fillna("❓")
     df_conv["timestamp"] = df_conv["timestamp"].dt.strftime("%d/%m %H:%M")
@@ -702,9 +730,8 @@ with col_conv:
                   else f"({r['response_type']})",
         axis=1,
     )
-    df_conv = df_conv.drop(columns=["response_type"])
-    df_conv = df_conv[["timestamp", "source", "tipo_label", "user_message", "bot_reply"]]
-    df_conv.columns = ["Fecha", "Canal", "Tipo", "Usuario", "Bot"]
+    df_conv = df_conv[["timestamp", "source", "tipo_label", "usuario", "user_message", "bot_reply"]]
+    df_conv.columns = ["Fecha", "Canal", "Tipo", "Usuario", "Mensaje", "Bot"]
     st.dataframe(df_conv, use_container_width=True, hide_index=True, height=520)
 
 with col_tgusers:
@@ -719,24 +746,7 @@ with col_tgusers:
         tg_user_counts["user_id"] = tg_user_counts["user_id"].astype(str)
 
         # Enriquecer con nombres desde user_experience.csv
-        def _display_name(uid):
-            row = df_user_exp[df_user_exp["User ID"] == uid]
-            if row.empty:
-                return "···" + uid[-6:]
-            fn = str(row["First Name"].values[0]).strip()
-            ln = str(row["Last Name"].values[0]).strip()
-            un = str(row["Username"].values[0]).strip()
-            if fn and fn != "nan":
-                name = fn
-                if ln and ln != "nan":
-                    name += " " + ln
-            elif un and un != "nan":
-                name = "@" + un
-            else:
-                name = "···" + uid[-6:]
-            return name
-
-        tg_user_counts["nombre"] = tg_user_counts["user_id"].apply(_display_name)
+        tg_user_counts["nombre"] = tg_user_counts["user_id"].apply(tg_display_name)
 
         fig_tgusers = go.Figure(go.Bar(
             x=tg_user_counts["mensajes"][::-1],
