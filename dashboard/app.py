@@ -672,13 +672,30 @@ col_conv, col_tgusers = st.columns([3, 2])
 
 with col_conv:
     df_conv = (
-        df_combined[["timestamp", "source", "user_message", "bot_reply", "response_type"]]
+        df_combined[["timestamp", "source", "response_type", "user_message", "bot_reply"]]
         .sort_values("timestamp", ascending=False)
         .head(200)
         .copy()
     )
     df_conv["source"] = df_conv["source"].map({"web": "💻", "telegram": "✈️"}).fillna("❓")
     df_conv["timestamp"] = df_conv["timestamp"].dt.strftime("%d/%m %H:%M")
+    # Etiqueta legible del tipo de respuesta — destaca las que dispararon el LLM
+    _conv_type_map = {
+        "llm":          "🤖 LLM",
+        "llm_blocked":  "⚠️ LLM bloqueado",
+        "llm_error":    "❌ LLM error",
+        "colectivas":   "🚢 Colectivas",
+        "almaceneras":  "🛒 Almaceneras",
+        "agenda":       "📅 Agenda",
+        "memes":        "😂 Memes",
+        "mareas":       "🌊 Mareas",
+        "hidrografia":  "📡 Hidrografía",
+        "clima":        "🌤️ Clima",
+        "windguru":     "🌬️ WindGurú",
+        "quick":        "⚡ Quick",
+        "social":       "💬 Social",
+    }
+    df_conv["tipo_label"] = df_conv["response_type"].map(_conv_type_map).fillna(df_conv["response_type"])
     # Si bot_reply está vacío, mostrar el tipo de respuesta como indicador
     df_conv["bot_reply"] = df_conv.apply(
         lambda r: r["bot_reply"] if (r["bot_reply"] and r["bot_reply"] not in ("", "nan"))
@@ -686,7 +703,8 @@ with col_conv:
         axis=1,
     )
     df_conv = df_conv.drop(columns=["response_type"])
-    df_conv.columns = ["Fecha", "Canal", "Usuario", "Bot"]
+    df_conv = df_conv[["timestamp", "source", "tipo_label", "user_message", "bot_reply"]]
+    df_conv.columns = ["Fecha", "Canal", "Tipo", "Usuario", "Bot"]
     st.dataframe(df_conv, use_container_width=True, hide_index=True, height=520)
 
 with col_tgusers:
