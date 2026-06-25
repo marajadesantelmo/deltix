@@ -205,6 +205,12 @@ def wrap_handler_with_tracking(handler):
     """Wrap a handler with message tracking (MySQL) and CSV logging."""
     if isinstance(handler, (CommandHandler, MessageHandler)):
         original_callback = handler.callback
+        # Idempotencia: no volver a envolver un callback ya envuelto. Los mismos objetos
+        # handler se comparten entre entry_points y fallbacks, y además el ConversationHandler
+        # se re-envuelve recursivamente. Sin esta guarda, cada handler queda anidado 2-3 veces
+        # y un solo mensaje del usuario se registra 3 filas en el CSV (rtype real + 2x "other").
+        if getattr(original_callback, "_tracking_wrapped", False):
+            return handler
         rtype = HANDLER_RESPONSE_TYPES.get(original_callback.__name__, "other")
 
         async def wrapped_callback(update, context):
@@ -230,6 +236,7 @@ def wrap_handler_with_tracking(handler):
 
             return result
 
+        wrapped_callback._tracking_wrapped = True
         handler.callback = wrapped_callback
 
     elif isinstance(handler, ConversationHandler):

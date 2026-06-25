@@ -159,6 +159,26 @@ def load_user_experience(pa_token: str = "", pa_user: str = "facundol") -> pd.Da
         print(f"user_experience load error: {e}")
         return pd.DataFrame(columns=["User ID", "Username", "First Name", "Last Name"])
 
+def _dedup_tg_logging(df: pd.DataFrame) -> pd.DataFrame:
+    """Colapsa el triple-logging del bot de Telegram.
+
+    Por un bug en main2.py (handlers envueltos varias veces), un mismo mensaje del
+    usuario quedaba registrado 2-3 veces casi simultáneamente: el response_type real
+    + filas "other". Agrupamos por usuario+mensaje+segundo y conservamos una sola fila,
+    priorizando la del response_type más específico (no "other")."""
+    if df.empty or "response_type" not in df.columns or "session_id" not in df.columns:
+        return df
+    df = df.copy()
+    df["_sec"]  = pd.to_datetime(df["timestamp"]).dt.floor("s")
+    df["_prio"] = (df["response_type"].astype(str) == "other").astype(int)  # 0=específico, 1=other
+    df = (df.sort_values(["_sec", "_prio"])
+            .drop_duplicates(subset=["session_id", "user_message", "_sec"], keep="first")
+            .drop(columns=["_sec", "_prio"])
+            .sort_values("timestamp")
+            .reset_index(drop=True))
+    return df
+
+
 @st.cache_data(ttl=3600)
 def load_tg_data(pa_token: str = "", pa_user: str = "facundol") -> pd.DataFrame:
     """Carga datos de Telegram. Devuelve DataFrame vacío si el archivo no existe aún."""
@@ -185,6 +205,8 @@ def load_tg_data(pa_token: str = "", pa_user: str = "facundol") -> pd.DataFrame:
         # Normalizar: renombrar user_id → session_id para compatibilidad
         if "user_id" in df.columns:
             df = df.rename(columns={"user_id": "session_id"})
+        # Colapsar el triple-logging del bot (datos históricos previos al fix de main2.py)
+        df = _dedup_tg_logging(df)
         return df
     except Exception as e:
         print(f"TG data load error: {e}")
