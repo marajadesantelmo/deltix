@@ -393,6 +393,33 @@ with st.expander("🔍 Monitor de actualización", expanded=True):
         else:
             st.warning("No disponible", icon="⚠️")
 
+        # Pronóstico extendido resumido — próximos 3 días (OpenWeatherMap)
+        _fc_m = (weather_data.get("forecast", {}) or {}).get("list", []) if weather_data else []
+        if _fc_m:
+            _ICON_EMOJI = {"01": "☀️", "02": "🌤️", "03": "⛅", "04": "☁️",
+                           "09": "🌧️", "10": "🌦️", "11": "⛈️", "13": "❄️", "50": "🌫️"}
+            _DOW_ES = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
+            _by_day = {}
+            for _it in _fc_m:
+                _dt = datetime.utcfromtimestamp(_it["dt"]) - timedelta(hours=3)  # ARG (UTC-3)
+                _e = _by_day.setdefault(_dt.date(),
+                                        {"tmax": -99.0, "tmin": 99.0, "pop": 0.0, "icon": "", "dist": 99})
+                _e["tmax"] = max(_e["tmax"], _it["main"]["temp_max"])
+                _e["tmin"] = min(_e["tmin"], _it["main"]["temp_min"])
+                _e["pop"]  = max(_e["pop"], _it.get("pop", 0) * 100)
+                _dist = abs(_dt.hour - 15)   # ícono ~media tarde
+                if _dist < _e["dist"]:
+                    _e["dist"], _e["icon"] = _dist, (_it["weather"][0]["icon"] or "")[:2]
+            _html = ["<p style='font-size:0.75rem;font-weight:700;margin:10px 0 2px'>🔮 Próximos días</p>"]
+            for _d in sorted(_by_day)[:3]:
+                _e = _by_day[_d]
+                _html.append(
+                    f"<p style='font-size:0.85rem;margin:1px 0'>{_ICON_EMOJI.get(_e['icon'], '🌡')} "
+                    f"{_DOW_ES[_d.weekday()]} {_d.strftime('%d/%m')} · "
+                    f"<b>{round(_e['tmax'])}°</b>/{round(_e['tmin'])}° · 💧{round(_e['pop'])}%</p>"
+                )
+            st.markdown("".join(_html), unsafe_allow_html=True)
+
         st.markdown("<p style='font-size:0.75rem;font-weight:700;margin:10px 0 4px'>🌊 Hidrografía PNA</p>",
                     unsafe_allow_html=True)
         _htxt = _monitor_fetch("table_data.txt")
@@ -615,92 +642,6 @@ kpi(k4, "Mensajes este mes",
     icon="📊", accent="#5a9e47")
 
 st.markdown("<br>", unsafe_allow_html=True)
-
-# ── Pronóstico extendido (OpenWeatherMap, vía get_weather.py) ─────────────────
-
-_fc_list = (weather_data.get("forecast", {}) or {}).get("list", []) if weather_data else []
-if _fc_list:
-    _city = (weather_data.get("forecast", {}) or {}).get("city", {}).get("name", "Tigre")
-    st.markdown(f"## 🌤️ Pronóstico extendido — {_city}")
-
-    _ICON_EMOJI = {
-        "01": "☀️", "02": "🌤️", "03": "⛅", "04": "☁️",
-        "09": "🌧️", "10": "🌦️", "11": "⛈️", "13": "❄️", "50": "🌫️",
-    }
-    _DOW_ES = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
-
-    # Items de 3hs → hora local Argentina (UTC-3), independiente del server
-    _fc = pd.DataFrame([{
-        "dt":   datetime.utcfromtimestamp(it["dt"]) - timedelta(hours=3),
-        "temp": it["main"]["temp"],
-        "tmin": it["main"]["temp_min"],
-        "tmax": it["main"]["temp_max"],
-        "pop":  it.get("pop", 0) * 100,
-        "icon": (it["weather"][0]["icon"] or "")[:2],
-        "desc": it["weather"][0]["description"].capitalize(),
-    } for it in _fc_list])
-    _fc["date"] = _fc["dt"].dt.date
-
-    # Resumen por día
-    _days = []
-    for _d, _g in _fc.groupby("date"):
-        _g = _g.copy()
-        _g["_dist"] = (_g["dt"].dt.hour - 15).abs()   # ícono representativo ~media tarde
-        _rep = _g.sort_values("_dist").iloc[0]
-        _days.append({
-            "label": f"{_DOW_ES[_d.weekday()]} {_d.strftime('%d/%m')}",
-            "tmax":  round(_g["tmax"].max()),
-            "tmin":  round(_g["tmin"].min()),
-            "pop":   round(_g["pop"].max()),
-            "emoji": _ICON_EMOJI.get(_rep["icon"], "🌡️"),
-            "desc":  _rep["desc"],
-        })
-
-    for _c, _day in zip(st.columns(len(_days)), _days):
-        _c.markdown(f"""
-        <div style="text-align:center; background:rgba(43,159,196,0.08);
-                    border:1px solid rgba(43,159,196,0.18); border-radius:10px; padding:10px 4px;">
-          <div style="font-size:0.78rem; color:#9fd0e0; font-weight:600">{_day['label']}</div>
-          <div style="font-size:2rem; line-height:2.4rem">{_day['emoji']}</div>
-          <div style="font-size:1rem; color:#e8f5e2"><b>{_day['tmax']}°</b>
-               <span style="color:#7aa0b0">{_day['tmin']}°</span></div>
-          <div style="font-size:0.72rem; color:#4dc4e8">💧 {_day['pop']}%</div>
-          <div style="font-size:0.62rem; color:#7a9e7a; margin-top:2px">{_day['desc']}</div>
-        </div>""", unsafe_allow_html=True)
-
-    # Curva de temperatura + probabilidad de lluvia
-    fig_w = go.Figure()
-    fig_w.add_trace(go.Bar(
-        x=_fc["dt"], y=_fc["pop"], name="💧 Prob. lluvia",
-        marker=dict(color="rgba(43,159,196,0.30)"), yaxis="y2",
-        hovertemplate="%{x|%a %d/%m %Hh}: %{y:.0f}%<extra></extra>",
-    ))
-    fig_w.add_trace(go.Scatter(
-        x=_fc["dt"], y=_fc["temp"], name="🌡️ Temp",
-        mode="lines", fill="tozeroy", fillcolor="rgba(224,160,32,0.12)",
-        line=dict(color="#e0a020", width=2.5, shape="spline"),
-        hovertemplate="%{x|%a %d/%m %Hh}: %{y:.1f}°C<extra></extra>",
-    ))
-    fig_w.update_layout(
-        paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
-        margin=dict(l=0, r=0, t=10, b=0), height=240,
-        xaxis=dict(showgrid=False, color=TEXT, tickformat="%a %d/%m"),
-        yaxis=dict(title="°C", title_font=dict(color="#e0a020", size=11),
-                   showgrid=True, gridcolor=GRID, color="#e0a020", zeroline=False),
-        yaxis2=dict(title="% lluvia", overlaying="y", side="right", range=[0, 100],
-                    showgrid=False, color="#4dc4e8", title_font=dict(size=11)),
-        legend=dict(orientation="h", x=0, y=1.14, font=dict(color=TEXT, size=11), bgcolor=TRANSP),
-        hoverlabel=dict(bgcolor="#1a2e3a", font_color="#e8f5e2"),
-    )
-    st.plotly_chart(fig_w, use_container_width=True)
-
-    _wts = weather_data.get("timestamp", "")
-    _cur = (weather_data.get("current_weather", {}) or {}).get("main", {}).get("temp")
-    st.caption(
-        f"Fuente: OpenWeatherMap · actualizado {_wts}"
-        + (f" · ahora {round(_cur)}°C" if _cur is not None else "")
-    )
-    st.markdown("<br>", unsafe_allow_html=True)
 
 # ── Fila 1: barras + tablas ──────────────────────────────────────────────────
 
