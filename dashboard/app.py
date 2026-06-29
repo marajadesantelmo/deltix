@@ -15,7 +15,7 @@ import plotly.graph_objects as go
 import streamlit as st
 from io import StringIO
 from pathlib import Path
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, timezone
 
 # ── Configuración de página ───────────────────────────────────────────────────
 
@@ -212,6 +212,30 @@ def load_tg_data(pa_token: str = "", pa_user: str = "facundol") -> pd.DataFrame:
         print(f"TG data load error: {e}")
         return pd.DataFrame(columns=["timestamp","user_id","user_message","response_type","bot_reply","date","hour","weekday","source"])
 
+@st.cache_data(ttl=1800)
+def load_weather(pa_token: str = "", pa_user: str = "facundol") -> dict:
+    """Carga el pronóstico (rag/weather_data.json). Cloud→API de PA, local→archivo.
+    Se actualiza por get_weather.py en PythonAnywhere (OpenWeatherMap)."""
+    try:
+        if pa_token:
+            url = (
+                f"https://www.pythonanywhere.com/api/v0/user/{pa_user}"
+                f"/files/path/home/{pa_user}/deltix/rag/weather_data.json"
+            )
+            resp = requests.get(url, headers={"Authorization": f"Token {pa_token}"}, timeout=30)
+            if resp.status_code == 404:
+                return {}
+            resp.raise_for_status()
+            return resp.json()
+        wpath = ROOT / "rag" / "weather_data.json"
+        if not wpath.exists():
+            return {}
+        with open(wpath, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"weather load error: {e}")
+        return {}
+
 # Validar secretos y cargar datos
 if IS_CLOUD:
     _pa_token = st.secrets.get("PA_API_TOKEN", "")
@@ -222,10 +246,12 @@ if IS_CLOUD:
     df_full       = load_data(_pa_token, _pa_user)
     df_tg_full    = load_tg_data(_pa_token, _pa_user)
     df_user_exp   = load_user_experience(_pa_token, _pa_user)
+    weather_data  = load_weather(_pa_token, _pa_user)
 else:
     df_full       = load_data()
     df_tg_full    = load_tg_data()
     df_user_exp   = load_user_experience()
+    weather_data  = load_weather()
 
 TG_AVAILABLE = len(df_tg_full) > 0
 
@@ -473,7 +499,10 @@ prev_pct_llm = (df_combined_prev["response_type"].isin(["llm","llm_blocked","llm
                 / len(df_combined_prev) * 100) if not df_combined_prev.empty else 0
 
 # ── Métricas hoy / este mes (sobre datos completos, independiente del filtro) ─
-_today       = df_combined_full["date"].max()
+# "Hoy" es la fecha real en hora Argentina (UTC-3), no la última fecha con datos:
+# si hoy todavía no hubo interacciones, los contadores muestran 0 en vez de etiquetar
+# como "hoy" los datos de ayer. Independiente del timezone del server (Streamlit Cloud = UTC).
+_today       = (datetime.now(timezone.utc) - timedelta(hours=3)).date()
 _dau_full    = df_combined_full.groupby("date")["session_id"].nunique()
 _msgs_daily  = df_combined_full.groupby("date").size()
 users_today  = int(_dau_full.get(_today, 0))
@@ -586,6 +615,92 @@ kpi(k4, "Mensajes este mes",
     icon="📊", accent="#5a9e47")
 
 st.markdown("<br>", unsafe_allow_html=True)
+
+# ── Pronóstico extendido (OpenWeatherMap, vía get_weather.py) ─────────────────
+
+_fc_list = (weather_data.get("forecast", {}) or {}).get("list", []) if weather_data else []
+if _fc_list:
+    _city = (weather_data.get("forecast", {}) or {}).get("city", {}).get("name", "Tigre")
+    st.markdown(f"## 🌤️ Pronóstico extendido — {_city}")
+
+    _ICON_EMOJI = {
+        "01": "☀️", "02": "🌤️", "03": "⛅", "04": "☁️",
+        "09": "🌧️", "10": "🌦️", "11": "⛈️", "13": "❄️", "50": "🌫️",
+    }
+    _DOW_ES = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
+
+    # Items de 3hs → hora local Argentina (UTC-3), independiente del server
+    _fc = pd.DataFrame([{
+        "dt":   datetime.utcfromtimestamp(it["dt"]) - timedelta(hours=3),
+        "temp": it["main"]["temp"],
+        "tmin": it["main"]["temp_min"],
+        "tmax": it["main"]["temp_max"],
+        "pop":  it.get("pop", 0) * 100,
+        "icon": (it["weather"][0]["icon"] or "")[:2],
+        "desc": it["weather"][0]["description"].capitalize(),
+    } for it in _fc_list])
+    _fc["date"] = _fc["dt"].dt.date
+
+    # Resumen por día
+    _days = []
+    for _d, _g in _fc.groupby("date"):
+        _g = _g.copy()
+        _g["_dist"] = (_g["dt"].dt.hour - 15).abs()   # ícono representativo ~media tarde
+        _rep = _g.sort_values("_dist").iloc[0]
+        _days.append({
+            "label": f"{_DOW_ES[_d.weekday()]} {_d.strftime('%d/%m')}",
+            "tmax":  round(_g["tmax"].max()),
+            "tmin":  round(_g["tmin"].min()),
+            "pop":   round(_g["pop"].max()),
+            "emoji": _ICON_EMOJI.get(_rep["icon"], "🌡️"),
+            "desc":  _rep["desc"],
+        })
+
+    for _c, _day in zip(st.columns(len(_days)), _days):
+        _c.markdown(f"""
+        <div style="text-align:center; background:rgba(43,159,196,0.08);
+                    border:1px solid rgba(43,159,196,0.18); border-radius:10px; padding:10px 4px;">
+          <div style="font-size:0.78rem; color:#9fd0e0; font-weight:600">{_day['label']}</div>
+          <div style="font-size:2rem; line-height:2.4rem">{_day['emoji']}</div>
+          <div style="font-size:1rem; color:#e8f5e2"><b>{_day['tmax']}°</b>
+               <span style="color:#7aa0b0">{_day['tmin']}°</span></div>
+          <div style="font-size:0.72rem; color:#4dc4e8">💧 {_day['pop']}%</div>
+          <div style="font-size:0.62rem; color:#7a9e7a; margin-top:2px">{_day['desc']}</div>
+        </div>""", unsafe_allow_html=True)
+
+    # Curva de temperatura + probabilidad de lluvia
+    fig_w = go.Figure()
+    fig_w.add_trace(go.Bar(
+        x=_fc["dt"], y=_fc["pop"], name="💧 Prob. lluvia",
+        marker=dict(color="rgba(43,159,196,0.30)"), yaxis="y2",
+        hovertemplate="%{x|%a %d/%m %Hh}: %{y:.0f}%<extra></extra>",
+    ))
+    fig_w.add_trace(go.Scatter(
+        x=_fc["dt"], y=_fc["temp"], name="🌡️ Temp",
+        mode="lines", fill="tozeroy", fillcolor="rgba(224,160,32,0.12)",
+        line=dict(color="#e0a020", width=2.5, shape="spline"),
+        hovertemplate="%{x|%a %d/%m %Hh}: %{y:.1f}°C<extra></extra>",
+    ))
+    fig_w.update_layout(
+        paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
+        margin=dict(l=0, r=0, t=10, b=0), height=240,
+        xaxis=dict(showgrid=False, color=TEXT, tickformat="%a %d/%m"),
+        yaxis=dict(title="°C", title_font=dict(color="#e0a020", size=11),
+                   showgrid=True, gridcolor=GRID, color="#e0a020", zeroline=False),
+        yaxis2=dict(title="% lluvia", overlaying="y", side="right", range=[0, 100],
+                    showgrid=False, color="#4dc4e8", title_font=dict(size=11)),
+        legend=dict(orientation="h", x=0, y=1.14, font=dict(color=TEXT, size=11), bgcolor=TRANSP),
+        hoverlabel=dict(bgcolor="#1a2e3a", font_color="#e8f5e2"),
+    )
+    st.plotly_chart(fig_w, use_container_width=True)
+
+    _wts = weather_data.get("timestamp", "")
+    _cur = (weather_data.get("current_weather", {}) or {}).get("main", {}).get("temp")
+    st.caption(
+        f"Fuente: OpenWeatherMap · actualizado {_wts}"
+        + (f" · ahora {round(_cur)}°C" if _cur is not None else "")
+    )
+    st.markdown("<br>", unsafe_allow_html=True)
 
 # ── Fila 1: barras + tablas ──────────────────────────────────────────────────
 
