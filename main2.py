@@ -156,6 +156,26 @@ async def llm_fallback(update, context):
     user_id    = update.effective_user.id
     user_input = update.message.text
 
+    # Comandos desconocidos: NO pasarlos al LLM. El LLM llegó a inventar comandos
+    # inexistentes (/alert_windguru) y luego "confirmaba" suscripciones falsas cuando
+    # el usuario los escribía. Respondemos con la lista real de comandos.
+    if user_input and user_input.strip().startswith('/'):
+        msg = (
+            "Ese comando no existe 🦦 Estos son los comandos disponibles:\n\n"
+            "/mareas — pronóstico de mareas\n"
+            "/windguru — pronóstico de viento\n"
+            "/hidrografia — altura del río\n"
+            "/colectivas — horarios de lanchas colectivas\n"
+            "/almaceneras — lanchas almacén\n"
+            "/agenda — agenda del río\n"
+            "/suscribirme — recibir envíos automáticos diarios\n"
+            "/desuscribirme — dejar de recibirlos\n"
+            "/memes — memes del humedal"
+        )
+        await tracked_reply(update, msg)
+        log_tg_interaction(user_id, user_input, "social", msg)
+        return ConversationHandler.END
+
     # Create a task to send "Dejame pensar..." after 3 seconds
     thinking_message_task = asyncio.create_task(
         send_thinking_message_after_delay(update, context, 3)
@@ -319,6 +339,12 @@ if __name__ == '__main__':
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(masajes|charco|MASAJES)$'), charco_masajes)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(familia islena|familia_islena|FAMILIA ISLENA)$'), familia_islena)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(mimbre|Mimbre|MIMBRE|chiricote|mimbre del chiricote)$'), mimbre_del_chiricote)),
+        # Intención de suscripción por texto libre — ANTES de los contained-word handlers,
+        # porque frases como "mandame diariamente el pronóstico de mareas" contienen
+        # 'mareas'/'windguru' y dispararían esos handlers en lugar del flujo de suscripción.
+        # (\bsuscri no matchea dentro de 'desuscribirme': no hay word boundary interna)
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bsuscri\w*\b.*)'), suscribirme)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(?=.*\b(env[ií]o|env[ií]es|mandes|mandar|mand[aá]|recib[ií]r?|llegue)\w*\b)(?=.*\b(diari[oa]s?|diariamente|autom[aá]tic[oa]s?|todos los d[ií]as)\b).*'), suscribirme)),
         # Handlers for words contained in messages
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bcharlar\b.*)'), charlar)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bmareas\b.*)'), mareas)),
