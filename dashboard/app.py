@@ -736,6 +736,9 @@ with col_l:
     weekly = (_wk.groupby("week")["sess_key"].nunique()
                  .reset_index(name="sesiones")
                  .sort_values("week"))
+    # Excluir semanas incompletas: sólo las que ya transcurrieron por completo
+    # (domingo = lunes+6 anterior a hoy). _today es la fecha real en hora Argentina.
+    weekly = weekly[weekly["week"].apply(lambda w: w + timedelta(days=6) < _today)]
     weekly["week_str"] = weekly["week"].apply(lambda d: f"Sem {d.strftime('%d/%m')}")
 
     fig_wk = go.Figure(go.Scatter(
