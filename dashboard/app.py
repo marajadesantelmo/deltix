@@ -726,6 +726,39 @@ with col_l:
     )
     st.plotly_chart(fig, use_container_width=True)
 
+    # ── Sesiones únicas por semana (web + Telegram unificado, una sola línea) ──
+    st.markdown("### Sesiones únicas por semana")
+    _wk = df_combined.copy()
+    # Clave por canal para no fusionar ids de web (hex) y Telegram (numéricos)
+    _wk["sess_key"] = _wk["source"].astype(str) + ":" + _wk["session_id"].astype(str)
+    # Semana calendaria (lunes como inicio)
+    _wk["week"] = _wk["timestamp"].dt.to_period("W").apply(lambda p: p.start_time.date())
+    weekly = (_wk.groupby("week")["sess_key"].nunique()
+                 .reset_index(name="sesiones")
+                 .sort_values("week"))
+    weekly["week_str"] = weekly["week"].apply(lambda d: f"Sem {d.strftime('%d/%m')}")
+
+    fig_wk = go.Figure(go.Scatter(
+        x=weekly["week_str"], y=weekly["sesiones"],
+        name="Sesiones únicas",
+        mode="lines+markers",
+        line=dict(color="#e0a020", width=2.5, shape="spline"),
+        marker=dict(color="#e0a020", size=8, line=dict(color="#0e1a0e", width=1.5)),
+        fill="tozeroy", fillcolor="rgba(224,160,32,0.10)",
+        hovertemplate="<b>%{x}</b><br>%{y} sesiones únicas (web + ✈️)<extra></extra>",
+    ))
+    fig_wk.update_layout(
+        paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
+        margin=dict(l=0, r=10, t=10, b=0), height=280,
+        xaxis=dict(showgrid=False, color=TEXT, tickfont=dict(size=11)),
+        yaxis=dict(
+            title="Sesiones únicas", title_font=dict(color="#e0a020", size=11),
+            showgrid=True, gridcolor=GRID, color="#e0a020", zeroline=False, rangemode="tozero",
+        ),
+        hoverlabel=dict(bgcolor="#2a4a2a", font_color="#e8f5e2"),
+    )
+    st.plotly_chart(fig_wk, use_container_width=True)
+
 with col_tabs:
     # ── Tabla: Últimas conversaciones ─────────────────────────────────────────
     st.markdown("### Últimas conversaciones")
