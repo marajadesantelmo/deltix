@@ -176,6 +176,24 @@ async def llm_fallback(update, context):
         log_tg_interaction(user_id, user_input, "social", msg)
         return ConversationHandler.END
 
+    # Confirmaciones / ruido suelto ("no", "si", "dale", "ok"...) NO van al LLM: suelen
+    # venir de taps a botones Si/No que quedan pegados en Telegram tras expirar un flujo.
+    # Sin contexto el LLM respondía confundido y hasta con mala onda. Respondemos con el menú.
+    _confirm_noise = {
+        'si', 'sí', 'sip', 'no', 'nop', 'nope', 'ok', 'oka', 'okey', 'okay', 'dale',
+        'bueno', 'listo', 'va', 'ya', 'aja', 'ajá', 'ah', 'mmm', 'mm', 'ah ok', 'ok!',
+        'sisi', 'sí sí', 'obvio', 'claro', 'jaja', 'jeje', '.', '👍', '🙂', '👌',
+    }
+    if user_input and user_input.strip().lower() in _confirm_noise:
+        msg = (
+            "¿En qué te doy una mano? 🦦 Elegí una opción o escribí una palabra clave:\n\n"
+            "/mareas · /windguru · /hidrografia · /colectivas · /almaceneras · /agenda\n\n"
+            "También podés escribir cosas como 'clima', 'mareas' o 'colectivas' y te ayudo."
+        )
+        await tracked_reply(update, msg)
+        log_tg_interaction(user_id, user_input, "social", msg)
+        return ConversationHandler.END
+
     # Create a task to send "Dejame pensar..." after 3 seconds
     thinking_message_task = asyncio.create_task(
         send_thinking_message_after_delay(update, context, 3)
