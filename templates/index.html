@@ -346,6 +346,11 @@
       color: #d4edda;
     }
     .chip-featured:hover { background: rgba(0,255,65,0.18); border-color: rgba(0,255,65,0.45); }
+    /* Celulares muy angostos (iPhone SE y similares): achicar apenas fuente y padding
+       para que "Mareas Hidrografía" siga entrando en una línea y no duplique el alto. */
+    @media (max-width: 340px) {
+      .chip-featured { font-size: 11px; padding: 7px 7px; }
+    }
 
     /* ── Pinned quick chips (desktop: sticky at top of chat after first message) ── */
     #pinned-chips {
@@ -880,7 +885,7 @@
         <!-- Pinned quick chips (desktop only, shown after first message) -->
         <div id="pinned-chips">
           <button class="chip chip-featured" onclick="sendQuick('mareas')">🌊 Mareas INA</button>
-          <button class="chip chip-featured" onclick="sendQuick('hidrografia')">📊 Mareas Hidrografía</button>
+          <button class="chip chip-featured" onclick="sendQuick('hidrografia')">⚓️ Mareas Hidrografía</button>
           <span class="chip-row-break"></span>
           <button class="chip" onclick="sendQuick('clima')">🌤️ Clima</button>
           <button class="chip" onclick="sendQuick('windguru')">💨 Windgurú</button>
@@ -905,7 +910,7 @@
         <!-- Mobile chips -->
         <div class="chips">
           <button class="chip chip-featured" onclick="sendQuick('mareas')">🌊 Mareas INA</button>
-          <button class="chip chip-featured" onclick="sendQuick('hidrografia')">📊 Mareas Hidrografía</button>
+          <button class="chip chip-featured" onclick="sendQuick('hidrografia')">⚓️ Mareas Hidrografía</button>
           <span class="chip-row-break"></span>
           <button class="chip" onclick="sendQuick('clima')">🌤️ Clima</button>
           <button class="chip" onclick="sendQuick('windguru')">💨 Windgurú</button>
@@ -933,7 +938,7 @@
         <!-- Desktop landing chips (hidden after first message) -->
         <div id="landing-chips">
           <button class="chip chip-featured" onclick="sendQuick('mareas')">🌊 Mareas INA</button>
-          <button class="chip chip-featured" onclick="sendQuick('hidrografia')">📊 Mareas Hidrografía</button>
+          <button class="chip chip-featured" onclick="sendQuick('hidrografia')">⚓️ Mareas Hidrografía</button>
           <span class="chip-row-break"></span>
           <button class="chip" onclick="sendQuick('clima')">🌤️ Clima</button>
           <button class="chip" onclick="sendQuick('windguru')">💨 Windgurú</button>
