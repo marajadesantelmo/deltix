@@ -332,14 +332,14 @@
 
     .chip-featured {
       flex: 1 1 calc(50% - 10px);
-      max-width: 420px;
+      max-width: 320px;
       min-width: 0;
-      /* Escala con el ancho: en celulares angostos baja lo justo para que
-         "Mareas Hidrografía" entre en una sola línea; en desktop llega a 15px. */
-      font-size: clamp(12px, 3.4vw, 15px);
+      /* Apenas más grande que un chip normal (11.5px / 5px 12px). El clamp baja
+         lo justo en celulares angostos para que "Mareas Hidrografía" entre en una línea. */
+      font-size: clamp(11.5px, 3.3vw, 13px);
       font-weight: 600;
-      padding: 11px 10px;
-      border-radius: 14px;
+      padding: 7px 10px;
+      border-radius: 20px;
       text-align: center;
       background: rgba(0,255,65,0.11);
       border-color: rgba(0,255,65,0.32);
