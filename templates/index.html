@@ -330,26 +330,23 @@
        primera línea aunque tengan max-width y sobre espacio al costado. */
     .chip-row-break { flex-basis: 100%; height: 0; margin: 0; padding: 0; border: 0; }
 
+    /* Misma tipografía que el resto de los chips (font-size y peso heredados de .chip):
+       se distinguen sólo por ocupar la primera fila, el ancho y el acento de color. */
     .chip-featured {
       flex: 1 1 calc(50% - 10px);
       max-width: 320px;
       min-width: 0;
-      /* Apenas más grande que un chip normal (11.5px / 5px 12px). El clamp baja
-         lo justo en celulares angostos para que "Mareas Hidrografía" entre en una línea. */
-      font-size: clamp(11.5px, 3.3vw, 13px);
-      font-weight: 600;
-      padding: 7px 10px;
-      border-radius: 20px;
+      padding: 6px 10px;
       text-align: center;
       background: rgba(0,255,65,0.11);
       border-color: rgba(0,255,65,0.32);
       color: #d4edda;
     }
     .chip-featured:hover { background: rgba(0,255,65,0.18); border-color: rgba(0,255,65,0.45); }
-    /* Celulares muy angostos (iPhone SE y similares): achicar apenas fuente y padding
-       para que "Mareas Hidrografía" siga entrando en una línea y no duplique el alto. */
+    /* Celulares muy angostos (iPhone SE y similares): achicar el padding lateral
+       para que "Mareas Hidrografía" siga entrando en una sola línea. */
     @media (max-width: 340px) {
-      .chip-featured { font-size: 11px; padding: 7px 7px; }
+      .chip-featured { padding: 6px 5px; }
     }
 
     /* ── Pinned quick chips (desktop: sticky at top of chat after first message) ── */
