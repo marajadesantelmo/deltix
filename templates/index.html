@@ -953,6 +953,14 @@
     const sendBtn = document.getElementById('send-btn');
     const BOT_AVATAR = '/img/bot_icon.png';
 
+    // En dispositivos táctiles, enfocar el input por código abre el teclado en pantalla
+    // y tapa la respuesta del bot (sobre todo las imágenes de mareas/colectivas).
+    // El teclado debe aparecer sólo cuando el usuario toca el input para escribir.
+    // Se evalúa en cada llamada (no al cargar) para no quedar con un valor viejo
+    // si cambia el viewport o la orientación.
+    const isTouchDevice = () => window.matchMedia('(pointer: coarse)').matches
+                             || window.matchMedia('(max-width: 767px)').matches;
+
     // Landing → Chat transition (desktop only)
     let _isLanding = window.innerWidth >= 768;
     const _headerAvatar = document.querySelector('.header-avatar');
@@ -1046,6 +1054,8 @@
         const imgSrc = isDynamic ? src + '?v=' + Date.now() : src;
         img.src = imgSrc; img.alt = ''; img.className = 'chat-image';
         img.onclick = () => window.open(imgSrc, '_blank');
+        // La imagen no tiene alto hasta que carga: si no re-scrolleamos, queda fuera de vista.
+        img.onload = () => scrollBottom();
         col.appendChild(img);
       });
 
@@ -1124,7 +1134,8 @@
         addMessage('bot', 'Error de conexión. Intentá de nuevo.');
       } finally {
         sendBtn.disabled = false;
-        input.focus();
+        // En touch NO devolvemos el foco: abriría el teclado y taparía la respuesta.
+        if (!isTouchDevice()) input.focus();
       }
     }
 
@@ -1145,6 +1156,8 @@
         return;
       }
       input.value = text;
+      // Chip tocado: si el teclado estaba abierto, cerrarlo para que se vea la respuesta.
+      if (isTouchDevice()) input.blur();
       submit();
     }
 
