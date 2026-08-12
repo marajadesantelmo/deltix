@@ -152,28 +152,42 @@ async def tracked_reply(update, text, *args, **kwargs):
         print(f"Failed to track bot response: {e}")
 
 # Update the llm_fallback handler to use tracked_reply
+COMANDOS_MSG = (
+    "Ese comando no existe 🦦 Estos son los comandos disponibles:\n\n"
+    "/mareas — pronóstico de mareas\n"
+    "/windguru — pronóstico de viento\n"
+    "/hidrografia — altura del río\n"
+    "/colectivas — horarios de lanchas colectivas\n"
+    "/almaceneras — lanchas almacén\n"
+    "/agenda — agenda del río\n"
+    "/suscribirme — recibir envíos automáticos diarios\n"
+    "/desuscribirme — dejar de recibirlos\n"
+    "/memes — memes del humedal"
+)
+
+
+async def unknown_command(update, context):
+    """Sólo para comandos que NO tienen CommandHandler propio.
+
+    Va SIEMPRE último en la lista de handlers: los comandos válidos se resuelven
+    antes en su CommandHandler, incluso si el usuario está dentro de un flujo.
+    """
+    user_id    = update.effective_user.id
+    user_input = update.message.text if update.message else ""
+    await tracked_reply(update, COMANDOS_MSG)
+    log_tg_interaction(user_id, user_input, "social", COMANDOS_MSG)
+    return ConversationHandler.END
+
+
 async def llm_fallback(update, context):
     user_id    = update.effective_user.id
     user_input = update.message.text
 
-    # Comandos desconocidos: NO pasarlos al LLM. El LLM llegó a inventar comandos
-    # inexistentes (/alert_windguru) y luego "confirmaba" suscripciones falsas cuando
-    # el usuario los escribía. Respondemos con la lista real de comandos.
+    # Red de seguridad: si por algún camino llega un comando hasta acá, no mandarlo
+    # al LLM (llegó a inventar comandos y a "confirmar" suscripciones falsas).
     if user_input and user_input.strip().startswith('/'):
-        msg = (
-            "Ese comando no existe 🦦 Estos son los comandos disponibles:\n\n"
-            "/mareas — pronóstico de mareas\n"
-            "/windguru — pronóstico de viento\n"
-            "/hidrografia — altura del río\n"
-            "/colectivas — horarios de lanchas colectivas\n"
-            "/almaceneras — lanchas almacén\n"
-            "/agenda — agenda del río\n"
-            "/suscribirme — recibir envíos automáticos diarios\n"
-            "/desuscribirme — dejar de recibirlos\n"
-            "/memes — memes del humedal"
-        )
-        await tracked_reply(update, msg)
-        log_tg_interaction(user_id, user_input, "social", msg)
+        await tracked_reply(update, COMANDOS_MSG)
+        log_tg_interaction(user_id, user_input, "social", COMANDOS_MSG)
         return ConversationHandler.END
 
     # Confirmaciones / ruido suelto ("no", "si", "dale", "ok"...) NO van al LLM: suelen
@@ -395,8 +409,12 @@ if __name__ == '__main__':
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bmasajes\b.*)'), charco_masajes)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bfamilia islena\b.*)'), familia_islena)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\bchiricote\b.*)'), mimbre_del_chiricote)),
-        # LLM como fallback
-        MessageHandler(filters.TEXT, llm_fallback)
+        # LLM como fallback. ~filters.COMMAND es CLAVE: filters.TEXT también matchea
+        # los comandos, así que sin esto un /colectivas escrito dentro de un flujo
+        # activo caía acá en vez de resolverse en su CommandHandler.
+        MessageHandler(filters.TEXT & ~filters.COMMAND, llm_fallback),
+        # Último recurso: comandos sin handler propio (los válidos ya matchearon antes).
+        MessageHandler(filters.COMMAND, unknown_command),
     ]
     
     # Combine all handlers, with command handlers first to ensure they take priority
@@ -435,7 +453,9 @@ if __name__ == '__main__':
                                           CommandHandler('menu', timeout_handler)],
         },
         # LLM fallback handler
-        fallbacks=[MessageHandler(filters.TEXT, llm_fallback)] + handlers,
+        # El fallback de texto excluye comandos para que, estando dentro de un flujo,
+        # un /comando válido siga cayendo en su CommandHandler (que viene en `handlers`).
+        fallbacks=[MessageHandler(filters.TEXT & ~filters.COMMAND, llm_fallback)] + handlers,
         conversation_timeout=600,
     ))
 
