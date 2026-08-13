@@ -2,6 +2,7 @@ from telegram.ext import ApplicationBuilder,  CommandHandler, ConversationHandle
 import pandas as pd
 import nest_asyncio
 import os
+import re
 import csv
 import asyncio
 import random
@@ -190,6 +191,14 @@ async def llm_fallback(update, context):
         log_tg_interaction(user_id, user_input, "social", COMANDOS_MSG)
         return ConversationHandler.END
 
+    # Pedidos de menú: mostrar el menú REAL, nunca dejar que lo improvise el LLM
+    # (respondía una lista de comandos incompleta). Cubre el caso de que el pedido
+    # llegue acá por estar dentro de un flujo activo, donde los regex no aplican.
+    if user_input and re.search(r'(?i)\b(men[uú]|opciones)\b', user_input):
+        await menu(update, context)
+        log_tg_interaction(user_id, user_input, "social", "[menu]")
+        return ConversationHandler.END
+
     # Confirmaciones / ruido suelto ("no", "si", "dale", "ok"...) NO van al LLM: suelen
     # venir de taps a botones Si/No que quedan pegados en Telegram tras expirar un flujo.
     # Sin contexto el LLM respondía confundido y hasta con mala onda. Respondemos con el menú.
@@ -348,6 +357,11 @@ if __name__ == '__main__':
     
     # Other handlers for message text with tracking
     message_handlers = [
+        # Menú: va PRIMERO para que pedirlo dispare el menú real y no el LLM,
+        # que improvisaba una lista de comandos incompleta.
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)^[\s¿¡]*(men[uú]|opciones|comandos|ayuda|help)[\s!?.¿¡]*$'), menu)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i).*\b(men[uú]|opciones)\b.*'), menu)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i).*\b(qu[eé]|cu[aá]les)\b.*\b(comandos|opciones|pod[eé]s\s+hacer|sab[eé]s\s+hacer|puedo\s+(pedir|preguntar|consultar))\b.*'), menu)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Mareas|mareas|MAREAS|Marea|marea|MAREA)$'), mareas)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Windguru|windguru|WINDGURU)$'), windguru)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Desuscribirme|desuscribirme|DESUSCRIBIRME)$'), desuscribirme)),
