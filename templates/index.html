@@ -323,31 +323,19 @@
     }
     .chip:hover { background: rgba(0,255,65,0.12); border-color: rgba(0,255,65,0.3); color: #d4edda; }
 
-    /* ── Chips destacados (Mareas INA / Mareas Hidrografía) ──
-       flex-basis ~50% hace que los dos ocupen exactamente la primera línea
-       y el resto de los chips baje solo por el flex-wrap del contenedor. */
-    /* Salto de fila explícito: garantiza que los destacados queden solos en la
-       primera línea aunque tengan max-width y sobre espacio al costado. */
+    /* ── Chips de mareas (Mareas INA / Mareas Hidrografía) ──
+       Mismo tamaño, tipografía y alineación que el resto (ancho natural según
+       el contenido, no estirados): sólo se distinguen por un acento de color
+       muy sutil y por quedar solos en la primera fila.
+       El salto de fila explícito es lo que los mantiene en su propia línea. */
     .chip-row-break { flex-basis: 100%; height: 0; margin: 0; padding: 0; border: 0; }
 
-    /* Misma tipografía que el resto de los chips (font-size y peso heredados de .chip):
-       se distinguen sólo por ocupar la primera fila, el ancho y el acento de color. */
     .chip-featured {
-      flex: 1 1 calc(50% - 10px);
-      max-width: 320px;
-      min-width: 0;
-      padding: 6px 10px;
-      text-align: center;
-      background: rgba(0,255,65,0.11);
-      border-color: rgba(0,255,65,0.32);
-      color: #d4edda;
+      padding: 6px 12px;
+      background: rgba(0,255,65,0.10);
+      border-color: rgba(0,255,65,0.22);
     }
-    .chip-featured:hover { background: rgba(0,255,65,0.18); border-color: rgba(0,255,65,0.45); }
-    /* Celulares muy angostos (iPhone SE y similares): achicar el padding lateral
-       para que "Mareas Hidrografía" siga entrando en una sola línea. */
-    @media (max-width: 340px) {
-      .chip-featured { padding: 6px 5px; }
-    }
+    .chip-featured:hover { background: rgba(0,255,65,0.15); border-color: rgba(0,255,65,0.32); }
 
     /* ── Pinned quick chips (desktop: sticky at top of chat after first message) ── */
     #pinned-chips {
