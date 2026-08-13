@@ -29,14 +29,20 @@ st.set_page_config(
 # ── Control de acceso ─────────────────────────────────────────────────────────
 
 if not st.session_state.get("authenticated"):
-    _pwd = st.text_input("🔒 Código de acceso", type="password", key="pwd")
-    if _pwd == "nomellamescapibara":
-        st.session_state["authenticated"] = True
-        st.rerun()
-    else:
-        if _pwd:
+    # Formulario: se envía tocando "Acceder" (cómodo en celular) o con Enter.
+    # Además el código sólo se valida al enviar, así no aparece "incorrecto"
+    # mientras se está escribiendo.
+    with st.form("login_form"):
+        _pwd = st.text_input("🔒 Código de acceso", type="password")
+        _entrar = st.form_submit_button("Acceder", type="primary", use_container_width=True)
+
+    if _entrar:
+        if _pwd == "nomellamescapibara":
+            st.session_state["authenticated"] = True
+            st.rerun()
+        else:
             st.error("Código incorrecto.")
-        st.stop()
+    st.stop()
 
 # ── Paleta y estilos ──────────────────────────────────────────────────────────
 
