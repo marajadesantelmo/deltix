@@ -813,6 +813,37 @@ with col_conv:
     )
     st.plotly_chart(fig_wk, use_container_width=True)
 
+    # ── Volumen total de mensajes por semana (web + Telegram) ──
+    st.markdown("### Mensajes por semana")
+    weekly_msgs = _wk.groupby("week").size().reset_index(name="mensajes").sort_values("week")
+    # Desglose por canal, sólo para el hover
+    _wk_src = _wk.groupby(["week", "source"]).size().unstack(fill_value=0)
+    for _canal in ("web", "telegram"):
+        weekly_msgs[_canal] = (weekly_msgs["week"].map(_wk_src[_canal]).fillna(0).astype(int)
+                               if _canal in _wk_src.columns else 0)
+    # Mismo criterio que el gráfico de arriba: sólo semanas completas
+    weekly_msgs = weekly_msgs[weekly_msgs["week"].apply(lambda w: w + timedelta(days=6) < _today)]
+    weekly_msgs["week_str"] = weekly_msgs["week"].apply(lambda d: f"Sem {d.strftime('%d/%m')}")
+
+    fig_wkm = go.Figure(go.Bar(
+        x=weekly_msgs["week_str"], y=weekly_msgs["mensajes"],
+        marker=dict(color="#5a9e47", line=dict(width=0)),
+        customdata=weekly_msgs[["web", "telegram"]].values,
+        hovertemplate="<b>%{x}</b><br>%{y} mensajes"
+                      "<br>💻 %{customdata[0]} · ✈️ %{customdata[1]}<extra></extra>",
+    ))
+    fig_wkm.update_layout(
+        paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
+        margin=dict(l=0, r=10, t=10, b=0), height=260,
+        xaxis=dict(showgrid=False, color=TEXT, tickfont=dict(size=11)),
+        yaxis=dict(
+            title="Mensajes", title_font=dict(color="#7ed957", size=11),
+            showgrid=True, gridcolor=GRID, color="#7ed957", zeroline=False, rangemode="tozero",
+        ),
+        hoverlabel=dict(bgcolor="#2a4a2a", font_color="#e8f5e2"),
+    )
+    st.plotly_chart(fig_wkm, use_container_width=True)
+
     # ── Detalle de conversaciones (últimas 200) ──
     st.markdown("### Detalle de conversaciones")
     df_conv = (
