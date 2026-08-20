@@ -323,13 +323,6 @@
     }
     .chip:hover { background: rgba(0,255,65,0.12); border-color: rgba(0,255,65,0.3); color: #d4edda; }
 
-    /* ── Chips de mareas (Mareas INA / Mareas Hidrografía) ──
-       Se ven exactamente igual que el resto: no llevan estilo propio, heredan
-       todo de .chip (color, borde, tipografía, padding, hover y alineación).
-       Lo único que los diferencia es la posición: el salto de fila los deja
-       solos en la primera línea. Vale para desktop y celular por igual. */
-    .chip-row-break { flex-basis: 100%; height: 0; margin: 0; padding: 0; border: 0; }
-
     /* ── Pinned quick chips (desktop: sticky at top of chat after first message) ── */
     #pinned-chips {
       display: none;
@@ -864,10 +857,9 @@
         <div id="pinned-chips">
           <button class="chip" onclick="sendQuick('mareas')">🌊 Mareas INA</button>
           <button class="chip" onclick="sendQuick('hidrografia')">⚓️ Mareas Hidrografía</button>
-          <span class="chip-row-break"></span>
-          <button class="chip" onclick="sendQuick('clima')">🌤️ Clima</button>
-          <button class="chip" onclick="sendQuick('windguru')">💨 Windgurú</button>
           <button class="chip" onclick="sendQuick('colectivas')">⛵ Lanchas Colectivas</button>
+          <button class="chip" onclick="sendQuick('windguru')">💨 Windgurú</button>
+          <button class="chip" onclick="sendQuick('clima')">🌤️ Clima</button>
           <button class="chip" onclick="sendQuick('almaceneras')">🛒 Almaceneras</button>
           <button class="chip" onclick="sendQuick('agenda del rio')">🌿 Agenda del Río</button>
           <button class="chip" onclick="sendQuick('memes')">😄 Memes</button>
@@ -889,10 +881,9 @@
         <div class="chips">
           <button class="chip" onclick="sendQuick('mareas')">🌊 Mareas INA</button>
           <button class="chip" onclick="sendQuick('hidrografia')">⚓️ Mareas Hidrografía</button>
-          <span class="chip-row-break"></span>
-          <button class="chip" onclick="sendQuick('clima')">🌤️ Clima</button>
-          <button class="chip" onclick="sendQuick('windguru')">💨 Windgurú</button>
           <button class="chip" onclick="sendQuick('colectivas')">⛵ Lanchas Colectivas</button>
+          <button class="chip" onclick="sendQuick('windguru')">💨 Windgurú</button>
+          <button class="chip" onclick="sendQuick('clima')">🌤️ Clima</button>
           <button class="chip" onclick="sendQuick('almaceneras')">🛒 Almaceneras</button>
           <button class="chip" onclick="sendQuick('agenda del rio')">🌿 Agenda del Río</button>
           <button class="chip" onclick="sendQuick('memes')">😄 Memes</button>
@@ -917,10 +908,9 @@
         <div id="landing-chips">
           <button class="chip" onclick="sendQuick('mareas')">🌊 Mareas INA</button>
           <button class="chip" onclick="sendQuick('hidrografia')">⚓️ Mareas Hidrografía</button>
-          <span class="chip-row-break"></span>
-          <button class="chip" onclick="sendQuick('clima')">🌤️ Clima</button>
-          <button class="chip" onclick="sendQuick('windguru')">💨 Windgurú</button>
           <button class="chip" onclick="sendQuick('colectivas')">⛵ Lanchas Colectivas</button>
+          <button class="chip" onclick="sendQuick('windguru')">💨 Windgurú</button>
+          <button class="chip" onclick="sendQuick('clima')">🌤️ Clima</button>
           <button class="chip" onclick="sendQuick('almaceneras')">🛒 Almaceneras</button>
           <button class="chip" onclick="sendQuick('agenda del rio')">🌿 Agenda del Río</button>
           <button class="chip" onclick="sendQuick('memes')">😄 Memes</button>
