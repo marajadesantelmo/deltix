@@ -311,9 +311,17 @@
       .footer-desktop-only { display: none !important; }
     }
     /* Salto de fila: fuerza que lo que sigue empiece en una línea nueva.
-       Se usa para agrupar los chips de servicio (emergencias / aportá / sugerí)
-       en su propia fila, separados de los de información del río. */
+       Se usa para separar los chips de aporte/sugerencias del resto.
+       El span ocupa su propia línea de alto cero, así que el `gap` del contenedor
+       se aplica dos veces (arriba y abajo) y la fila siguiente quedaría al doble
+       de distancia. El margen negativo —igual al gap de cada contenedor— lo
+       compensa para que todas las filas queden separadas por lo mismo. */
     .chip-row-break { flex-basis: 100%; height: 0; margin: 0; padding: 0; border: 0; }
+    /* El margen negativo va en los chips POSTERIORES al salto, no en el salto:
+       el `gap` entre líneas flex no se ve afectado por los márgenes del span,
+       así que hay que subir la fila siguiente para recuperar el gap sobrante. */
+    #landing-chips .chip-row-break ~ .chip { margin-top: -8px; }  /* gap: 8px */
+    .chips .chip-row-break ~ .chip         { margin-top: -6px; }  /* gap: 6px */
 
     .chip {
       background: rgba(0,255,65,0.06);
@@ -892,8 +900,8 @@
           <button class="chip" onclick="sendQuick('almaceneras')">🛒 Almaceneras</button>
           <button class="chip" onclick="sendQuick('agenda del rio')">🌿 Agenda del Río</button>
           <button class="chip" onclick="sendQuick('memes')">😄 Memes</button>
-          <span class="chip-row-break"></span>
           <button class="chip" onclick="document.getElementById('modal-emergencias').classList.remove('hidden')">🚨 Contactos emergencias</button>
+          <span class="chip-row-break"></span>
           <button class="chip" onclick="document.getElementById('modal-aporte').classList.remove('hidden')">☕ Aportá</button>
           <button class="chip" onclick="document.getElementById('modal-sugerencia').classList.remove('hidden')">💡 Sugerí algo</button>
         </div>
@@ -920,8 +928,8 @@
           <button class="chip" onclick="sendQuick('almaceneras')">🛒 Almaceneras</button>
           <button class="chip" onclick="sendQuick('agenda del rio')">🌿 Agenda del Río</button>
           <button class="chip" onclick="sendQuick('memes')">😄 Memes</button>
-          <span class="chip-row-break"></span>
           <button class="chip" onclick="document.getElementById('modal-emergencias').classList.remove('hidden')">🚨 Contactos emergencias</button>
+          <span class="chip-row-break"></span>
           <button class="chip" onclick="document.getElementById('modal-aporte').classList.remove('hidden')">☕ Aportá</button>
           <button class="chip" onclick="document.getElementById('modal-sugerencia').classList.remove('hidden')">💡 Sugerí algo</button>
         </div>
