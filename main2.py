@@ -3,6 +3,7 @@ import pandas as pd
 import nest_asyncio
 import os
 import re
+import unicodedata
 import csv
 import asyncio
 import random
@@ -37,6 +38,7 @@ HANDLER_RESPONSE_TYPES = {
     "desuscribirme":    "social",
     "mensaje_trigger":  "social",
     "mensajear":        "social",
+    "informacion":      "social",
     "mareas":           "mareas",
     "windguru":         "windguru",
     "hidrografia":      "hidrografia",
@@ -167,14 +169,45 @@ COMANDOS_MSG = (
 )
 
 
+def _comandos_validos():
+    """Nombre de comando (sin acentos) -> función que lo atiende."""
+    return {
+        "start": start, "menu": menu, "cancel": cancel, "charlar": charlar,
+        "mareas": mareas, "mareaa": mareas, "windguru": windguru, "memes": memes,
+        "colaborar": colaborar, "mensajear": mensaje_trigger, "colectivas": colectivas,
+        "agenda": agenda_rio, "almaceneras": almaceneras, "hidrografia": hidrografia,
+        "suscribirme": suscribirme, "desuscribirme": desuscribirme,
+        "informacion": informacion, "amanita": amanita, "alfareria": alfareria,
+        "labusqueda": labusqueda, "canaveralkayaks": canaveralkayaks,
+        "charco_masajes": charco_masajes, "familia_islena": familia_islena,
+        "mimbre": mimbre_del_chiricote,
+    }
+
+
+def _normalizar_comando(texto):
+    """'/Hidrografía' -> 'hidrografia'. Saca la barra, el @bot, mayúsculas y acentos."""
+    t = (texto or "").strip()
+    if not t:
+        return ""
+    t = t.split()[0].lstrip("/").split("@")[0].lower()
+    return unicodedata.normalize("NFD", t).encode("ascii", "ignore").decode("ascii")
+
+
 async def unknown_command(update, context):
-    """Sólo para comandos que NO tienen CommandHandler propio.
+    """Comandos que no matchearon ningún CommandHandler.
 
     Va SIEMPRE último en la lista de handlers: los comandos válidos se resuelven
     antes en su CommandHandler, incluso si el usuario está dentro de un flujo.
+
+    Antes de contestar "no existe", intenta resolver variantes acentuadas: el
+    teclado del celular corrige "/hidrografia" a "/hidrografía" y "/menu" a
+    "/menú", y Telegram no los toma como comando por llevar tilde.
     """
     user_id    = update.effective_user.id
     user_input = update.message.text if update.message else ""
+    fn = _comandos_validos().get(_normalizar_comando(user_input))
+    if fn is not None:
+        return await fn(update, context)
     await tracked_reply(update, COMANDOS_MSG)
     log_tg_interaction(user_id, user_input, "social", COMANDOS_MSG)
     return ConversationHandler.END
@@ -187,9 +220,7 @@ async def llm_fallback(update, context):
     # Red de seguridad: si por algún camino llega un comando hasta acá, no mandarlo
     # al LLM (llegó a inventar comandos y a "confirmar" suscripciones falsas).
     if user_input and user_input.strip().startswith('/'):
-        await tracked_reply(update, COMANDOS_MSG)
-        log_tg_interaction(user_id, user_input, "social", COMANDOS_MSG)
-        return ConversationHandler.END
+        return await unknown_command(update, context)
 
     # Pedidos de menú: mostrar el menú REAL, nunca dejar que lo improvise el LLM
     # (respondía una lista de comandos incompleta). Cubre el caso de que el pedido
@@ -344,6 +375,7 @@ if __name__ == '__main__':
         wrap_handler_with_tracking(CommandHandler('agenda', agenda_rio)),
         wrap_handler_with_tracking(CommandHandler('almaceneras', almaceneras)),
         wrap_handler_with_tracking(CommandHandler('hidrografia', hidrografia)),
+        wrap_handler_with_tracking(CommandHandler('informacion', informacion)),
         wrap_handler_with_tracking(CommandHandler('suscribirme', suscribirme)),
         wrap_handler_with_tracking(CommandHandler('desuscribirme', desuscribirme)),
         wrap_handler_with_tracking(CommandHandler('amanita', amanita)),
