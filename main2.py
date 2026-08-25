@@ -420,6 +420,9 @@ if __name__ == '__main__':
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Colaborar|colaborar|COLABORAR)$'), colaborar)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Mensajear|mensajear|MENSAJEAR)$'), mensaje_trigger)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Hola|hola|HOLA)[\s!,.¿?]*'), start)),
+        # 'Start'/'Empezar' escritos como texto (sin barra): antes caían al LLM,
+        # que llegó a inventar sintaxis de comandos. Ahora saludan y muestran el menú.
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)^(start|inicio|empezar|comenzar)[\s!,.¿?]*$'), start)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)^(colectivas?|horarios?|ida|vuelta)$'), colectivas)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Agenda|agenda|AGENDA|actividades|emprendimientos)$'), agenda_rio)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Gracias|gracias|GRACIAS)$'), de_nada)),
