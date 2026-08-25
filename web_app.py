@@ -91,6 +91,10 @@ SYSTEM_PROMPT = (
     "y en defensa de los humedales — no inventes más detalles. "
     "NUNCA inventes información: no alucines nombres de lanchas, cooperativas, almaceneras, horarios, "
     "precios ni datos de contacto que no estén en el contexto provisto. "
+    "HORARIOS: dá un horario SÓLO si figura textualmente en el contexto. Si no está, decí que no "
+    "lo tenés y sugerí consultar la sección de colectivas — nunca lo estimes, deduzcas ni lo "
+    "completes de memoria. Si el usuario te corrige, no inventes otro horario: reconocé que no "
+    "tenés el dato. La gente usa esto para tomarse una lancha. "
     "Si no tenés el dato, decí que no lo tenés y sugerí las palabras clave disponibles: "
     "clima, mareas, hidrografia, windguru, colectivas, almaceneras, actividades, emergencias, escuelas. "
     "Sobre datos de contacto: si el usuario pide explícitamente el contacto, teléfono o WhatsApp "
@@ -134,10 +138,13 @@ KEYWORDS = {
     "jilguero":    ['jilguero', 'carapachay', 'angostura'],
     "interislena": ['interisleña', 'interislena', 'sarmiento', 'san antonio', 'capitan', 'capitán',
                     'paso del toro', 'rama negra', 'antequera', 'cruz colorada', 'felicaria',
-                    'arroyo toro', 'abra vieja', 'fredes', 'estudiantes', 'puy carabi', 'canal 5'],
+                    'arroyo toro', 'abra vieja', 'fredes', 'estudiantes', 'puy carabi', 'canal 5',
+                    # paradas que figuran en rag/interislena.txt y no estaban acá:
+                    # sin ellas el LLM se quedaba sin contexto e inventaba horarios
+                    'torito', 'toro y torito', 'urion', 'canal honda', 'arroyo dorado', 'borasso'],
     "lineasdelta": ['lineasdelta', 'lineas delta', 'caraguata', 'canal arias'],
     # 'horarios' removido — demasiado genérico, activa flujo colectivas para cualquier negocio
-    "colectivas":  ['colectivas', 'lancha', 'lanchas', 'horario de lancha', 'horarios de lancha',
+    "colectivas":  ['colectivas', 'colectiva', 'lancha', 'lanchas', 'horario de lancha', 'horarios de lancha',
                     'horario del barco', 'barco colectivo'],
     # delivery/provisiones agregados
     "almacen":     ['almacen', 'almacén', 'almacenera', 'almaceneras',
@@ -217,6 +224,14 @@ KEYWORDS = {
 def _norm(s):
     """Lowercase + strip accents for accent-insensitive keyword matching."""
     return unicodedata.normalize('NFD', s.lower()).encode('ascii', 'ignore').decode('ascii')
+
+# Señales de que el mensaje pregunta por horarios de lanchas, aunque no nombre la línea.
+# Se usa word boundary a propósito: con substring, 'ida' matchearía "comida"/"salida".
+HORARIOS_RE = re.compile(
+    r'\b(colectivas?|lanchas?|horarios?|sale|salen|salida|zarpa|zarpan|frecuencia|'
+    r'muelle|embarcadero|ida|vuelta|primera|ultima|proxima)\b'
+    r'|\ba que hora\b|\bque hora\b'
+)
 
 # Pre-normalized keyword lists (computed once at startup)
 KEYWORDS_NORM = {k: [_norm(kw) for kw in v] for k, v in KEYWORDS.items()}
@@ -309,12 +324,19 @@ def build_llm_context(user_input):
         context.append(load_rag_file("escuelas.txt"))
     if any(k in text for k in KEYWORDS_NORM["almacen"]):
         context.append(load_rag_file("almaceneras.txt"))
+    _colectivas_cargadas = False
     if any(k in text for k in KEYWORDS_NORM["jilguero"]):
-        context.append(load_rag_file("jilguero.txt"))
+        context.append(load_rag_file("jilguero.txt"));    _colectivas_cargadas = True
     if any(k in text for k in KEYWORDS_NORM["interislena"]):
-        context.append(load_rag_file("interislena.txt"))
+        context.append(load_rag_file("interislena.txt")); _colectivas_cargadas = True
     if any(k in text for k in KEYWORDS_NORM["lineasdelta"]):
-        context.append(load_rag_file("lineasdelta.txt"))
+        context.append(load_rag_file("lineasdelta.txt")); _colectivas_cargadas = True
+    # Si pregunta por horarios pero no nombró ninguna línea, cargar las tres.
+    # Sin esto el LLM se quedaba sin datos e inventaba horarios: pasó el 25/08 con
+    # "la colectiva de toro y torito", que sí está en rag/interislena.txt.
+    if not _colectivas_cargadas and HORARIOS_RE.search(text):
+        for _archivo in ("jilguero.txt", "interislena.txt", "lineasdelta.txt"):
+            context.append(load_rag_file(_archivo))
     _base_act_kws = (KEYWORDS_NORM["activities"] + KEYWORDS_NORM["amanita"] + KEYWORDS_NORM["alfareria"] +
                      KEYWORDS_NORM["labusqueda"] + KEYWORDS_NORM["kayaks"] + KEYWORDS_NORM["masajes"] +
                      KEYWORDS_NORM["familia"] + KEYWORDS_NORM["mimbre"] + KEYWORDS_NORM["electricista"] + KEYWORDS_NORM["frutales"] +

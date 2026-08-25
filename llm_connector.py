@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import time
 from openai import OpenAI
@@ -59,11 +60,23 @@ KEYWORDS = {
     "jilguero": ['jilguero', 'carapachay', 'angostura'],
     "interislena": ['interisleña', 'interislena', 'sarmiento', 'san antonio', 'capitan', 'capitán',
                     'paso del toro', 'rama negra', 'antequera', 'cruz colorada', 'felicaria',
-                    'arroyo toro', 'abra vieja', 'fredes', 'estudiantes', 'puy carabi', 'canal 5'],
+                    'arroyo toro', 'abra vieja', 'fredes', 'estudiantes', 'puy carabi', 'canal 5',
+                    # paradas del RAG que faltaban acá (sin esto el LLM inventaba horarios)
+                    'torito', 'toro y torito', 'urion', 'canal honda', 'arroyo dorado', 'borasso'],
     "lineasdelta": ['lineasdelta', 'caraguatá', 'caraguata', 'canal arias', 'paraná miní', 'parana mini', 'lineas delta'],
     "activities": ['actividades', 'emprendimientos', 'hacer', 'visitar', 'conocer', 'experiencias', 'atracciones', 'paseos', 'canoa', 'kayak', 'arcilla', 'barro', 'alfareria', 'hospedaje'],
     "tides": ['mareas', 'marea', 'pleamar', 'bajamar', 'altura', 'agua', 'alta', 'baja', 'subir'],
 }
+
+# Señales de que el mensaje pregunta por horarios de lanchas, aunque no nombre la línea.
+# Word boundary a propósito: con substring, 'ida' matchearía "comida"/"salida".
+HORARIOS_RE = re.compile(
+    r'\b(colectivas?|lanchas?|horarios?|sale|salen|salida|zarpa|zarpan|frecuencia|'
+    r'muelle|embarcadero|ida|vuelta|primera|ultima|proxima)\b'
+    r'|\ba que hora\b|\bque hora\b',
+    re.IGNORECASE
+)
+
 
 class ContextManager:
     """Manages context generation based on user input."""
@@ -142,12 +155,18 @@ class ContextManager:
         # Add other context files based on keywords
         if any(keyword in user_input.lower() for keyword in KEYWORDS["almacen"]):
             context.append(self.load_file("almaceneras.txt"))
+        _colectivas_cargadas = False
         if any(keyword in user_input.lower() for keyword in KEYWORDS["jilguero"]):
-            context.append(self.load_file("jilguero.txt"))
+            context.append(self.load_file("jilguero.txt"));    _colectivas_cargadas = True
         if any(keyword in user_input.lower() for keyword in KEYWORDS["interislena"]):
-            context.append(self.load_file("interislena.txt"))
+            context.append(self.load_file("interislena.txt")); _colectivas_cargadas = True
         if any(keyword in user_input.lower() for keyword in KEYWORDS["lineasdelta"]):
-            context.append(self.load_file("lineasdelta.txt"))
+            context.append(self.load_file("lineasdelta.txt")); _colectivas_cargadas = True
+        # Si pregunta por horarios pero no nombró ninguna línea, cargar las tres:
+        # sin datos el LLM los inventa (pasó con "la colectiva de toro y torito").
+        if not _colectivas_cargadas and HORARIOS_RE.search(user_input):
+            for _archivo in ("jilguero.txt", "interislena.txt", "lineasdelta.txt"):
+                context.append(self.load_file(_archivo))
         if any(keyword in user_input.lower() for keyword in KEYWORDS["activities"]):
             context.append(self.load_file("actividades.txt"))
 
@@ -215,6 +234,10 @@ class LLMClient:
             "útil usando el contexto provisto. No saludes ni repitas 'hola'. "
             "NUNCA inventes información: no alucines nombres, lanchas, cooperativas, horarios, precios ni "
             "datos de contacto que no estén en el contexto. "
+            "HORARIOS: dá un horario SÓLO si figura textualmente en el contexto. Si no está, decí que no "
+            "lo tenés y sugerí /colectivas — nunca lo estimes, deduzcas ni lo completes de memoria. Si el "
+            "usuario te corrige, no inventes otro horario: reconocé que no tenés el dato. La gente usa "
+            "esto para tomarse una lancha. "
             "Los ÚNICOS comandos que existen son: /mareas, /windguru, /hidrografia, /colectivas, "
             "/almaceneras, /agenda, /memes, /suscribirme, /desuscribirme. NUNCA inventes comandos nuevos "
             "ni digas que existen otros. NUNCA confirmes acciones que no podés ejecutar (activar alertas, "
