@@ -66,6 +66,19 @@ KEYWORDS = {
     "lineasdelta": ['lineasdelta', 'caraguatá', 'caraguata', 'canal arias', 'paraná miní', 'parana mini', 'lineas delta'],
     "activities": ['actividades', 'emprendimientos', 'hacer', 'visitar', 'conocer', 'experiencias', 'atracciones', 'paseos', 'canoa', 'kayak', 'arcilla', 'barro', 'alfareria', 'hospedaje'],
     "tides": ['mareas', 'marea', 'pleamar', 'bajamar', 'altura', 'agua', 'alta', 'baja', 'subir'],
+    # Emergencias y escuelas estaban solo en la web: por Telegram el LLM contestaba
+    # sobre una urgencia sin ningun dato cargado. Misma lista que web_app.py.
+    "emergencias": ['emergencia', 'emergencias', 'urgencia', 'urgencias', 'bomberos', 'prefectura',
+                    'policia', 'policía', 'ambulancia', 'set tigre', 'quemas', 'incendio',
+                    'cot tigre', '107', '106', '100', '911',
+                    'hospital', 'hospitales', 'salud', 'salita', 'cafys', 'sanitario', 'sanitaria',
+                    'same', 'medico', 'médico', 'medica', 'médica', 'doctor', 'enfermeria', 'enfermería',
+                    'defensa civil', 'catamaran sanitario', 'catamarán sanitario',
+                    'do porto', 'favaloro', 'carrillo', 'absalon rojas', 'carapachay salud',
+                    'rio capitan salud'],
+    "escuelas":    ['escuela', 'escuelas', 'colegio', 'colegios', 'primaria', 'secundaria',
+                    'jardin de infantes', 'jardín de infantes', 'jardin infantes', 'educacion',
+                    'educación', 'sobral', 'cens', 'tecnica isla', 'técnica isla'],
 }
 
 # Señales de que el mensaje pregunta por horarios de lanchas, aunque no nombre la línea.
@@ -151,6 +164,14 @@ class ContextManager:
         # Add tides/mareas context if applicable
         if any(keyword in user_input.lower() for keyword in KEYWORDS.get("tides", [])):
             context.append(self.load_tides_data())
+
+        # Emergencias: policia.txt va junto con emergencias.txt porque 'policia' ya
+        # es keyword de emergencias, y el archivo no lo cargaba nadie en ningun lado.
+        if any(keyword in user_input.lower() for keyword in KEYWORDS["emergencias"]):
+            context.append(self.load_file("emergencias.txt"))
+            context.append(self.load_file("policia.txt"))
+        if any(keyword in user_input.lower() for keyword in KEYWORDS["escuelas"]):
+            context.append(self.load_file("escuelas.txt"))
 
         # Add other context files based on keywords
         if any(keyword in user_input.lower() for keyword in KEYWORDS["almacen"]):

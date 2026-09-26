@@ -322,6 +322,8 @@ def build_llm_context(user_input):
             )
     if any(k in text for k in KEYWORDS_NORM["emergencias"]):
         context.append(load_rag_file("emergencias.txt"))
+        # 'policia' ya es keyword de emergencias, pero policia.txt no lo leia nadie.
+        context.append(load_rag_file("policia.txt"))
     if any(k in text for k in KEYWORDS_NORM["escuelas"]):
         context.append(load_rag_file("escuelas.txt"))
     if any(k in text for k in KEYWORDS_NORM["almacen"]):
