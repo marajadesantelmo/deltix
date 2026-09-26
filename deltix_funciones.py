@@ -9,6 +9,7 @@ import os
 import smtplib 
 from email.message import EmailMessage
 from tokens import gmail_token
+from interislena_museo import texto_museo
 
 # Defino paths segun donde se ejecute el bot
 if os.path.exists('/home/facundol/deltix/'):
@@ -1073,16 +1074,29 @@ async def answer_colectivas(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         return ConversationHandler.END
 
 async def Interislena(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    await update.message.reply_text("Para Interisleña, por ahora solo tengo los horarios de Ida hacia la isla. Querés los horarios de verano o de inverno?",
-                                reply_markup=ReplyKeyboardMarkup(
-                                    [["Verano", "Invierno"]],
-                                    one_time_keyboard=True,
-                                    input_field_placeholder="Invierno o verano"))
+    await update.message.reply_text(
+        "De Interisleña tengo los horarios de Ida hacia la isla, de verano y de invierno. "
+        "Y también el recorrido del Museo Sarmiento, que es el más pedido porque pasan "
+        "todas las lanchas y tiene ida y vuelta. ¿Cuál querés?",
+        reply_markup=ReplyKeyboardMarkup(
+            [["Verano", "Invierno"], ["Museo"]],
+            one_time_keyboard=True,
+            input_field_placeholder="Verano, invierno o museo"))
     return ANSWER_interislena
 
 async def answer_interislena(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     chat_id = update.effective_chat.id
     user_response = update.message.text.lower()
+    # El Museo va primero: es el recorrido mas pedido y no depende de temporada,
+    # el cartel del muelle es uno solo para todo el año.
+    if 'museo' in user_response or 'sarmiento' in user_response:
+        await context.bot.send_message(chat_id, texto_museo(html=True), parse_mode='HTML')
+        time.sleep(1)
+        await context.bot.send_message(
+            chat_id,
+            "Si ves que hay algún horario incorrecto o información a corregir, no dudes en mandarle un mensajito al equipo Deltix",
+            reply_markup=main_menu_keyboard)
+        return ConversationHandler.END
     if 'invierno' in user_response:
         await context.bot.send_photo(chat_id, open(interislena_ida_invierno_path, "rb"))
         await context.bot.send_message(chat_id, f"Estos son los horarios de {user_response} de Interisleña. Si ves que hay algún horario incorrecto o información a corregir, no dudes en mandarle un mensajito al equipo Deltix")

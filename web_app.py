@@ -15,6 +15,8 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from openai import OpenAI
 
+from interislena_museo import texto_museo
+
 try:
     from tokens import openrouter_key, telegram_token, gmail_token
 except ImportError:
@@ -637,8 +639,8 @@ def handle_colectivas_flow(user_input):
             if any(k in text for k in KEYWORDS_NORM["interislena"]):
                 session['col'] = {'step': 'temporada', 'linea': 'interislena'}
                 session.modified = True
-                return {"reply": "Interisleña ⛵ ¿Qué temporada?", "images": [],
-                        "quick_replies": ["Invierno", "Verano"]}
+                return {"reply": "Interisleña ⛵ ¿Qué querés ver?", "images": [],
+                        "quick_replies": ["Invierno", "Verano", "Museo Sarmiento"]}
             if any(k in text for k in KEYWORDS_NORM["lineasdelta"]):
                 session['col'] = {'step': 'periodo', 'linea': 'lineasdelta'}
                 session.modified = True
@@ -646,6 +648,15 @@ def handle_colectivas_flow(user_input):
                         "quick_replies": ["Escolar", "No escolar"]}
 
         elif step == 'temporada':
+            # El Museo va primero: no depende de temporada (el cartel del muelle
+            # es uno solo) y cierra el flujo sin preguntar ida o vuelta, porque
+            # trae las dos direcciones.
+            if 'museo' in text or 'sarmiento' in text:
+                session.pop('col', None)
+                session.modified = True
+                return {"reply": texto_museo(), "images": [],
+                        "quick_replies": ["📞 Interisleña: 4749-0900",
+                                          "✏️ Sugerí una modificación"]}
             if 'invierno' in text:
                 session['col'] = {**col, 'step': 'direccion', 'temporada': 'invierno'}
                 session.modified = True
@@ -764,8 +775,8 @@ def handle_colectivas_flow(user_input):
     if any(k in text for k in KEYWORDS_NORM["interislena"]):
         session['col'] = {'step': 'temporada', 'linea': 'interislena'}
         session.modified = True
-        return {"reply": "Interisleña ⛵ ¿Qué temporada?", "images": [],
-                "quick_replies": ["Invierno", "Verano"]}
+        return {"reply": "Interisleña ⛵ ¿Qué querés ver?", "images": [],
+                "quick_replies": ["Invierno", "Verano", "Museo Sarmiento"]}
 
     if any(k in text for k in KEYWORDS_NORM["lineasdelta"]):
         session['col'] = {'step': 'periodo', 'linea': 'lineasdelta'}
