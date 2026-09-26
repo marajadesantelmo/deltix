@@ -1,5 +1,5 @@
 python-telegram-bot==20.3
-pandas
+pandas>=1.5
 urllib3
 nest_asyncio
 openai

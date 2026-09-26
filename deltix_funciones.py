@@ -133,7 +133,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
             "q_mensajear": 0,
             "timestamp_mensajear": None
         }
-        user_experience = user_experience.append(user_info, ignore_index=True)
+        user_experience = pd.concat([user_experience, pd.DataFrame([user_info])], ignore_index=True)
         user_experience.to_csv(user_experience_path, index=False)
 
     await context.bot.send_message(
@@ -572,7 +572,7 @@ async def answer_charlar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
                         "First Name": [update.message.from_user.first_name],
                         "Last Name": [update.message.from_user.last_name],}
             user_df = pd.DataFrame(user_info)
-            subscribers_mareas = subscribers_mareas.append(user_df, ignore_index=True)
+            subscribers_mareas = pd.concat([subscribers_mareas, user_df], ignore_index=True)
             subscribers_mareas.to_csv(subscribers_mareas_path, index=False)
             await update.message.reply_text(
                 "¡Gracias por suscribirte! Voy a intentar mandarte el pronóstico de mareas una vez al día. A veces fallo porque dependo de que me ande la internet isleña")
@@ -610,7 +610,7 @@ async def charlar_windguru(update: Update, context: ContextTypes.DEFAULT_TYPE) -
                         "First Name": [update.message.from_user.first_name],
                         "Last Name": [update.message.from_user.last_name],}
             user_df = pd.DataFrame(user_info)
-            subscribers_windguru = subscribers_windguru.append(user_df, ignore_index=True)
+            subscribers_windguru = pd.concat([subscribers_windguru, user_df], ignore_index=True)
             subscribers_windguru.to_csv('subscribers_windguru.csv', index=False)
             await update.message.reply_text("Ya te anoté!!! aiiii... tengo unas ganas de verme unos memes &#128057 Vemos uno?", parse_mode='HTML')
             return ANSWER_meme
@@ -713,7 +713,7 @@ async def mareas_suscribir_directo(update: Update, context: ContextTypes.DEFAULT
                     "First Name": [update.message.from_user.first_name],
                     "Last Name": [update.message.from_user.last_name],}
         user_df = pd.DataFrame(user_info)
-        subscribers_mareas = subscribers_mareas.append(user_df, ignore_index=True)
+        subscribers_mareas = pd.concat([subscribers_mareas, user_df], ignore_index=True)
         subscribers_mareas.to_csv(subscribers_mareas_path, index=False)
         await update.message.reply_text("¡Gracias por suscribirte! Voy a intentar mandarte el pronóstico de mareas una vez al día. A veces fallo porque dependende de que me ande la internet isleña")
     return ConversationHandler.END
@@ -734,7 +734,7 @@ async def windguru_suscribir_directo(update: Update, context: ContextTypes.DEFAU
                     "First Name": [update.message.from_user.first_name],
                     "Last Name": [update.message.from_user.last_name],}
         user_df = pd.DataFrame(user_info)
-        subscribers_windguru = subscribers_windguru.append(user_df, ignore_index=True)
+        subscribers_windguru = pd.concat([subscribers_windguru, user_df], ignore_index=True)
         subscribers_windguru.to_csv('/home/facundol/deltix/subscribers_windguru.csv', index=False)
         await update.message.reply_text("¡Gracias por suscribirte! Te enviaré el pronóstico de Windguru una vez al día.")
     return ConversationHandler.END
@@ -761,7 +761,7 @@ async def mareas_suscribir(update: Update, context: ContextTypes.DEFAULT_TYPE) -
                         "First Name": [update.message.from_user.first_name],
                         "Last Name": [update.message.from_user.last_name],}
             user_df = pd.DataFrame(user_info)
-            subscribers_mareas = subscribers_mareas.append(user_df, ignore_index=True)
+            subscribers_mareas = pd.concat([subscribers_mareas, user_df], ignore_index=True)
             subscribers_mareas.to_csv(subscribers_mareas_path, index=False)
             await update.message.reply_text("¡Gracias por suscribirte! Voy a intentar mandarte el pronóstico de mareas una vez al día. A veces fallo porque dependende de que me ande la internet isleña")
         return ConversationHandler.END
@@ -790,7 +790,7 @@ async def windguru_suscribir(update: Update, context: ContextTypes.DEFAULT_TYPE)
                         "First Name": [update.message.from_user.first_name],
                         "Last Name": [update.message.from_user.last_name],}
             user_df = pd.DataFrame(user_info)
-            subscribers_windguru = subscribers_windguru.append(user_df, ignore_index=True)
+            subscribers_windguru = pd.concat([subscribers_windguru, user_df], ignore_index=True)
             subscribers_windguru.to_csv('/home/facundol/deltix/subscribers_windguru.csv', index=False)
             await update.message.reply_text("¡Gracias por suscribirte! Te enviaré el pronóstico de Windguru una vez al día.")
         return ConversationHandler.END
