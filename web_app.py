@@ -17,6 +17,7 @@ from flask_limiter.util import get_remote_address
 from openai import OpenAI
 
 from interislena_museo import texto_museo
+from niveles_agua import ESCALA_PARA_LLM, frase
 from mareas_frescura import (aviso_tabla_vieja, aviso_png_viejo,
                              instruccion_para_llm)
 
@@ -346,7 +347,9 @@ def format_hidrografia():
                 if time_.strip().strip('-') == '':
                     continue
                 emoji = "🌊" if tide_type.upper() == "PLEAMAR" else "⬇️"
-                msg += f"{emoji} {tide_type}: {time_} hs — {height} m ({date})\n"
+                _nivel = frase(height)
+                _nivel = f" — {_nivel}" if _nivel else ""
+                msg += f"{emoji} {tide_type}: {time_} hs — {height} m{_nivel} ({date})\n"
         aviso = aviso_tabla_vieja()
         if aviso:
             msg += "\n" + aviso
@@ -388,6 +391,7 @@ def build_llm_context(user_input):
                 "ahora y a qué hora será la próxima pleamar o bajamar. No inventes alturas ni horarios "
                 "que no estén en la tabla:\n" + tides
             )
+            context.append(ESCALA_PARA_LLM)
             _aviso_llm = instruccion_para_llm()
             if _aviso_llm:
                 context.append(_aviso_llm)

@@ -11,6 +11,7 @@ from email.message import EmailMessage
 from tokens import gmail_token
 from interislena_museo import texto_museo
 from hora_local import ahora
+from niveles_agua import frase
 from mareas_frescura import aviso_tabla_vieja, aviso_png_viejo
 
 # Defino paths segun donde se ejecute el bot
@@ -1487,7 +1488,9 @@ async def hidrografia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
                     # Add emoji based on tide type
                     emoji = "🌊" if tide_type == "PLEAMAR" else "⬇️"
                     
-                    formatted_message += f"{emoji} <b>{tide_type}</b>: {time} hs - {height} m ({date})\n"
+                    _nivel = frase(height)
+                    _nivel = f" - {_nivel}" if _nivel else ""
+                    formatted_message += f"{emoji} <b>{tide_type}</b>: {time} hs - {height} m{_nivel} ({date})\n"
 
         _aviso = aviso_tabla_vieja()
         if _aviso:

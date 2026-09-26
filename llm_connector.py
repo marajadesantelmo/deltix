@@ -1,5 +1,6 @@
 import os
 import re
+from niveles_agua import ESCALA_PARA_LLM
 import json
 import time
 from openai import OpenAI
@@ -164,6 +165,7 @@ class ContextManager:
         # Add tides/mareas context if applicable
         if any(keyword in user_input.lower() for keyword in KEYWORDS.get("tides", [])):
             context.append(self.load_tides_data())
+            context.append(ESCALA_PARA_LLM)
 
         # Emergencias: policia.txt va junto con emergencias.txt porque 'policia' ya
         # es keyword de emergencias, y el archivo no lo cargaba nadie en ningun lado.
