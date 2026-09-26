@@ -52,6 +52,14 @@ from telegram.error import BadRequest, Forbidden, RetryAfter, TelegramError
 from tokens import telegram_token
 from deltix_funciones import generate_main_menu, main_menu_keyboard
 
+# Al redirigir la salida a un archivo (nohup … > saludo.log) Python bufferea
+# stdout en bloques de ~8 KB, asi que el log queda vacio varios minutos y parece
+# que el envio no arranco. Con line buffering cada linea aparece al instante.
+try:
+    sys.stdout.reconfigure(line_buffering=True)
+except AttributeError:      # python < 3.7
+    pass
+
 # ── Configuración ─────────────────────────────────────────────────────────────
 
 DRY_RUN = True      # Se apaga solo con --enviar. No lo cambies acá.
