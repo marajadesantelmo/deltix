@@ -1,6 +1,9 @@
 
 tokens.py
+# el bytecode de tokens.py filtro todos los secretos una vez: cubrir tambien
+# los .pyc sueltos, no solo el directorio
 __pycache__/
+*.pyc
 user_experience.csv
 subscribers_mareas.csv
 subscribers_windguru.csv
