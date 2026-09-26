@@ -231,6 +231,56 @@ def _norm(s):
 
 # Señales de que el mensaje pregunta por horarios de lanchas, aunque no nombre la línea.
 # Se usa word boundary a propósito: con substring, 'ida' matchearía "comida"/"salida".
+# Click de chip vs pregunta escrita. El chip manda una etiqueta corta y suelta
+# ("mareas", "hidrografia"); una persona escribiendo pregunta algo. La distincion
+# ya la hacia la rama de clima inline; ahora la comparten clima, mareas e
+# hidrografia, que tenian el mismo problema y lo resolvian distinto.
+_CHIP_TEMPORAL = ['manana', 'sabado', 'domingo', 'lunes', 'martes', 'miercoles',
+                  'jueves', 'viernes', 'semana', 'proximo', 'proxima',
+                  'estara', 'estaran', 'va a', 'habra', 'noche', 'tarde',
+                  'hoy', 'ahora', 'recien']
+_CHIP_QUESTION = ['como', 'cuanto', 'que tal', 'por que', 'cuando',
+                  'a que hora', 'que hora', 'conviene', 'puedo', 'se puede']
+
+
+def _es_click_de_chip(text, temporal=_CHIP_TEMPORAL, question=_CHIP_QUESTION,
+                      max_palabras=3):
+    """True si parece el texto de un chip y no una pregunta escrita a mano."""
+    return (len(text.strip().split()) <= max_palabras
+            and not any(t in text for t in temporal)
+            and not any(q in text for q in question))
+
+
+# Intencion de "nivel / estado del agua" para decidir si cargar la tabla de mareas
+# al contexto del LLM. Va como regex y no como lista de keywords porque las listas
+# de tides/hidrografia tambien rutean la respuesta fija: agregarles frases para
+# mejorar el contexto reintroduce el cortocircuito que esto viene a arreglar.
+# Mismo enfoque que HORARIOS_RE, que ya resolvio el problema equivalente.
+AGUA_CTX_RE = re.compile(
+    r'\b(marea|mareas|pleamar|bajamar|bajante|creciente|crecida|sudestada|hidrografia)\b'
+    r'|\b(rio|agua|nivel|altura)\b[^.?!]{0,25}\b(sube|subir|subiendo|baja|bajar|bajando|'
+    r'alto|alta|bajo|creci\w*|esta|estara|hay|queda|tenemos)\b'
+    r'|\b(sube|subir|subiendo|baja|bajar|bajando|alto|bajo)\b[^.?!]{0,25}\b(rio|agua|nivel|altura)\b'
+    r'|\b(empieza|empiece|comienza|termina) a (subir|bajar)\b'
+    r'|\b(va|van) a (subir|bajar|crecer)\b'
+)
+
+# Consejo de navegacion: "¿me conviene salir en lancha a la tarde?" es una pregunta
+# de marea aunque no nombre la marea.
+NAV_ADVICE_RE = re.compile(
+    r'\b(conviene|convendria|es seguro|se puede|puedo|podemos|vale la pena)\b'
+    r'[^.?!]{0,40}\b(salir|navegar|cruzar|remar|lancha|kayak|canoa|bote)\b'
+    r'|\b(salir|navegar|cruzar|remar)\b[^.?!]{0,30}\b(lancha|kayak|canoa|bote|rio|agua|isla)\b'
+)
+
+# Como HORARIOS_RE pero sin 'lancha': señales de que se piden HORARIOS de verdad,
+# no de que se menciono una lancha al pasar.
+HORARIOS_FUERTE_RE = re.compile(
+    r'\b(colectivas?|horarios?|sale|salen|salida|zarpa|zarpan|frecuencia|'
+    r'muelle|embarcadero|ida|vuelta|primera|ultima|proxima)\b'
+    r'|\ba que hora\b|\bque hora\b'
+)
+
 HORARIOS_RE = re.compile(
     r'\b(colectivas?|lanchas?|horarios?|sale|salen|salida|zarpa|zarpan|frecuencia|'
     r'muelle|embarcadero|ida|vuelta|primera|ultima|proxima)\b'
@@ -317,7 +367,15 @@ def build_llm_context(user_input):
             desc = current.get('weather', [{}])[0].get('description', 'N/A')
             wind = current.get('wind', {}).get('speed', 'N/A')
             context.append(f"Clima en Tigre: {temp}°C (sensación {feels}°C), {desc}, humedad {humidity}%, viento {wind} m/s")
-    if any(k in text for k in KEYWORDS_NORM["tides"] + KEYWORDS_NORM["hidrografia"] + KEYWORDS_NORM["nivelrio"]):
+    # Union aditiva: las keywords siguen valiendo y la regex cubre lo que se les
+    # escapaba ("cuando empieza a bajar", "el rio esta alto"). Un falso positivo
+    # cuesta ~530 chars de tabla; un falso negativo hace que el LLM hable de
+    # mareas sin datos.
+    _agua_intent = (any(k in text for k in KEYWORDS_NORM["tides"] + KEYWORDS_NORM["hidrografia"]
+                        + KEYWORDS_NORM["nivelrio"])
+                    or bool(AGUA_CTX_RE.search(text)))
+    _nav_intent = bool(NAV_ADVICE_RE.search(text))
+    if _agua_intent or _nav_intent:
         tides = load_tides_text()
         if tides:
             ahora = datetime.now().strftime("%d/%m/%Y a las %H:%M hs")
@@ -351,8 +409,22 @@ def build_llm_context(user_input):
     # Sin esto el LLM se quedaba sin datos e inventaba horarios: pasó el 25/08 con
     # "la colectiva de toro y torito", que sí está en rag/interislena.txt.
     if not _colectivas_cargadas and HORARIOS_RE.search(text):
-        for _archivo in ("jilguero.txt", "interislena.txt", "lineasdelta.txt"):
-            context.append(load_rag_file(_archivo))
+        # Pero no si lo que se pregunta es el agua y no los horarios: "cuando es la
+        # proxima pleamar" disparaba HORARIOS_RE por 'proxima' y se llevaba 18k de
+        # horarios al contexto; "me conviene salir en lancha" lo disparaba por
+        # 'lancha'. Se corta solo cuando NO hay pedido de horario de verdad.
+        _habla_de_marea = bool(re.search(r'\b(marea|mareas|pleamar|bajamar|bajante|creciente)\b', text))
+        _menciona_lancha = bool(re.search(r'\b(lancha|lanchas|colectiva|colectivas|barco|catamaran)\b', text))
+        _pide_horarios = bool(HORARIOS_FUERTE_RE.search(text))
+        # G1: nombra la marea y ninguna lancha → es pregunta de marea ("a que hora
+        #     es la bajamar", "cuando es la proxima pleamar" disparaban por 'proxima').
+        # G2: no pide horarios de verdad pero si hay intencion de agua o navegacion
+        #     ("me conviene salir en lancha a la tarde" disparaba por 'lancha').
+        _saltear = ((_habla_de_marea and not _menciona_lancha)
+                    or (not _pide_horarios and (_agua_intent or _nav_intent)))
+        if not _saltear:
+            for _archivo in ("jilguero.txt", "interislena.txt", "lineasdelta.txt"):
+                context.append(load_rag_file(_archivo))
     _base_act_kws = (KEYWORDS_NORM["activities"] + KEYWORDS_NORM["amanita"] + KEYWORDS_NORM["alfareria"] +
                      KEYWORDS_NORM["labusqueda"] + KEYWORDS_NORM["kayaks"] + KEYWORDS_NORM["masajes"] +
                      KEYWORDS_NORM["familia"] + KEYWORDS_NORM["mimbre"] + KEYWORDS_NORM["electricista"] + KEYWORDS_NORM["frutales"] +
@@ -840,11 +912,8 @@ def detect_quick_response(user_input):
         _temporal = ['manana', 'sabado', 'domingo', 'lunes', 'martes', 'miercoles',
                      'jueves', 'viernes', 'semana', 'proximo', 'proxima',
                      'estara', 'estaran', 'va a', 'habra', 'noche', 'tarde']
-        _question = ['como', 'cuanto', 'cuanto', 'que tal', 'por que', 'cuando']
-        _is_chip  = (len(text.strip().split()) <= 3
-                     and not any(t in text for t in _temporal)
-                     and not any(q in text for q in _question))
-        if _is_chip:
+        _question = ['como', 'cuanto', 'que tal', 'por que', 'cuando']
+        if _es_click_de_chip(text, _temporal, _question):
             w = load_weather_data()
             if w:
                 # ── Clima actual ──────────────────────────────────────────
@@ -908,27 +977,36 @@ def detect_quick_response(user_input):
                 )
             else:
                 _reply = "No tengo datos de clima disponibles en este momento. Intentá de nuevo en unos minutos."
-            return {"reply": _reply, "images": [], "quick_replies": ["🌊 Mareas", "🌬️ WindGurú"], "type": "clima"}
+            return {"reply": _reply, "images": [], "quick_replies": ["🌊 Mareas INA", "🌬️ WindGurú"], "type": "clima"}
         # else: pregunta natural ("¿Va a hacer calor mañana?") → cae al LLM con contexto
 
-    if any(k in text for k in KEYWORDS_NORM["hidrografia"]):
+    if any(k in text for k in KEYWORDS_NORM["hidrografia"]) and _es_click_de_chip(text):
         validity = load_validity_text()
-        resp = {"reply": format_hidrografia(), "images": [], "quick_replies": [], "type": "hidrografia"}
+        resp = {"reply": format_hidrografia(), "images": [],
+                "quick_replies": ["🌊 Mareas INA", "🌤️ Clima", "🌬️ WindGurú"],
+                "type": "hidrografia"}
         if validity:
             resp["note"] = validity
         return resp
 
-    if any(k in text for k in KEYWORDS_NORM["tides"]) and not any(k in text for k in KEYWORDS_NORM["fletesmareaexpress"]):
+    # else de hidrografia: pregunta natural → cae al LLM con la tabla en el contexto
+    if (any(k in text for k in KEYWORDS_NORM["tides"])
+            and not any(k in text for k in KEYWORDS_NORM["fletesmareaexpress"])
+            and _es_click_de_chip(text)):
         _resp = {"reply": "Acá tenés el pronóstico de mareas del INA 🌊",
-                 "images": ["/img/marea.png"], "quick_replies": [], "type": "mareas"}
+                 "images": ["/img/marea.png"],
+                 "quick_replies": ["⚓️ Mareas Hidrografía", "🌤️ Clima", "🌬️ WindGurú"],
+                 "type": "mareas"}
         _aviso_png = aviso_png_viejo()
         if _aviso_png:
             _resp["note"] = _aviso_png
         return _resp
 
+    # else de mareas: pregunta natural → cae al LLM con la tabla en el contexto
     if any(k in text for k in KEYWORDS_NORM["windguru"]):
         return {"reply": "Pronóstico de WindGurú para las islas ☁️",
-                "images": ["/img/windguru.png"], "quick_replies": [], "type": "windguru"}
+                "images": ["/img/windguru.png"],
+                "quick_replies": ["🌊 Mareas INA", "🌤️ Clima"], "type": "windguru"}
 
     if any(k in text for k in KEYWORDS_NORM["amanita"]):
         return {
