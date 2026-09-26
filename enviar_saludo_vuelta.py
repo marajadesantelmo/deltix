@@ -27,11 +27,17 @@ POR UNICA VEZ: cada envio exitoso se anota en envios_masivos.csv. Si volves a
 correr el script, esa persona se saltea. Podes cortarlo a la mitad y retomar sin
 que nadie reciba dos veces.
 
-SEGURIDAD: DRY_RUN = True por defecto -> imprime a quien le mandaria y como se
-veria cada variante, sin mandar nada. Revisa la lista y recien ahi pone
-DRY_RUN = False.
+SEGURIDAD: simula por defecto. Sin argumentos imprime a quien le mandaria y como
+se veria cada variante, sin mandar nada. Para mandar de verdad hay que pedirlo
+explicitamente:
+
+    python3 enviar_saludo_vuelta.py --enviar
+
+La bandera existe para que correr el script de memoria, o por accidente, nunca
+mande nada: son 256 personas.
 """
 
+import argparse
 import asyncio
 import csv
 import datetime
@@ -48,7 +54,7 @@ from deltix_funciones import generate_main_menu, main_menu_keyboard
 
 # ── Configuración ─────────────────────────────────────────────────────────────
 
-DRY_RUN = True      # ⚠️ Poné False SOLO cuando confirmes la lista.
+DRY_RUN = True      # Se apaga solo con --enviar. No lo cambies acá.
 
 # Identifica este envío en el registro. Si algún día mandás otro saludo, cambiá
 # este id: el registro es por (envio_id, user_id), así que un id nuevo permite
@@ -61,7 +67,8 @@ ENVIO_ID = "saludo_vuelta_2026_09"
 #   "inactivos" -> solo los que no escriben desde hace DIAS_INACTIVIDAD
 #   "activos"   -> solo los que escribieron hace poco
 #   "prueba"    -> solo los IDs de PRUEBA_IDS
-AUDIENCIA = "prueba"
+# Se puede pisar desde la linea de comandos con --audiencia.
+AUDIENCIA = "todos"
 DIAS_INACTIVIDAD = 15
 PRUEBA_IDS = []     # poné acá tu propio User ID para la primera prueba
 
@@ -301,7 +308,22 @@ async def main():
               % fallos)
 
 
+def _leer_argumentos():
+    p = argparse.ArgumentParser(
+        description="Saludo de reencuentro por Telegram. Simula salvo --enviar.")
+    p.add_argument("--enviar", action="store_true",
+                   help="manda de verdad. Sin esta bandera solo simula.")
+    p.add_argument("--audiencia", choices=["todos", "inactivos", "activos", "prueba"],
+                   help="pisa AUDIENCIA para esta corrida (default: %s)" % AUDIENCIA)
+    return p.parse_args()
+
+
 if __name__ == "__main__":
     if sys.version_info < (3, 7):
         raise SystemExit("hace falta python 3.7+")
+    _a = _leer_argumentos()
+    if _a.enviar:
+        DRY_RUN = False
+    if _a.audiencia:
+        AUDIENCIA = _a.audiencia
     asyncio.run(main())
