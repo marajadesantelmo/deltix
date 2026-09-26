@@ -16,6 +16,8 @@ from flask_limiter.util import get_remote_address
 from openai import OpenAI
 
 from interislena_museo import texto_museo
+from mareas_frescura import (aviso_tabla_vieja, aviso_png_viejo,
+                             instruccion_para_llm)
 
 try:
     from tokens import openrouter_key, telegram_token, gmail_token
@@ -288,8 +290,15 @@ def format_hidrografia():
             data = line.strip().split('\t')
             if len(data) >= 4:
                 tide_type, time_, height, date = data[0], data[1], data[2], data[3]
+                # Hidrografia manda '---' cuando no hay dato para esa marea; mostrar
+                # "PLEAMAR: --- hs — --- m (---)" no le sirve a nadie.
+                if time_.strip().strip('-') == '':
+                    continue
                 emoji = "🌊" if tide_type.upper() == "PLEAMAR" else "⬇️"
                 msg += f"{emoji} {tide_type}: {time_} hs — {height} m ({date})\n"
+        aviso = aviso_tabla_vieja()
+        if aviso:
+            msg += "\n" + aviso
         return msg
     except Exception:
         return "No se pudo cargar la información de hidrografía."
@@ -320,6 +329,9 @@ def build_llm_context(user_input):
                 "ahora y a qué hora será la próxima pleamar o bajamar. No inventes alturas ni horarios "
                 "que no estén en la tabla:\n" + tides
             )
+            _aviso_llm = instruccion_para_llm()
+            if _aviso_llm:
+                context.append(_aviso_llm)
     if any(k in text for k in KEYWORDS_NORM["emergencias"]):
         context.append(load_rag_file("emergencias.txt"))
         # 'policia' ya es keyword de emergencias, pero policia.txt no lo leia nadie.
@@ -907,8 +919,12 @@ def detect_quick_response(user_input):
         return resp
 
     if any(k in text for k in KEYWORDS_NORM["tides"]) and not any(k in text for k in KEYWORDS_NORM["fletesmareaexpress"]):
-        return {"reply": "Acá tenés el pronóstico de mareas del INA 🌊",
-                "images": ["/img/marea.png"], "quick_replies": [], "type": "mareas"}
+        _resp = {"reply": "Acá tenés el pronóstico de mareas del INA 🌊",
+                 "images": ["/img/marea.png"], "quick_replies": [], "type": "mareas"}
+        _aviso_png = aviso_png_viejo()
+        if _aviso_png:
+            _resp["note"] = _aviso_png
+        return _resp
 
     if any(k in text for k in KEYWORDS_NORM["windguru"]):
         return {"reply": "Pronóstico de WindGurú para las islas ☁️",

@@ -10,6 +10,7 @@ import smtplib
 from email.message import EmailMessage
 from tokens import gmail_token
 from interislena_museo import texto_museo
+from mareas_frescura import aviso_tabla_vieja, aviso_png_viejo
 
 # Defino paths segun donde se ejecute el bot
 if os.path.exists('/home/facundol/deltix/'):
@@ -634,6 +635,9 @@ async def mareas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         # await update.message.reply_text("No estoy enviando reporte de mareas :( El INA no está publicando su pronóstico debido a los recortes de personal en el estado")
         await update.message.reply_text("Acá tenés el informe de mareas")
         await context.bot.send_photo(chat_id, open(marea_image_path, "rb"))
+        _aviso_png = aviso_png_viejo()
+        if _aviso_png:
+            await update.message.reply_text("⚠️ Ojo: " + _aviso_png)
         time.sleep(4)
         if user.id in user_experience['User ID'][user_experience['suscr_marea_ofrecida'].isna()].values:
             await update.message.reply_text("Querés suscribirte para recibir esto todos los días?",
@@ -1475,11 +1479,19 @@ async def hidrografia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
                     height = data[2]    # Altura
                     date = data[3]      # Fecha
                     
+                    # Hidrografia manda '---' cuando no hay dato para esa marea
+                    if time.strip().strip('-') == '':
+                        continue
+
                     # Add emoji based on tide type
                     emoji = "🌊" if tide_type == "PLEAMAR" else "⬇️"
                     
                     formatted_message += f"{emoji} <b>{tide_type}</b>: {time} hs - {height} m ({date})\n"
-        
+
+        _aviso = aviso_tabla_vieja()
+        if _aviso:
+            formatted_message += "\n" + _aviso
+
         await update.message.reply_text(formatted_message, parse_mode='HTML')
         
         # Check if subscription should be offered
