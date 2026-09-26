@@ -7,7 +7,9 @@ TODOS los recorridos de Interisleña pasan por ahi, asi que sirve de referencia
 para cualquiera que vaya o vuelva de la isla sin importar por que arroyo entre.
 
 Fuente de los horarios: el cartel del muelle del Museo, fotografiado en
-colectivas/interislena_deep/Interisleña Museo - Tigre.jpeg
+colectivas/interislena_deep/Interisleña Museo - Tigre.jpeg, con una correccion
+del equipo Deltix: donde el cartel dice 18:10 la salida es 18:30. Si alguien
+compara la lista con la foto, esa es la unica diferencia y es a proposito.
 
 El cartel dice "DIAS DE SEMANA" y no trae sabados ni domingos. El fin de semana
 lo aporto el equipo Deltix: son los mismos horarios que de lunes a viernes, pero
@@ -21,9 +23,9 @@ salidas de lunes a viernes que ya estaban cargadas en rag/interislena.txt,
 repartidos entre varias rutas. O sea que la columna es la union de las rutas que
 pasan por el Museo, y confirma que el cartel es de Interisleña.
 
-Los tres horarios de lunes a viernes que tenemos y el cartel no lista (17:00,
-18:00 y 18:30) son de las rutas Espera / Cruz Colorada y de los "solo viernes",
-que aparentemente no pasan por el Museo.
+Los tres horarios de lunes a viernes que tenemos y esta lista no incluye son
+17:00 (Antequera y Abra Vieja, los dos "solo viernes"), 18:00 (Espera / Cruz
+Colorada) y 18:10 (Paso del Toro), que aparentemente no paran en el Museo.
 
 Este dato vive en un modulo propio porque lo usan deltix_funciones (Telegram) y
 web_app (Flask), que no se importan entre si. Duplicarlo en los dos garantiza
@@ -31,8 +33,9 @@ que tarde o temprano uno quede viejo.
 """
 
 # Columna "DE TIGRE" del cartel: salidas desde la Estacion Fluvial de Tigre.
+# El 18:30 es la correccion del docstring; el cartel ahi dice 18:10.
 DE_TIGRE = ["7:00", "8:00", "8:30", "9:00", "10:00", "11:30", "12:45", "14:15",
-            "15:00", "15:30", "16:15", "17:30", "18:10", "19:00", "20:00", "21:00"]
+            "15:00", "15:30", "16:15", "17:30", "18:30", "19:00", "20:00", "21:00"]
 
 # Columna "A TIGRE" del cartel: horarios en que la lancha pasa por el muelle del
 # Museo rumbo a Tigre, no horarios de llegada a la Estacion Fluvial. Esta
