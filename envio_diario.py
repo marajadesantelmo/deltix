@@ -3,6 +3,7 @@ from telegram import Bot
 import asyncio
 import nest_asyncio
 import datetime
+from hora_local import ahora
 from tokens import telegram_token
 
 nest_asyncio.apply()
@@ -26,14 +27,14 @@ async def send_image_to_subscribers():
             user_name = subscribers_mareas.loc[subscribers_mareas['User ID'] == user_id, 'First Name'].values[0]
             try:
                 await asyncio.wait_for(bot.send_photo(user_id, open("/home/facundol/deltix/marea.png", "rb")), timeout=12000)
-                log_entry = {'Timestamp': datetime.datetime.now(),
+                log_entry = {'Timestamp': ahora(),
                              'User ID': user_id,
                              'user_name': user_name}
                 log_entries.append(log_entry)
             except Exception as e:
                 user_name = f"{str(e)}"
                 print(f"Error sending image to user {user_id}: {str(e)}")
-                log_entry = {'Timestamp': datetime.datetime.now(),
+                log_entry = {'Timestamp': ahora(),
                              'User ID': user_id,
                              'user_name': user_name}
                 log_entries.append(log_entry)
@@ -45,7 +46,7 @@ async def send_image_to_subscribers():
     except asyncio.TimeoutError:
         user_name = "Operation timed out"
         print("Operation timed out")
-        log_entry = {'Timestamp': datetime.datetime.now(),
+        log_entry = {'Timestamp': ahora(),
                      'User ID': user_id,
                      'user_name': user_name}
         log_entries.append(log_entry)
@@ -57,14 +58,14 @@ async def send_image_to_subscribers():
             user_name = subscribers_windguru.loc[subscribers_windguru['User ID'] == user_id, 'First Name'].values[0]
             try:
                 await asyncio.wait_for(bot.send_photo(user_id, open("/home/facundol/deltix/windguru.png", "rb")), timeout=12000)
-                log_entry = {'Timestamp': datetime.datetime.now(),
+                log_entry = {'Timestamp': ahora(),
                              'User ID': user_id,
                              'user_name': user_name}
                 log_entries.append(log_entry)
             except Exception as e:
                 user_name = f"{str(e)}"
                 print(f"Error sending image to user {user_id}: {str(e)}")
-                log_entry = {'Timestamp': datetime.datetime.now(),
+                log_entry = {'Timestamp': ahora(),
                              'User ID': user_id,
                              'user_name': user_name}
                 log_entries.append(log_entry)
@@ -76,7 +77,7 @@ async def send_image_to_subscribers():
     except asyncio.TimeoutError:
         user_name = "Operation timed out"
         print("Operation timed out")
-        log_entry = {'Timestamp': datetime.datetime.now(),
+        log_entry = {'Timestamp': ahora(),
                      'User ID': user_id,
                      'user_name': user_name}
         log_entries.append(log_entry)
@@ -111,14 +112,14 @@ async def send_image_to_subscribers():
                     content = formatted_message
 
                 await asyncio.wait_for(bot.send_message(user_id, content, parse_mode='HTML'), timeout=12000)
-                log_entry = {'Timestamp': datetime.datetime.now(),
+                log_entry = {'Timestamp': ahora(),
                              'User ID': user_id,
                              'user_name': user_name}
                 log_entries.append(log_entry)
             except Exception as e:
                 user_name = f"{str(e)}"
                 print(f"Error sending text to user {user_id}: {str(e)}")
-                log_entry = {'Timestamp': datetime.datetime.now(),
+                log_entry = {'Timestamp': ahora(),
                              'User ID': user_id,
                              'user_name': user_name}
                 log_entries.append(log_entry)
@@ -130,7 +131,7 @@ async def send_image_to_subscribers():
     except asyncio.TimeoutError:
         user_name = "Operation timed out"
         print("Operation timed out")
-        log_entry = {'Timestamp': datetime.datetime.now(),
+        log_entry = {'Timestamp': ahora(),
                      'User ID': user_id,
                      'user_name': user_name}
         log_entries.append(log_entry)

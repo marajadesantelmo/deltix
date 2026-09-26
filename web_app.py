@@ -10,6 +10,7 @@ import time
 from collections import defaultdict
 from email.message import EmailMessage
 from datetime import datetime
+from hora_local import ahora
 from flask import Flask, request, jsonify, render_template, session, send_from_directory, make_response
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -72,7 +73,7 @@ def log_interaction(user_message, bot_reply, response_type, images=None, quick_r
             session.modified = True
         with open(WEB_LOG_PATH, "a", newline="", encoding="utf-8") as f:
             csv.writer(f).writerow([
-                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                ahora().strftime("%Y-%m-%d %H:%M:%S"),
                 session.get('session_id', '?'),
                 user_message[:300],
                 (bot_reply or '')[:300],
@@ -291,7 +292,7 @@ HORARIOS_RE = re.compile(
 KEYWORDS_NORM = {k: [_norm(kw) for kw in v] for k, v in KEYWORDS.items()}
 
 def is_winter():
-    return datetime.now().month in [4, 5, 6, 7, 8, 9]
+    return ahora().month in [4, 5, 6, 7, 8, 9]
 
 
 def load_rag_file(filename):
@@ -378,9 +379,9 @@ def build_llm_context(user_input):
     if _agua_intent or _nav_intent:
         tides = load_tides_text()
         if tides:
-            ahora = datetime.now().strftime("%d/%m/%Y a las %H:%M hs")
+            _ahora_txt = ahora().strftime("%d/%m/%Y a las %H:%M hs")
             context.append(
-                f"Datos de mareas para San Fernando (Hidrografía Naval). Hora actual: {ahora}. "
+                f"Datos de mareas para San Fernando (Hidrografía Naval). Hora actual: {_ahora_txt}. "
                 "PLEAMAR = marea alta: el agua sube hasta esa hora; después empieza a bajar. "
                 "BAJAMAR = marea baja: el agua baja hasta esa hora; después empieza a subir. "
                 "Compará la hora actual con esta tabla para decir si el agua está subiendo o bajando "
@@ -1312,7 +1313,7 @@ def _save_suggestion(text, nombre='', contacto=''):
         writer = csv.writer(f)
         if not file_exists:
             writer.writerow(["timestamp", "suggestion", "nombre", "contacto"])
-        writer.writerow([datetime.now().isoformat(), text, nombre, contacto])
+        writer.writerow([ahora().isoformat(), text, nombre, contacto])
 
 def _send_suggestion_email(text, nombre='', contacto=''):
     msg = EmailMessage()
@@ -1350,7 +1351,7 @@ def join():
         writer = csv.writer(f)
         if not file_exists:
             writer.writerow(["timestamp", "nombre", "descripcion", "tipo", "instagram", "contacto"])
-        writer.writerow([datetime.now().isoformat(), nombre, descripcion, tipo, instagram, contacto])
+        writer.writerow([ahora().isoformat(), nombre, descripcion, tipo, instagram, contacto])
 
     # Enviar email
     try:
@@ -1391,7 +1392,7 @@ def data_request():
         writer = csv.writer(f)
         if not file_exists:
             writer.writerow(["timestamp", "nombre", "solicitud"])
-        writer.writerow([datetime.now().isoformat(), nombre, solicitud])
+        writer.writerow([ahora().isoformat(), nombre, solicitud])
 
     # Enviar email
     try:

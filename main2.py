@@ -8,6 +8,7 @@ import csv
 import asyncio
 import random
 from datetime import datetime
+from hora_local import ahora
 from tokens import telegram_token
 from deltix_funciones import *
 from llm_connector import get_llm_response, create_conversation, get_db_connection
@@ -89,7 +90,7 @@ def log_tg_interaction(user_id, user_message, response_type, bot_reply=""):
             if not file_exists:
                 writer.writerow(TG_LOG_HEADERS)
             writer.writerow([
-                datetime.now().isoformat(),
+                ahora().isoformat(),
                 str(user_id),
                 (user_message or '')[:300],
                 response_type,

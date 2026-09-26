@@ -10,6 +10,7 @@ import smtplib
 from email.message import EmailMessage
 from tokens import gmail_token
 from interislena_museo import texto_museo
+from hora_local import ahora
 from mareas_frescura import aviso_tabla_vieja, aviso_png_viejo
 
 # Defino paths segun donde se ejecute el bot
@@ -70,7 +71,7 @@ def update_user_experience(user_id, option):
     q_col = f'q_{option}'
 
     if user_id in user_experience['User ID'].values:
-        user_experience.loc[user_experience['User ID'] == user_id, timestamp_col] = datetime.now().strftime('%d-%m-%Y %H:%M')
+        user_experience.loc[user_experience['User ID'] == user_id, timestamp_col] = ahora().strftime('%d-%m-%Y %H:%M')
         current = user_experience.loc[user_experience['User ID'] == user_id, q_col].values[0]
         current = 0 if pd.isna(current) else int(current)
         user_experience.loc[user_experience['User ID'] == user_id, q_col] = current + 1
@@ -112,7 +113,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
             "Username": update.message.from_user.username,
             "First Name": update.message.from_user.first_name,
             "Last Name": update.message.from_user.last_name,
-            "first_interaction": datetime.now().strftime('%d-%m-%Y %H:%M'),
+            "first_interaction": ahora().strftime('%d-%m-%Y %H:%M'),
             "suscr_windguru_ofrecida": None,
             "suscr_marea_ofrecida": None,
             "q_mareas": 0,
@@ -644,7 +645,7 @@ async def mareas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             reply_markup=ReplyKeyboardMarkup(
                 [["Si", "No"]], one_time_keyboard=True, input_field_placeholder="Si o No?"
             ),)
-            user_experience.loc[user_experience['User ID'] == user.id, 'suscr_marea_ofrecida'] =  datetime.now().strftime('%d-%m-%Y %H:%M')
+            user_experience.loc[user_experience['User ID'] == user.id, 'suscr_marea_ofrecida'] =  ahora().strftime('%d-%m-%Y %H:%M')
             user_experience.to_csv(user_experience_path, index=False)
             return ANSWER_mareas_suscribir
         else:
@@ -668,7 +669,7 @@ async def windguru(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             reply_markup=ReplyKeyboardMarkup(
                 [["Si", "No"]], one_time_keyboard=True, input_field_placeholder="Si o No?"
             ),)
-            user_experience.loc[user_experience['User ID'] == user.id, 'suscr_windguru_ofrecida'] =  datetime.now().strftime('%d-%m-%Y %H:%M')
+            user_experience.loc[user_experience['User ID'] == user.id, 'suscr_windguru_ofrecida'] =  ahora().strftime('%d-%m-%Y %H:%M')
             user_experience.to_csv(user_experience_path, index=False)
             return ANSWER_windguru_suscribir
         else:
@@ -1501,7 +1502,7 @@ async def hidrografia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
                     [["Si", "No"]], one_time_keyboard=True, input_field_placeholder="Si o No?"
                 ),
             )
-            user_experience.loc[user_experience['User ID'] == user.id, 'suscr_hidrografia_ofrecida'] = datetime.now().strftime('%d-%m-%Y %H:%M')
+            user_experience.loc[user_experience['User ID'] == user.id, 'suscr_hidrografia_ofrecida'] = ahora().strftime('%d-%m-%Y %H:%M')
             user_experience.to_csv(user_experience_path, index=False)
             return ANSWER_hidrografia_suscribir
         

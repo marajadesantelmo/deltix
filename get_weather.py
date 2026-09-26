@@ -1,6 +1,7 @@
 import requests
 import json
 from datetime import datetime
+from hora_local import ahora
 import os
 from tokens import openweather_key
 
@@ -39,7 +40,7 @@ def save_data_for_rag(data, filename, data_type='weather'):
     
     # Format data with timestamp
     formatted_data = {
-        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "timestamp": ahora().strftime("%Y-%m-%d %H:%M:%S"),
         "type": data_type,
         "data": data
     }
@@ -57,7 +58,7 @@ def save_combined_data(weather_data, forecast_data, filename):
     
     # Format combined data with timestamp
     formatted_data = {
-        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "timestamp": ahora().strftime("%Y-%m-%d %H:%M:%S"),
         "current_weather": weather_data,
         "forecast": forecast_data
     }

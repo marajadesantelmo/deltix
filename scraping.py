@@ -9,11 +9,12 @@ import urllib.request
 import time
 import traceback
 from datetime import datetime
+from hora_local import ahora
 
 LOG_PATH = "/home/facundol/deltix/scraping.log"
 
 def log(msg):
-    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    ts = ahora().strftime("%Y-%m-%d %H:%M:%S")
     line = f"[{ts}] {msg}"
     print(line)
     try:

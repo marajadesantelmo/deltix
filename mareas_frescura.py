@@ -17,6 +17,7 @@ Vive en un modulo propio, como interislena_museo, porque lo usan deltix_funcione
 
 import os
 from datetime import datetime
+from hora_local import ahora, desde_timestamp
 
 if os.path.exists('/home/facundol/deltix/'):
     BASE_PATH = '/home/facundol/deltix/'
@@ -57,7 +58,7 @@ def dias_de_atraso_tabla():
     fecha = fecha_mas_nueva_tabla()
     if fecha is None:
         return None
-    return max(0, (datetime.now().date() - fecha).days)
+    return max(0, (ahora().date() - fecha).days)
 
 
 def dias_de_atraso_png():
@@ -66,7 +67,7 @@ def dias_de_atraso_png():
         mtime = os.path.getmtime(os.path.join(BASE_PATH, "marea.png"))
     except OSError:
         return None
-    return max(0, (datetime.now() - datetime.fromtimestamp(mtime)).days)
+    return max(0, (ahora() - desde_timestamp(mtime)).days)
 
 
 def tabla_vencida():
