@@ -265,8 +265,9 @@ async def main():
     mostrar_variantes(filas)
 
     if DRY_RUN:
-        print("\n>>> DRY_RUN = True — no se envio nada.")
-        print(">>> Revisa la lista, pone DRY_RUN = False y volve a correrlo.")
+        print("\n>>> Simulacion — no se envio nada.")
+        print(">>> Si la lista esta bien, para mandar de verdad:")
+        print(">>>   nohup python3 enviar_saludo_vuelta.py --enviar > saludo.log 2>&1 &")
         return
     if not filas:
         print("\nNo queda nadie pendiente.")
