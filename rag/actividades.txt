@@ -233,3 +233,11 @@ Tipo: Educación Ambiental / Gestión de residuos
 Instagram: @la_residuoteca / residuoteca.org
 Contacto: Contacto@residuoteca.org
 
+
+---
+
+Nombre: Proveeduría Globo Rojo (Almacén "Globo Rojo")
+Descripción: Almacén de ramos generales en el Río Carapachay. Venta de carbón, leña, nafta y gas YPF.
+Tipo: Almacén / Proveeduría
+Ubicación: Río Carapachay km 1200 — Muelle Globo Rojo
+Contacto: 1125512762 / 1125773931

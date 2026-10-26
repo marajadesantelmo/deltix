@@ -208,7 +208,7 @@ AGENDA_KEYBOARD = ReplyKeyboardMarkup([
     ["Sublinor", "Yoga"],
     ["Igarapé Delta", "Fletes"],
     ["Viajes Vita", "Óscar T"],
-    ["Electricista"],
+    ["Electricista", "Globo Rojo"],
 ], one_time_keyboard=True, resize_keyboard=True)
 
 async def agenda_rio(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -371,6 +371,14 @@ async def answer_agenda(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
             "Viajes, traslados y paseos las 24 horas\n"
             "Base en Arroyo Espera, Delta del Paraná\n\n"
             "📞 1165012823 / 1131761412")
+    elif 'globo rojo' in t:
+        await context.bot.send_message(chat_id,
+            "🛒 <b>Proveeduría Globo Rojo</b>\n\n"
+            "Almacén de ramos generales en el Río Carapachay\n"
+            "Venta de carbón, leña, nafta y gas YPF\n\n"
+            "📍 Río Carapachay km 1200 — Muelle Globo Rojo\n\n"
+            "📞 1125512762 / 1125773931",
+            parse_mode='HTML')
     elif 'electricista' in t:
         await context.bot.send_message(chat_id,
             "⚡ <b>Electricista — Gonzalo</b>\n\n"

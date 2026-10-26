@@ -225,6 +225,9 @@ KEYWORDS = {
     "residuoteca":        ['residuoteca', 'la residuoteca', 'residuos', 'gestion de residuos',
                            'gestión de residuos', 'reciclaje', 'reciclado', 'educacion ambiental',
                            'educación ambiental'],
+    "globorojo":          ['globo rojo', 'proveeduria globo rojo', 'proveeduría globo rojo',
+                           'almacen globo rojo', 'almacén globo rojo', 'muelle globo rojo',
+                           'carbon', 'carbón', 'nafta', 'gas ypf', 'garrafa', 'garrafas'],
 }
 
 def _norm(s):
@@ -439,7 +442,7 @@ def build_llm_context(user_input):
                      KEYWORDS_NORM["fletesmareaexpress"] + KEYWORDS_NORM["viajesvita"] +
                      KEYWORDS_NORM["oscart"] + KEYWORDS_NORM["deltafix"] +
                      KEYWORDS_NORM["fletesnauticos"] + KEYWORDS_NORM["mecanica"] +
-                     KEYWORDS_NORM["residuoteca"])
+                     KEYWORDS_NORM["residuoteca"] + KEYWORDS_NORM["globorojo"])
     _lena_ok = (any(k in text for k in KEYWORDS_NORM["lena"]) and
                 not any(k in text for k in KEYWORDS_NORM["interislena"]))
     _agua_ok = any(k in text for k in KEYWORDS_NORM["agua"])
@@ -493,6 +496,7 @@ AGENDA_OPTIONS = {
     "Deltafix 📱":               "deltafix reparacion celular",
     "Mecánica Náutica ⚙️":       "mecanica nautica angel cenizo",
     "La Residuoteca ♻️":         "residuoteca residuos",
+    "Proveeduría Globo Rojo 🛒": "globo rojo proveeduria",
 }
 
 
@@ -1120,6 +1124,12 @@ def detect_quick_response(user_input):
     if any(k in text for k in KEYWORDS_NORM["mecanica"]):
         return {
             "reply": "⚙️ **Mecánica Náutica Angel Cenizo**\n\nReparación de motores fuera de borda, service y mantenimientos\nMotosierra, cuatriciclos, gasoleros, motoguadañas\nMecánica en general\n\nContacto: 1133798303",
+            "images": []
+        }
+
+    if any(k in text for k in KEYWORDS_NORM["globorojo"]):
+        return {
+            "reply": "🛒 **Proveeduría Globo Rojo**\n\nAlmacén de ramos generales en el Río Carapachay\nVenta de carbón, leña, nafta y gas YPF\n\nUbicación: Río Carapachay km 1200 — Muelle Globo Rojo\n\nContacto: 1125512762 / 1125773931",
             "images": []
         }
 
