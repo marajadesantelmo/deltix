@@ -24,3 +24,6 @@ rag/weather_data.json
 dashboard/.env
 dashboard/sync.log
 dashboard/.last_sync
+
+# Tincho: base SQLite local (sesiones, OTP, auditoría)
+tincho/var/

@@ -31,6 +31,15 @@ except ImportError:
 app = Flask(__name__)
 app.secret_key = telegram_token[:32]
 
+# Tincho: bot de la UNDelta, montado en /tincho (ver tincho/README.md).
+# Si falla su carga, Deltix sigue funcionando igual.
+try:
+    from tincho import config as _tincho_config
+    from tincho.blueprint import tincho_bp
+    app.register_blueprint(tincho_bp, url_prefix=_tincho_config.PREFIX)
+except Exception as _e:  # pragma: no cover
+    print(f"[tincho] no se pudo montar: {_e}")
+
 limiter = Limiter(
     get_remote_address,
     app=app,

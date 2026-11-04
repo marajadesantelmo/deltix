@@ -1,4 +1,4 @@
-const CACHE = 'deltix-v4';
+const CACHE = 'deltix-v5';
 const STATIC_ASSETS = ['/img/bot_icon.png'];
 
 // Imágenes dinámicas que se actualizan en el servidor — nunca cachear
@@ -25,6 +25,8 @@ self.addEventListener('fetch', e => {
 
   // No interceptar POSTs ni llamadas al backend
   if (e.request.method !== 'GET') return;
+  // Tincho (bot de la UNDelta) vive en /tincho: nunca cachearlo desde el service worker de Deltix
+  if (url.pathname === '/tincho' || url.pathname.startsWith('/tincho/')) return;
   if (['/chat', '/suggest', '/join', '/data-request'].some(p => url.pathname.startsWith(p))) return;
 
   // HTML (incluyendo '/') → siempre network-first, sin caché

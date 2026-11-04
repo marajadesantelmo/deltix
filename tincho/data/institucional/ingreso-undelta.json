@@ -1,0 +1,65 @@
+{
+  "fuente": "https://undelta.edu.ar/carreras/ (sección común de ingreso) y https://undelta.edu.ar/servicios-academicos/",
+  "obtenido": "2026-10-08",
+  "nota": "Datos institucionales de ingreso 2027. Las fechas cambian cada cohorte: actualizar acá y regenerar los flujos. El horario (9:30, no 9:00) y el estado de inscripción abierta son correcciones del equipo (documentacion/correciones_chatbot_8-oct.md) que todavía no están reflejadas en la web pública.",
+  "gratuidad": "Todas nuestras carreras son presenciales y gratuitas.",
+  "sede": {
+    "lugar": "Secretaría Académica",
+    "direccion": "Av. Avellaneda 2270, San Fernando",
+    "horario": "de lunes a viernes de 9:30 a 19:00 hs"
+  },
+  "contacto": {
+    "email": "estudiantes@undelta.edu.ar",
+    "telefono": "+54 9 11 5565 3035"
+  },
+  "fechas": {
+    "inicioCPU": "febrero de 2027",
+    "inicioClases": "marzo de 2027"
+  },
+  "inscripcion": {
+    "abierta": true,
+    "texto": "Inscripción abierta para toda la oferta académica."
+  },
+  "documentacion": [
+    "Título secundario o constancia de título en trámite (original y copia).",
+    "DNI (original y copia, frente y dorso).",
+    "Ficha de preinscripción impresa que emite el SIU Guaraní."
+  ],
+  "secundarioEnCurso": "Si estás cursando el último año de la escuela secundaria, tenés que presentar un certificado de alumno/a regular.",
+  "secundarioExtranjero": "Si cursaste el secundario en el extranjero, el título o certificado de estudios completos debe ir acompañado de una constancia expedida por autoridad competente que indique que ese título habilita para ingresar a la universidad en su país de origen.",
+  "sinRecursosTecnologicos": "Si no tenés computadora o tenés dudas con la inscripción, acercate directamente a la UNDelta y te ayudamos.",
+  "pasos": [
+    {
+      "titulo": "Generar tu usuario en SIU Guaraní",
+      "texto": "Dá de alta un usuario nuevo con un correo personal al que puedas acceder: a esa dirección la UNDelta te va a enviar notificaciones y comunicaciones."
+    },
+    {
+      "titulo": "Hacer la preinscripción online",
+      "texto": "Se hace en SIU Guaraní, en \"Preinscripción a carreras\"."
+    },
+    {
+      "titulo": "Presentar la documentación (originales y copias)",
+      "texto": "Se entrega en la Secretaría Académica."
+    }
+  ],
+  "yaEstudiante": "Si ya sos estudiante de la UNDelta y querés inscribirte en otra carrera, hacelo desde la Autogestión de SIU Guaraní.",
+  "cpu": {
+    "nombre": "Curso de Preparación Universitaria (CPU)",
+    "descripcion": "Es un requisito obligatorio para todos/as los/as ingresantes: hay que hacerlo antes de empezar a cursar la carrera elegida. Busca acompañarte en el inicio de tu vida académica.",
+    "ejes": [
+      "Ser Universitario/a: orientación e introducción a la vida universitaria",
+      "Introducción a las técnicas de lectura y escritura universitaria",
+      "Introducción a la matemática y al pensamiento lógico"
+    ],
+    "modalidad": "Se cursa tres veces por semana, de manera presencial.",
+    "turnos": "Mañana (8:00 a 12:00 hs), tarde (14:00 a 18:00 hs) o noche (18:00 a 22:00 hs).",
+    "exenciones": [
+      "Graduados de carreras de grado o pregrado universitarias (públicas o privadas, del país o del extranjero), con la documentación respaldatoria.",
+      "Egresados del nivel superior no universitario (Ley 24.521) con título de validez nacional.",
+      "Quienes cursan el último año del secundario con promedio de 9 o más entre 1.º y 5.º año (1.º a 4.º en CABA). Hay que presentar constancia del promedio y una carta formal de hasta 3.000 caracteres explicando por qué elegiste la UNDelta.",
+      "Quienes hicieron el CPU en la UNDelta hace no más de 5 cuatrimestres (2 años y medio).",
+      "Estudios universitarios incompletos: lo evalúa la Secretaría Académica. Hay que haber aprobado al menos 4 materias en los últimos 4 años, o 10 materias o más en un lapso que no supere los 10 años.",
+      "Otras excepciones que disponga la Secretaría Académica."
+    ]
+  }
+}

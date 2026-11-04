@@ -1,0 +1,19 @@
+{
+  "nota": "Textos fijos de 'Instructivo SIU' y 'Herramientas Estudiantes' (provistos por el equipo). 'link' es una clave de data/links.json.",
+  "recursos": [
+    {
+      "id": "instructivo_siu",
+      "nombre": "Instructivo SIU",
+      "alias": ["siu", "instructivo"],
+      "texto": "*Instructivo SIU*\nExplica la preinscripción online en la UNDelta a través del sistema SIU Guaraní, en dos etapas:\n1. Registrarte para obtener usuario y clave.\n2. Completar el formulario de preinscripción (los datos marcados con asterisco son obligatorios).\n\nDespués tenés que imprimir el formulario y presentarte en la sede para completar la inscripción.",
+      "link": "instructivoSiu"
+    },
+    {
+      "id": "herramientas",
+      "nombre": "Guía Estudiantes",
+      "alias": ["guia estudiantes", "herramientas estudiantes", "herramienta"],
+      "texto": "*Guía Estudiantes*\nConocé la Guía de la Universidad Nacional del Delta sobre las herramientas y aspectos clave de tu trayectoria universitaria:\n- Calendario académico\n- Sistema SIU Guaraní y Campus Virtual (trámites y materiales)\n- Curso de Preparación Universitaria\n- Inscripción a materias y condición de alumno regular\n- Planes de estudio\n- Cómo regularizar o promocionar una materia",
+      "link": "herramientasEstudiantes"
+    }
+  ]
+}

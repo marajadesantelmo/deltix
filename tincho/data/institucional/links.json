@@ -1,0 +1,14 @@
+{
+  "nota": "Fuente única de links del bot (el inventario de documentacion/ pide no escribirlos sueltos en los mensajes). Extraídos de undelta.edu.ar el 2026-09-25.",
+  "carreras": "https://undelta.edu.ar/carreras/",
+  "inscripciones": "https://undelta.edu.ar/inscripciones/",
+  "preinscripcionSiu": "https://guarani.undelta.edu.ar/guarani_preinscripcion/?__o=e",
+  "autogestionSiu": "https://guarani.undelta.edu.ar/g3w3/",
+  "instructivoSiu": "https://drive.google.com/file/d/1xineR6X-9Tkhw32uQ1cCL2x4jsrCketD/view",
+  "avisameInscripcion": "https://forms.gle/tGRL8Sr5FqWfHJ8j8",
+  "campusVirtual": "https://campusvirtual.undelta.edu.ar/login/index.php",
+  "calendario2026Pdf": "https://undelta.edu.ar/wp-content/themes/undelta/assets/doc/calendario-academico-undelta-2026.pdf",
+  "serviciosAcademicos": "https://undelta.edu.ar/servicios-academicos/",
+  "contacto": "https://undelta.edu.ar/contacto/",
+  "herramientasEstudiantes": "https://drive.google.com/file/d/1URg7C1eVPjKNCdybRlX1kd55V-kTViwG/view?usp=sharing"
+}

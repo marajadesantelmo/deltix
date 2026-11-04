@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tincho · asistente virtual de la UNDelta</title>
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="{{ prefix }}/static/tincho.css">
+</head>
+<body>
+  <main class="app" data-prefix="{{ prefix }}">
+    <header>
+      <div class="avatar" aria-hidden="true">T</div>
+      <div>
+        <h1>Tincho</h1>
+        <p>Asistente virtual de la UNDelta</p>
+      </div>
+      <button id="reset" title="Terminar la conversación" aria-label="Terminar la conversación">Salir</button>
+    </header>
+    <div class="aviso">Proyecto en etapa de validación. La información oficial está en
+      <a href="https://undelta.edu.ar" target="_blank" rel="noopener noreferrer">undelta.edu.ar</a>.
+      Nunca te pedimos contraseñas.</div>
+    <section id="chat" aria-live="polite"></section>
+    <div id="opciones" class="opciones"></div>
+    <form id="form" autocomplete="off">
+      <input id="msg" type="text" maxlength="500" placeholder="Escribí tu consulta o elegí una opción…" aria-label="Mensaje">
+      <button type="submit">Enviar</button>
+    </form>
+  </main>
+  <script src="{{ prefix }}/static/tincho.js"></script>
+</body>
+</html>
