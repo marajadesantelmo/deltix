@@ -19,8 +19,11 @@ VAR_DIR = os.getenv("TINCHO_VAR_DIR") or os.path.join(BASE_DIR, "var")
 # Ruta pública donde se monta el bot dentro de www.deltix.com.ar
 PREFIX = _get("TINCHO_PREFIX", "/tincho")
 
-# Clave de inicio (modo testing). Vacía = bot público sin clave.
-CLAVE_INICIO = _get("TINCHO_CLAVE_INICIO", "")
+# Clave de inicio, igual que en el bot de WhatsApp: sin escribirla no se puede conversar.
+# Para cambiarla definí TINCHO_CLAVE_INICIO; para dejar el bot público sin clave, "sin-clave".
+CLAVE_INICIO = _get("TINCHO_CLAVE_INICIO", "testing-tincho-undelta")
+if CLAVE_INICIO.strip().lower() in ("sin-clave", "off", "none"):
+    CLAVE_INICIO = ""
 
 # Modo "no identificar": consulta el SIU por DNI sin código de verificación. Acordado con las
 # autoridades de la UNDelta mientras el bot esté protegido por la clave de inicio. Si no hay

@@ -72,6 +72,33 @@ class TestRAG(Base):
         self.assertEqual(r["reply"], llm.REPLY_JAILBREAK)
 
 
+class TestClaveDeInicio(Base):
+    def test_clave_por_defecto_como_whatsapp(self):
+        import importlib
+        os.environ.pop("TINCHO_CLAVE_INICIO", None)
+        self.assertEqual(importlib.reload(config).CLAVE_INICIO, "testing-tincho-undelta")
+        os.environ["TINCHO_CLAVE_INICIO"] = "sin-clave"
+        self.assertEqual(importlib.reload(config).CLAVE_INICIO, "")
+        os.environ.pop("TINCHO_CLAVE_INICIO")
+        importlib.reload(config)
+        config.OPENROUTER_KEY = ""  # el reload relee tokens.py: los tests nunca llaman al LLM
+        config.VAR_DIR = self.tmp.name
+
+    def test_nada_funciona_sin_la_clave(self):
+        config.CLAVE_INICIO = "testing-tincho-undelta"
+        for t in ("hola", "carreras", "siu", "cuánto dura enfermería"):
+            self.assertIn("clave de acceso", self.say(t)["reply"], t)
+        self.assertEqual(self.say("carreras")["options"], [])
+        self.assertIn("Soy Tincho", self.say("Testing-Tincho-UNDelta")["reply"])  # sin distinguir mayúsculas
+        self.assertIn("Institutos", self.say("carreras")["reply"])
+
+    def test_chau_vuelve_a_pedir_la_clave(self):
+        config.CLAVE_INICIO = "testing-tincho-undelta"
+        self.say("testing-tincho-undelta")
+        self.say("chau")
+        self.assertIn("clave de acceso", self.say("hola")["reply"])
+
+
 class TestMenus(Base):
     def test_saludo_y_menu_principal(self):
         r = self.say("hola")

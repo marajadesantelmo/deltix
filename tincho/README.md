@@ -42,7 +42,7 @@ tincho/
 | `TINCHO_SMTP_USER`, `TINCHO_SMTP_PASSWORD` (`_HOST`, `_PORT`, `_FROM`) | Envío del código OTP | para consultas SIU |
 | `TINCHO_SECRET` | Clave para firmar hashes | **sí en producción** |
 | `TINCHO_PREFIX` | Ruta pública (default `/tincho`) | no |
-| `TINCHO_CLAVE_INICIO` | Si se define, el bot solo arranca al escribir esa clave (p. ej. `testing-tincho-undelta`, como en WhatsApp) | requerida para el modo "no identificar" |
+| `TINCHO_CLAVE_INICIO` | Clave para empezar a conversar. **Por defecto `testing-tincho-undelta`**, igual que en WhatsApp; `chau` o 30 min de inactividad la vuelven a pedir. `sin-clave` deja el bot público (y apaga el modo "no identificar") | no |
 | `TINCHO_NO_IDENTIFICAR` | `1` (default) habilita el modo "no identificar" (consulta por DNI sin código), **solo si hay `TINCHO_CLAVE_INICIO`** | no |
 | `TINCHO_SIU_MOCK=1` | SIU simulado, **solo desarrollo** (el código OTP se imprime en la consola del servidor) | no |
 
