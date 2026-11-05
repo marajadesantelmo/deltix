@@ -225,7 +225,7 @@ class TestSIUIdentidad(Base):
     def test_no_identificar_con_clave(self):
         config.CLAVE_INICIO = "clave-prueba"
         self.say("clave-prueba")
-        self.assertIn("no identificar", self.say("siu")["reply"])  # el aviso aparece
+        self.assertNotIn("no identificar", self.say("siu")["reply"])  # el modo existe pero no se anuncia
         self.assertIn("sin verificar", self.say("no identificar")["reply"])
         self.assertIn("Identidad verificada", self.say("30123456")["reply"])
         self.assertIn("Ciencia de Datos", self.say(option="sa:cursadas")["reply"])

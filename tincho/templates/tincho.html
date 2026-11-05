@@ -2,30 +2,55 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
   <title>Tincho · asistente virtual de la UNDelta</title>
   <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#153549">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ prefix }}/static/tincho.css">
 </head>
-<body>
-  <main class="app" data-prefix="{{ prefix }}">
-    <header>
-      <div class="avatar" aria-hidden="true">T</div>
-      <div>
-        <h1>Tincho</h1>
-        <p>Asistente virtual de la UNDelta</p>
-      </div>
-      <button id="reset" title="Terminar la conversación" aria-label="Terminar la conversación">Salir</button>
-    </header>
-    <div class="aviso">Proyecto en etapa de validación. La información oficial está en
-      <a href="https://undelta.edu.ar" target="_blank" rel="noopener noreferrer">undelta.edu.ar</a>.
-      Nunca te pedimos contraseñas.</div>
-    <section id="chat" aria-live="polite"></section>
-    <div id="opciones" class="opciones"></div>
-    <form id="form" autocomplete="off">
-      <input id="msg" type="text" maxlength="500" placeholder="Escribí tu consulta o elegí una opción…" aria-label="Mensaje">
-      <button type="submit">Enviar</button>
-    </form>
+<body class="is-landing" data-prefix="{{ prefix }}">
+  <header>
+    <svg class="curvas" viewBox="0 0 600 600" aria-hidden="true">
+      <g fill="none" stroke="rgba(181,204,124,.22)" stroke-width="1.5" transform="rotate(-18 340 280)">
+        <ellipse cx="340" cy="280" rx="50" ry="34"/><ellipse cx="335" cy="282" rx="92" ry="64"/>
+        <ellipse cx="330" cy="285" rx="136" ry="96"/><ellipse cx="324" cy="288" rx="180" ry="128"/>
+        <ellipse cx="318" cy="292" rx="226" ry="162"/>
+      </g>
+    </svg>
+    <img class="logo" src="{{ prefix }}/static/undelta-logo.png" alt="UNDelta, Universidad Nacional del Delta">
+    <div class="sep" aria-hidden="true"></div>
+    <div class="brand">
+      <div class="brand-title">Tincho</div>
+      <div class="brand-sub">asistente virtual</div>
+    </div>
+    <div class="status"><span class="dot"></span><span class="status-label">online</span></div>
+    <button id="reset" type="button" title="Terminar la conversación">Salir</button>
+  </header>
+
+  <main>
+    <section id="landing">
+      <div class="landing-mark" aria-hidden="true">T</div>
+      <h1>Hola, soy <em>Tincho</em></h1>
+      <p id="landing-sub">Asistente virtual de la Universidad Nacional del Delta</p>
+      <div id="landing-chips" class="quick-replies"></div>
+    </section>
+
+    <section id="chat-messages" aria-live="polite"></section>
+
+    <div class="input-bar">
+      <form id="form" autocomplete="off">
+        <textarea id="msg" rows="1" maxlength="500" placeholder="Escribí tu consulta o elegí una opción…" aria-label="Mensaje"></textarea>
+        <button class="send-btn" type="submit" aria-label="Enviar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>
+        </button>
+      </form>
+      <p class="nota">Proyecto en etapa de validación. La información oficial está en
+        <a href="https://undelta.edu.ar" target="_blank" rel="noopener noreferrer">undelta.edu.ar</a>.
+        Nunca te pedimos contraseñas.</p>
+    </div>
   </main>
   <script src="{{ prefix }}/static/tincho.js"></script>
 </body>

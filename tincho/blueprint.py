@@ -25,8 +25,9 @@ def _cabeceras(resp):
     resp.headers["X-Frame-Options"] = "DENY"
     resp.headers["Referrer-Policy"] = "no-referrer"
     resp.headers["Content-Security-Policy"] = (
-        "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; "
-        "connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'")
+        "default-src 'self'; img-src 'self' data:; script-src 'self'; connect-src 'self'; "
+        "style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; "
+        "frame-ancestors 'none'; base-uri 'none'; form-action 'none'")
     if request.endpoint != "tincho.static":
         resp.headers["Cache-Control"] = "no-store"
     return resp

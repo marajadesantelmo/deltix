@@ -199,8 +199,7 @@ def iniciar_siu(st, sid, rol=None):
     st["ask"], st["menu"], st["rol_pedido"] = "dni", None, rol
     return {"reply": "Para ver tus datos necesito verificar que sos vos. 🔐\n"
                      "Escribí tu número de documento (sin puntos, por ej.: 31075330).\n"
-                     "Te voy a mandar un código al correo que tenés registrado en el SIU."
-                     + ("\n(Modo de prueba: escribí *no identificar* para consultar sin verificar.)" if no_identificar_activo() else ""),
+                     "Te voy a mandar un código al correo que tenés registrado en el SIU.",
             "options": [opt("main", "Cancelar")]}
 
 
