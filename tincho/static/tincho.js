@@ -116,6 +116,8 @@
       const j = await pedir('', null);
       saludo = j.reply;
       botones(landingChips, j.options);
+      // Sin opciones = el bot pide la clave de acceso: se lo explicamos en la bienvenida.
+      if (!(j.options && j.options.length) && j.reply) document.getElementById('landing-sub').textContent = j.reply;
     } catch (e) { /* queda la bienvenida sin botones; se puede escribir igual */ }
   })();
 

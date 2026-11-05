@@ -28,8 +28,9 @@ def _cabeceras(resp):
         "default-src 'self'; img-src 'self' data:; script-src 'self'; connect-src 'self'; "
         "style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; "
         "frame-ancestors 'none'; base-uri 'none'; form-action 'none'")
-    if request.endpoint != "tincho.static":
-        resp.headers["Cache-Control"] = "no-store"
+    # Páginas y API: nunca en caché. Estáticos: el navegador debe revalidar siempre (no-cache),
+    # así un deploy nuevo se ve de inmediato sin tener que forzar la recarga.
+    resp.headers["Cache-Control"] = "no-cache" if request.endpoint == "tincho.static" else "no-store"
     return resp
 
 
@@ -47,7 +48,9 @@ def _set_cookie(resp, sid):
 
 @tincho_bp.route("/")
 def index():
-    return make_response(render_template("tincho.html", prefix=config.PREFIX.rstrip("/")))
+    st = os.path.join(BASE, "static")
+    v = int(max(os.path.getmtime(os.path.join(st, f)) for f in ("tincho.css", "tincho.js")))
+    return make_response(render_template("tincho.html", prefix=config.PREFIX.rstrip("/"), v=v))
 
 
 @tincho_bp.route("/health")

@@ -9,17 +9,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ prefix }}/static/tincho.css">
+  <link rel="stylesheet" href="{{ prefix }}/static/tincho.css?v={{ v }}">
 </head>
 <body class="is-landing" data-prefix="{{ prefix }}">
   <header>
-    <svg class="curvas" viewBox="0 0 600 600" aria-hidden="true">
-      <g fill="none" stroke="rgba(181,204,124,.22)" stroke-width="1.5" transform="rotate(-18 340 280)">
-        <ellipse cx="340" cy="280" rx="50" ry="34"/><ellipse cx="335" cy="282" rx="92" ry="64"/>
-        <ellipse cx="330" cy="285" rx="136" ry="96"/><ellipse cx="324" cy="288" rx="180" ry="128"/>
-        <ellipse cx="318" cy="292" rx="226" ry="162"/>
-      </g>
-    </svg>
     <img class="logo" src="{{ prefix }}/static/undelta-logo.png" alt="UNDelta, Universidad Nacional del Delta">
     <div class="sep" aria-hidden="true"></div>
     <div class="brand">
@@ -35,7 +28,6 @@
       <div class="landing-mark" aria-hidden="true">T</div>
       <h1>Hola, soy <em>Tincho</em></h1>
       <p id="landing-sub">Asistente virtual de la Universidad Nacional del Delta</p>
-      <div id="landing-chips" class="quick-replies"></div>
     </section>
 
     <section id="chat-messages" aria-live="polite"></section>
@@ -47,11 +39,14 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>
         </button>
       </form>
-      <p class="nota">Proyecto en etapa de validación. La información oficial está en
-        <a href="https://undelta.edu.ar" target="_blank" rel="noopener noreferrer">undelta.edu.ar</a>.
-        Nunca te pedimos contraseñas.</p>
     </div>
+
+    <div id="landing-chips" class="quick-replies"></div>
+
+    <p class="nota">Proyecto en etapa de validación. La información oficial está en
+      <a href="https://undelta.edu.ar" target="_blank" rel="noopener noreferrer">undelta.edu.ar</a>.
+      Nunca te pedimos contraseñas.</p>
   </main>
-  <script src="{{ prefix }}/static/tincho.js"></script>
+  <script src="{{ prefix }}/static/tincho.js?v={{ v }}"></script>
 </body>
 </html>
