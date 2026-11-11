@@ -777,72 +777,90 @@ with col_tabs:
 col_conv, col_tgusers = st.columns([3, 2])
 
 with col_conv:
-    # ── Sesiones únicas por semana (web + Telegram unificado, una sola línea) ──
-    st.markdown("### Sesiones únicas por semana")
+    # ── Sesiones y mensajes, por semana y por mes (web + Telegram) ──
+    # Antes eran dos graficos apilados con el mismo eje X y los mismos filtros.
+    # Van juntos: las barras son el volumen de mensajes y la linea las sesiones
+    # unicas, cada una en su eje, porque las sesiones son un orden de magnitud
+    # mas chicas y compartir escala las aplastaba contra el piso.
     _wk = df_combined.copy()
     # Clave por canal para no fusionar ids de web (hex) y Telegram (numéricos)
     _wk["sess_key"] = _wk["source"].astype(str) + ":" + _wk["session_id"].astype(str)
-    # Semana calendaria (lunes como inicio)
-    _wk["week"] = _wk["timestamp"].dt.to_period("W").apply(lambda p: p.start_time.date())
-    weekly = (_wk.groupby("week")["sess_key"].nunique()
-                 .reset_index(name="sesiones")
-                 .sort_values("week"))
-    # Excluir semanas incompletas: sólo las que ya transcurrieron por completo
-    # (domingo = lunes+6 anterior a hoy). _today es la fecha real en hora Argentina.
-    weekly = weekly[weekly["week"].apply(lambda w: w + timedelta(days=6) < _today)]
-    weekly["week_str"] = weekly["week"].apply(lambda d: f"Sem {d.strftime('%d/%m')}")
 
-    fig_wk = go.Figure(go.Scatter(
-        x=weekly["week_str"], y=weekly["sesiones"],
-        name="Sesiones únicas",
-        mode="lines+markers",
-        line=dict(color="#e0a020", width=2.5, shape="spline"),
-        marker=dict(color="#e0a020", size=8, line=dict(color="#0e1a0e", width=1.5)),
-        fill="tozeroy", fillcolor="rgba(224,160,32,0.10)",
-        hovertemplate="<b>%{x}</b><br>%{y} sesiones únicas (web + ✈️)<extra></extra>",
-    ))
-    fig_wk.update_layout(
-        paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
-        margin=dict(l=0, r=10, t=10, b=0), height=260,
-        xaxis=dict(showgrid=False, color=TEXT, tickfont=dict(size=11)),
-        yaxis=dict(
-            title="Sesiones únicas", title_font=dict(color="#e0a020", size=11),
-            showgrid=True, gridcolor=GRID, color="#e0a020", zeroline=False, rangemode="tozero",
-        ),
-        hoverlabel=dict(bgcolor="#2a4a2a", font_color="#e8f5e2"),
-    )
-    st.plotly_chart(fig_wk, use_container_width=True)
+    _MESES_ES = ["ene", "feb", "mar", "abr", "may", "jun",
+                 "jul", "ago", "sep", "oct", "nov", "dic"]
 
-    # ── Volumen total de mensajes por semana (web + Telegram) ──
-    st.markdown("### Mensajes por semana")
-    weekly_msgs = _wk.groupby("week").size().reset_index(name="mensajes").sort_values("week")
-    # Desglose por canal, sólo para el hover
-    _wk_src = _wk.groupby(["week", "source"]).size().unstack(fill_value=0)
-    for _canal in ("web", "telegram"):
-        weekly_msgs[_canal] = (weekly_msgs["week"].map(_wk_src[_canal]).fillna(0).astype(int)
-                               if _canal in _wk_src.columns else 0)
-    # Mismo criterio que el gráfico de arriba: sólo semanas completas
-    weekly_msgs = weekly_msgs[weekly_msgs["week"].apply(lambda w: w + timedelta(days=6) < _today)]
-    weekly_msgs["week_str"] = weekly_msgs["week"].apply(lambda d: f"Sem {d.strftime('%d/%m')}")
+    def _agrupar_periodo(df, periodo):
+        """Sesiones únicas y mensajes por período ('W' semanal, 'M' mensual), con
+        el desglose por canal que usa el hover.
 
-    fig_wkm = go.Figure(go.Bar(
-        x=weekly_msgs["week_str"], y=weekly_msgs["mensajes"],
-        marker=dict(color="#5a9e47", line=dict(width=0)),
-        customdata=weekly_msgs[["web", "telegram"]].values,
-        hovertemplate="<b>%{x}</b><br>%{y} mensajes"
-                      "<br>💻 %{customdata[0]} · ✈️ %{customdata[1]}<extra></extra>",
-    ))
-    fig_wkm.update_layout(
-        paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
-        margin=dict(l=0, r=10, t=10, b=0), height=260,
-        xaxis=dict(showgrid=False, color=TEXT, tickfont=dict(size=11)),
-        yaxis=dict(
-            title="Mensajes", title_font=dict(color="#7ed957", size=11),
-            showgrid=True, gridcolor=GRID, color="#7ed957", zeroline=False, rangemode="tozero",
-        ),
-        hoverlabel=dict(bgcolor="#2a4a2a", font_color="#e8f5e2"),
-    )
-    st.plotly_chart(fig_wkm, use_container_width=True)
+        Devuelve sólo períodos ya terminados. El que está corriendo siempre se ve
+        como una caída y no es una caída: es que todavía no pasó."""
+        g = df.assign(_per=df["timestamp"].dt.to_period(periodo))
+        out = (g.groupby("_per")
+                .agg(sesiones=("sess_key", "nunique"), mensajes=("sess_key", "size"))
+                .reset_index())
+        _por_canal = g.groupby(["_per", "source"]).size().unstack(fill_value=0)
+        for _canal in ("web", "telegram"):
+            out[_canal] = (out["_per"].map(_por_canal[_canal]).fillna(0).astype(int)
+                           if _canal in _por_canal.columns else 0)
+        out = out[out["_per"].apply(lambda per: per.end_time.date() < _today)]
+        return out.sort_values("_per")
+
+    def _fig_sesiones_mensajes(datos, etiquetas, alto=300):
+        """Barras de mensajes + línea de sesiones únicas, cada una en su eje."""
+        fig = go.Figure()
+        fig.add_trace(go.Bar(
+            x=etiquetas, y=datos["mensajes"], name="Mensajes",
+            marker=dict(color="#5a9e47", line=dict(width=0)),
+            customdata=datos[["web", "telegram"]].values,
+            hovertemplate="Mensajes: <b>%{y}</b>"
+                          " · 💻 %{customdata[0]} · ✈️ %{customdata[1]}<extra></extra>",
+        ))
+        fig.add_trace(go.Scatter(
+            x=etiquetas, y=datos["sesiones"], name="Sesiones únicas",
+            mode="lines+markers", yaxis="y2",
+            line=dict(color="#e0a020", width=2.5, shape="spline"),
+            marker=dict(color="#e0a020", size=8, line=dict(color="#0e1a0e", width=1.5)),
+            hovertemplate="Sesiones únicas: <b>%{y}</b><extra></extra>",
+        ))
+        fig.update_layout(
+            paper_bgcolor=TRANSP, plot_bgcolor=TRANSP,
+            margin=dict(l=0, r=10, t=28, b=0), height=alto,
+            xaxis=dict(showgrid=False, color=TEXT, tickfont=dict(size=11)),
+            yaxis=dict(
+                title="Mensajes", title_font=dict(color="#7ed957", size=11),
+                showgrid=True, gridcolor=GRID, color="#7ed957",
+                zeroline=False, rangemode="tozero",
+            ),
+            yaxis2=dict(
+                title="Sesiones únicas", title_font=dict(color="#e0a020", size=11),
+                overlaying="y", side="right", showgrid=False, color="#e0a020",
+                zeroline=False, rangemode="tozero",
+            ),
+            legend=dict(orientation="h", yanchor="bottom", y=1.0, x=0,
+                        font=dict(color=TEXT, size=11), bgcolor=TRANSP),
+            hovermode="x unified",
+            hoverlabel=dict(bgcolor="#2a4a2a", font_color="#e8f5e2"),
+        )
+        return fig
+
+    st.markdown("### Sesiones y mensajes por semana")
+    _semanal = _agrupar_periodo(_wk, "W")
+    st.plotly_chart(
+        _fig_sesiones_mensajes(
+            _semanal,
+            _semanal["_per"].apply(lambda per: f"Sem {per.start_time.strftime('%d/%m')}")),
+        use_container_width=True)
+
+    # La vista semanal sirve para el pulso; la mensual para ver si el bot crece
+    # o se apaga, sin que el ruido de cada semana tape la tendencia.
+    st.markdown("### Sesiones y mensajes por mes")
+    _mensual = _agrupar_periodo(_wk, "M")
+    st.plotly_chart(
+        _fig_sesiones_mensajes(
+            _mensual,
+            _mensual["_per"].apply(lambda per: f"{_MESES_ES[per.month - 1]} {per.year}")),
+        use_container_width=True)
 
     # ── Detalle de conversaciones (últimas 200) ──
     st.markdown("### Detalle de conversaciones")
