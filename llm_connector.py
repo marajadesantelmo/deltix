@@ -1,6 +1,7 @@
 import os
 import re
 from niveles_agua import ESCALA_PARA_LLM
+from tarifas_colectivas import texto_tarifas
 import json
 import time
 from openai import OpenAI
@@ -190,6 +191,14 @@ class ContextManager:
         if not _colectivas_cargadas and HORARIOS_RE.search(user_input):
             for _archivo in ("jilguero.txt", "interislena.txt", "lineasdelta.txt"):
                 context.append(self.load_file(_archivo))
+        # Tarifas: siempre que se hable de colectivas (se ofrecen) o se pregunte por precios.
+        if (_colectivas_cargadas or HORARIOS_RE.search(user_input)
+                or re.search(r'\b(tarifas?|precios?|pasajes?|boletos?|colectivas?|lanchas?)\b', user_input.lower())):
+            context.append(texto_tarifas())
+            context.append("INSTRUCCIÓN: cuando el usuario consulte por lanchas colectivas, mencionale que "
+                           "también tenés las tarifas (comando /tarifas). Si pregunta por precios, usá "
+                           "SOLO la tabla de tarifas de arriba e indicá que es la actualización de "
+                           "noviembre 2026.")
         if any(keyword in user_input.lower() for keyword in KEYWORDS["activities"]):
             context.append(self.load_file("actividades.txt"))
 
@@ -262,7 +271,7 @@ class LLMClient:
             "usuario te corrige, no inventes otro horario: reconocé que no tenés el dato. La gente usa "
             "esto para tomarse una lancha. "
             "Los ÚNICOS comandos que existen son: /mareas, /windguru, /hidrografia, /colectivas, "
-            "/almaceneras, /agenda, /memes, /suscribirme, /desuscribirme. NUNCA inventes comandos nuevos "
+            "/tarifas, /almaceneras, /agenda, /memes, /suscribirme, /desuscribirme. NUNCA inventes comandos nuevos "
             "ni digas que existen otros. NUNCA confirmes acciones que no podés ejecutar (activar alertas, "
             "configurar envíos, suscribir usuarios): vos solo respondés mensajes, no ejecutás acciones. "
             "Si el usuario pide recibir envíos automáticos, un pronóstico diario o suscribirse a algo, "

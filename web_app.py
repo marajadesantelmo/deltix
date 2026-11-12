@@ -17,6 +17,7 @@ from flask_limiter.util import get_remote_address
 from openai import OpenAI
 
 from interislena_museo import texto_museo
+from tarifas_colectivas import texto_tarifas
 from niveles_agua import ESCALA_PARA_LLM, frase
 from mareas_frescura import (aviso_tabla_vieja, aviso_png_viejo,
                              instruccion_para_llm)
@@ -442,6 +443,14 @@ def build_llm_context(user_input):
         if not _saltear:
             for _archivo in ("jilguero.txt", "interislena.txt", "lineasdelta.txt"):
                 context.append(load_rag_file(_archivo))
+    # Tarifas: siempre que se hable de colectivas (se ofrecen) o se pregunte por precios.
+    if (_colectivas_cargadas or HORARIOS_RE.search(text)
+            or re.search(r'\b(tarifas?|precios?|pasajes?|boletos?|colectivas?|lanchas?)\b', text)):
+        context.append(texto_tarifas())
+        context.append("INSTRUCCIÓN: cuando el usuario consulte por lanchas colectivas, mencionale que "
+                       "también tenés las tarifas y que puede pedirlas escribiendo 'tarifas'. Si pregunta "
+                       "por precios, usá SOLO la tabla de tarifas de arriba e indicá que es la "
+                       "actualización de noviembre 2026.")
     _base_act_kws = (KEYWORDS_NORM["activities"] + KEYWORDS_NORM["amanita"] + KEYWORDS_NORM["alfareria"] +
                      KEYWORDS_NORM["labusqueda"] + KEYWORDS_NORM["kayaks"] + KEYWORDS_NORM["masajes"] +
                      KEYWORDS_NORM["familia"] + KEYWORDS_NORM["mimbre"] + KEYWORDS_NORM["electricista"] + KEYWORDS_NORM["frutales"] +
@@ -722,6 +731,18 @@ def handle_colectivas_flow(user_input):
     text = _norm(user_input).strip()
     col = session.get('col')
 
+    # Tarifas: se piden con "tarifas" o "cuánto sale/cuesta la lancha". Van antes que
+    # los horarios y cierran cualquier flujo activo.
+    _pide_tarifas = (re.search(r'\btarifas?\b', text) or
+                     (re.search(r'\bcuanto\b', text) and
+                      re.search(r'\b(sale|cuesta|cobran|vale)\b', text) and
+                      re.search(r'\b(lanchas?|colectivas?|pasajes?|boletos?)\b', text)))
+    if _pide_tarifas and not _is_taxiflete(text):
+        session.pop('col', None)
+        session.modified = True
+        return {"reply": texto_tarifas(), "images": [],
+                "quick_replies": ["Horarios de colectivas", "✏️ Sugerí una modificación"]}
+
     # Preguntas específicas de horario → LLM con RAG (no flujo guiado)
     if not col:
         specific_patterns = ['?', 'cuando', 'a que hora', 'que hora',
@@ -760,7 +781,7 @@ def handle_colectivas_flow(user_input):
                 session.modified = True
                 return {"reply": texto_museo(), "images": [],
                         "quick_replies": ["📞 Interisleña: 4749-0900",
-                                          "✏️ Sugerí una modificación"]}
+                                          "💲 Tarifas", "✏️ Sugerí una modificación"]}
             if 'invierno' in text:
                 session['col'] = {**col, 'step': 'direccion', 'temporada': 'invierno'}
                 session.modified = True
@@ -804,7 +825,7 @@ def handle_colectivas_flow(user_input):
                 return {
                     "reply": f"Jilguero — {direccion.capitalize()} 🚢",
                     "images": [f"/img/colectivas/jilguero_{direccion}.png"],
-                    "quick_replies": ["✏️ Sugerí una modificación"],
+                    "quick_replies": ["💲 Tarifas", "✏️ Sugerí una modificación"],
                     "note": _col_note
                 }
             if linea == 'interislena':
@@ -817,7 +838,7 @@ def handle_colectivas_flow(user_input):
                         "quick_replies": [
                             "¿Horarios de vuelta de Interisleña?",
                             "📞 Interisleña: 4749-0900",
-                            "✏️ Sugerí una modificación"
+                            "💲 Tarifas", "✏️ Sugerí una modificación"
                         ],
                         "note": _col_note
                     }
@@ -849,7 +870,7 @@ def handle_colectivas_flow(user_input):
                         "quick_replies": [
                             "¿Horarios completos desde Paso del Toro?",
                             "¿Horarios completos desde Antequera?",
-                            "✏️ Sugerí una modificación"
+                            "💲 Tarifas", "✏️ Sugerí una modificación"
                         ],
                         "note": _col_note
                     }
@@ -859,7 +880,7 @@ def handle_colectivas_flow(user_input):
                 return {
                     "reply": f"Líneas Delta — {direccion.capitalize()} — {label.capitalize()} 🛥️",
                     "images": [f"/img/colectivas/lineas_delta_{direccion}_{periodo}.png"],
-                    "quick_replies": ["✏️ Sugerí una modificación"],
+                    "quick_replies": ["💲 Tarifas", "✏️ Sugerí una modificación"],
                     "note": _col_note
                 }
 
@@ -867,8 +888,9 @@ def handle_colectivas_flow(user_input):
     if any(k in text for k in KEYWORDS_NORM["colectivas"]) and not _is_taxiflete(text):
         session['col'] = {'step': 'linea'}
         session.modified = True
-        return {"reply": "¿Qué línea de colectiva querés consultar? 🚢", "images": [],
-                "quick_replies": ["Jilguero", "Interisleña", "Líneas Delta"]}
+        return {"reply": "¿Qué línea de colectiva querés consultar? 🚢\nTambién tengo las tarifas 💲",
+                "images": [],
+                "quick_replies": ["Jilguero", "Interisleña", "Líneas Delta", "💲 Tarifas"]}
 
     if any(k in text for k in KEYWORDS_NORM["jilguero"]):
         session['col'] = {'step': 'direccion', 'linea': 'jilguero'}

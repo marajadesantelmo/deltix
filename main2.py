@@ -45,7 +45,8 @@ HANDLER_RESPONSE_TYPES = {
     "hidrografia":      "hidrografia",
     "memes":            "memes",
     "colectivas":       "colectivas",
-    "Jilguero":         "colectivas",
+    "tarifas_colectivas": "colectivas",
+    "Jilguero":        "colectivas",
     "Interislena":      "colectivas",
     "LineasDelta":      "colectivas",
     "almaceneras":      "almaceneras",
@@ -181,6 +182,7 @@ COMANDOS_MSG = (
     "/windguru — pronóstico de viento\n"
     "/hidrografia — altura del río\n"
     "/colectivas — horarios de lanchas colectivas\n"
+    "/tarifas — tarifas de lanchas colectivas\n"
     "/almaceneras — lanchas almacén\n"
     "/agenda — agenda del río\n"
     "/suscribirme — recibir envíos automáticos diarios\n"
@@ -195,6 +197,7 @@ def _comandos_validos():
         "start": start, "menu": menu, "cancel": cancel, "charlar": charlar,
         "mareas": mareas, "mareaa": mareas, "windguru": windguru, "memes": memes,
         "colaborar": colaborar, "mensajear": mensaje_trigger, "colectivas": colectivas,
+        "tarifas": tarifas_colectivas, "tarifa": tarifas_colectivas,
         "agenda": agenda_rio, "almaceneras": almaceneras, "hidrografia": hidrografia,
         "suscribirme": suscribirme, "desuscribirme": desuscribirme,
         "informacion": informacion, "amanita": amanita, "alfareria": alfareria,
@@ -392,6 +395,7 @@ if __name__ == '__main__':
         wrap_handler_with_tracking(CommandHandler('colaborar', colaborar)),
         wrap_handler_with_tracking(CommandHandler('mensajear', mensaje_trigger)),
         wrap_handler_with_tracking(CommandHandler('colectivas', colectivas)),
+        wrap_handler_with_tracking(CommandHandler(['tarifas', 'tarifa'], tarifas_colectivas)),
         wrap_handler_with_tracking(CommandHandler('agenda', agenda_rio)),
         wrap_handler_with_tracking(CommandHandler('almaceneras', almaceneras)),
         wrap_handler_with_tracking(CommandHandler('hidrografia', hidrografia)),
@@ -425,6 +429,9 @@ if __name__ == '__main__':
         # que llegó a inventar sintaxis de comandos. Ahora saludan y muestran el menú.
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)^(start|inicio|empezar|comenzar)[\s!,.¿?]*$'), start)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)^(colectivas?|horarios?|ida|vuelta)$'), colectivas)),
+        # Tarifas: antes del handler "contiene colectiva", así "tarifa de la colectiva" va a tarifas.
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(.*\btarifas?\b.*)'), tarifas_colectivas)),
+        wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)(?=.*\b(cu[aá]nto)\b)(?=.*\b(sale|cuesta|cobran|vale)\b)(?=.*\b(lanchas?|colectivas?|pasajes?|boletos?)\b).*'), tarifas_colectivas)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Agenda|agenda|AGENDA|actividades|emprendimientos)$'), agenda_rio)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'^(Gracias|gracias|GRACIAS)$'), de_nada)),
         wrap_handler_with_tracking(MessageHandler(filters.Regex(r'(?i)^interisle[nñ]a$'), Interislena)),

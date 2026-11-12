@@ -10,6 +10,7 @@ import smtplib
 from email.message import EmailMessage
 from tokens import gmail_token
 from interislena_museo import texto_museo
+from tarifas_colectivas import texto_tarifas
 from hora_local import ahora
 from niveles_agua import frase
 from mareas_frescura import aviso_tabla_vieja, aviso_png_viejo
@@ -87,6 +88,7 @@ def generate_main_menu():
             "- <b>/hidrografia </b>   <i> mareas hidrografia</i>\n"
             "- <b>/windguru </b>   <i> pronóstico del clima de windgurú</i>\n"
             "- <b>/colectivas </b>   <i> horarios lanchas colectivas &#128337</i>\n"
+            "- <b>/tarifas </b>   <i> tarifas lanchas colectivas &#128178</i>\n"
             "- <b>/agenda </b>   <i> agenda del río 🌿</i>\n"
             "- <b>/almaceneras </b>   <i> lanchas almaceneras &#128676</i>\n"
             "- <b>/memes </b>   <i> los memes más divertidos de la isla &#129315 </i>\n"
@@ -1058,10 +1060,11 @@ async def colectivas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await update.message.reply_text("""Elegí la empresa de lancha colectiva:\n
             - <b>Jilguero</b>   <i> va por el Carapachay-Angostura</i>
             - <b>Interisleña</b>   <i> Sarmiento, San Antonio y muchos más</i>
-            - <b>Lineas Delta</b>   <i> Caraguatá, Canal Arias, Paraná Miní</i>""",
+            - <b>Lineas Delta</b>   <i> Caraguatá, Canal Arias, Paraná Miní</i>
+            - <b>Tarifas</b>   <i> precios de los pasajes (actualización noviembre 2026)</i>""",
                                     parse_mode='HTML',
                                     reply_markup=ReplyKeyboardMarkup(
-                                        [["Jilguero", "Interisleña", "Lineas Delta"]],
+                                        [["Jilguero", "Interisleña", "Lineas Delta"], ["Tarifas"]],
                                         one_time_keyboard=True,
                                         input_field_placeholder="Empresa de lanchas"))
     
@@ -1073,7 +1076,9 @@ async def answer_colectivas(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     Maneja la selección de la empresa de lancha colectiva
     '''
     user_response = update.message.text.lower()
-    
+
+    if "tarifa" in user_response:
+        return await tarifas_colectivas(update, context)
     if "jilguero" in user_response:
         return await Jilguero(update, context)
     elif "interisleña" in user_response or "interislena" in user_response:
@@ -1086,6 +1091,17 @@ async def answer_colectivas(update: Update, context: ContextTypes.DEFAULT_TYPE) 
             reply_markup=main_menu_keyboard
         )
         return ConversationHandler.END
+
+TIP_TARIFAS = "💲 Para ver las tarifas de las lanchas colectivas escribí /tarifas"
+
+
+async def tarifas_colectivas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    '''
+    Tarifas vigentes de las lanchas colectivas
+    '''
+    await update.message.reply_text(texto_tarifas(html=True), parse_mode='HTML',
+                                    reply_markup=main_menu_keyboard)
+    return ConversationHandler.END
 
 async def Interislena(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await update.message.reply_text(
@@ -1108,21 +1124,21 @@ async def answer_interislena(update: Update, context: ContextTypes.DEFAULT_TYPE)
         time.sleep(1)
         await context.bot.send_message(
             chat_id,
-            "Si ves que hay algún horario incorrecto o información a corregir, no dudes en mandarle un mensajito al equipo Deltix",
+            "Si ves que hay algún horario incorrecto o información a corregir, no dudes en mandarle un mensajito al equipo Deltix\n\n" + TIP_TARIFAS,
             reply_markup=main_menu_keyboard)
         return ConversationHandler.END
     if 'invierno' in user_response:
         await context.bot.send_photo(chat_id, open(interislena_ida_invierno_path, "rb"))
         await context.bot.send_message(chat_id, f"Estos son los horarios de {user_response} de Interisleña. Si ves que hay algún horario incorrecto o información a corregir, no dudes en mandarle un mensajito al equipo Deltix")
         time.sleep(1)
-        await context.bot.send_message(chat_id, f"Siempre recomiendo llamar antes a la empresa porque los horarios suelen cambiar. El teléfono es 4749-0900",
+        await context.bot.send_message(chat_id, f"Siempre recomiendo llamar antes a la empresa porque los horarios suelen cambiar. El teléfono es 4749-0900\n\n{TIP_TARIFAS}",
                            reply_markup=main_menu_keyboard)
         return ConversationHandler.END
     elif 'verano' in user_response:
         await context.bot.send_photo(chat_id, open(interislena_ida_verano_path, "rb"))
         await context.bot.send_message(chat_id, f"Estos son los horarios de {user_response} de Interisleña. Si ves que hay algún horario incorrecto o información a corregir, no dudes en mandarle un mensajito al equipo Deltix")
         time.sleep(1)
-        await context.bot.send_message(chat_id, f"Siempre recomiendo llamar antes a la empresa porque los horarios suelen cambiar. El teléfono es 4749-0900",
+        await context.bot.send_message(chat_id, f"Siempre recomiendo llamar antes a la empresa porque los horarios suelen cambiar. El teléfono es 4749-0900\n\n{TIP_TARIFAS}",
                            reply_markup=main_menu_keyboard)
         return ConversationHandler.END
     else:
@@ -1147,14 +1163,14 @@ async def answer_jilguero(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         await context.bot.send_message(chat_id, f"Estos son los horarios de ida a la isla de Jilguero. Si ves que hay algún horario incorrecto o información a corregir, no dudes en mandarle un mensajito al equipo Deltix")
         await context.bot.send_photo(chat_id, open(jilguero_ida_path, "rb"))
         time.sleep(1)
-        await context.bot.send_message(chat_id, f"Siempre recomiendo llamar antes a la empresa porque los horarios suelen cambiar. El teléfono es 4749-0987",
+        await context.bot.send_message(chat_id, f"Siempre recomiendo llamar antes a la empresa porque los horarios suelen cambiar. El teléfono es 4749-0987\n\n{TIP_TARIFAS}",
                            reply_markup=main_menu_keyboard)
         return ConversationHandler.END
     elif 'vuelta' in user_response or 'tigre' in user_response:
         await context.bot.send_message(chat_id, f"Estos son los horarios de vuelta a Tigre de Jilguero. Si ves que hay algún horario incorrecto o información a corregir, no dudes en mandarle un mensajito al equipo Deltix")
         await context.bot.send_photo(chat_id, open(jilguero_vuelta_path, "rb"))
         time.sleep(1)
-        await context.bot.send_message(chat_id, f"Siempre recomiendo llamar antes a la empresa porque los horarios suelen cambiar. El teléfono es 4749-0987",
+        await context.bot.send_message(chat_id, f"Siempre recomiendo llamar antes a la empresa porque los horarios suelen cambiar. El teléfono es 4749-0987\n\n{TIP_TARIFAS}",
                            reply_markup=main_menu_keyboard)
         return ConversationHandler.END
     else:
@@ -1224,7 +1240,8 @@ async def schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             await context.bot.send_photo(chat_id, open(lineas_delta_vuelta_escolar_path, "rb"))
         else:  # 'no escolar'
             await context.bot.send_photo(chat_id, open(lineas_delta_vuelta_no_escolar_path, "rb"))
-            
+
+    await context.bot.send_message(chat_id, TIP_TARIFAS, reply_markup=main_menu_keyboard)
     return ConversationHandler.END
 
 
