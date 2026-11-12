@@ -27,7 +27,9 @@ tincho/
   data/institucional/  carreras, ingreso, links, recursos (curados por el equipo, copiados de undelta_bot)
   data/kb/             paginas.json (crawler) y chunks.json (índice)
   scripts/crawl_undelta.py, build_kb.py
-  tests/test_tincho.py
+  convlog.py        histórico de conversaciones (conversaciones.db), con datos sensibles omitidos
+  dashboard/        Streamlit (app.py) + sync_db.py para bajar el histórico desde PythonAnywhere
+  tests/test_tincho.py, test_convlog.py
 ```
 
 ## Puesta en marcha
@@ -43,12 +45,39 @@ tincho/
 | `TINCHO_SECRET` | Clave para firmar hashes | **sí en producción** |
 | `TINCHO_PREFIX` | Ruta pública (default `/tincho`) | no |
 | `TINCHO_CLAVE_INICIO` | Clave para empezar a conversar. **Por defecto `testing-tincho-undelta`**, igual que en WhatsApp; `chau` o 30 min de inactividad la vuelven a pedir. `sin-clave` deja el bot público (y apaga el modo "no identificar") | no |
+| `TINCHO_LLM_SID_MIN/HORA/DIA`, `TINCHO_LLM_IP_MIN/HORA/DIA` | Topes de preguntas libres (LLM) por sesión y por IP. Defaults 5/40/120 y 40/300/1000 | no |
+| `TINCHO_PROXY_HEADER` | Cabecera con la IP real del cliente detrás del proxy (default `X-Real-IP`, la de PythonAnywhere); vacía = IP de la conexión | no |
 | `TINCHO_NO_IDENTIFICAR` | `1` (default) habilita el modo "no identificar" (consulta por DNI sin código), **solo si hay `TINCHO_CLAVE_INICIO`** | no |
 | `TINCHO_SIU_MOCK=1` | SIU simulado, **solo desarrollo** (el código OTP se imprime en la consola del servidor) | no |
 
 Sin credenciales SIU, las consultas personales quedan **deshabilitadas** (falla cerrado) y el resto funciona. Sin SMTP solo funciona el modo "no identificar" (no hay códigos por correo).
 
 **Modo "no identificar"** (`no identificar` o `demo`, desde el paso de DNI de Consultas SIU): consulta por DNI sin verificar, como en el bot de pruebas de WhatsApp. Acordado con las autoridades de la UNDelta; rige únicamente mientras el bot esté protegido por la clave de inicio. Cada ingreso queda auditado (`sinid_ingreso`).
+
+## Histórico de conversaciones y dashboard
+
+Cada intercambio se guarda en `tincho/var/conversaciones.db` (SQLite, sin borrado automático). No se guardan DNI,
+códigos, la clave de inicio ni respuestas del SIU (ver `SEGURIDAD.md`). Para verlo, igual que en Deltix:
+
+```
+cd tincho/dashboard
+pip install -r requirements.txt
+# crear tincho/dashboard/.env con PA_USERNAME=... y PA_API_TOKEN=...  (token: pythonanywhere.com/account/#api_token)
+python sync_db.py                       # baja la base desde PythonAnywhere (o: setup_scheduler.bat para hacerlo a diario)
+set TINCHO_DASH_PASSWORD=<contraseña>   # Windows; sin esta variable el dashboard no abre
+streamlit run app.py
+```
+El dashboard muestra KPIs, actividad por día/hora, botones más usados, **preguntas sin respuesta** (para ampliar la base),
+**revisión de respuestas generadas por IA** con sus fuentes y el visor de cada sesión. `convlog.purgar(dias)` borra
+mensajes viejos si hiciera falta liberar espacio.
+
+## Calendario académico (datos fijos, sin IA)
+
+Las fechas **no pasan por el modelo**: el crawler lee la tabla de `servicios-academicos` fila por fila
+(`data/institucional/calendario.json`) y `tincho/calendario.py` responde las preguntas de calendario citando la fila.
+Motivo: en la prueba del 11/11 el LLM asociaba cada evento con la fecha de la fila siguiente (6 errores de 12) porque la
+tabla llegaba aplastada a texto. También alimenta el menú *Inscripciones → Calendario académico* y la palabra clave `calendario`.
+Las 8 preguntas del reporte están en `tests/test_calendario.py`. Se actualiza con `crawl_undelta.py` + `build_kb.py`.
 
 ## Mantenimiento de la base de conocimiento
 

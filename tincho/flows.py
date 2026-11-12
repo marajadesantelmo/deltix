@@ -17,7 +17,9 @@ import re
 import secrets
 import time
 
-from . import config, kb, llm, mailer, siu, store
+import math
+
+from . import calendario, config, convlog, kb, llm, mailer, siu, store
 from .carreras_util import duracion_legible
 
 INST = os.path.join(config.DATA_DIR, "institucional")
@@ -363,8 +365,10 @@ def comando(st, sid, t):
     if t in ("ayuda", "guia", "guia estudiantes", "herramientas", "instructivo"):
         st["ask"] = None
         return menu_guia(st)
-    if t in ("inscripcion", "inscripciones", "ingreso", "ingresar", "cpu", "documentacion"):
+    if t in ("inscripcion", "inscripciones", "ingreso", "ingresar", "cpu", "documentacion", "calendario", "calendario academico"):
         st["ask"] = None
+        if t.startswith("calendario"):
+            return menu_ingreso(st, calendario.texto_completo() + "\n\n¿Algo más?")
         if t == "cpu":
             return menu_ingreso(st, texto_cpu() + "\n\n¿Algo más?")
         if t == "documentacion":
@@ -418,7 +422,7 @@ def opcion(st, sid, oid):
     if oid.startswith("ing:"):
         k = oid[4:]
         txt = {"pasos": texto_pasos, "doc": texto_doc, "cpu": texto_cpu, "sede": texto_sede,
-               "cal": lambda: f"🗓 Calendario académico: {LINKS['calendario2026Pdf']}\nTambién está en {LINKS['serviciosAcademicos']}"}.get(k)
+               "cal": calendario.texto_completo}.get(k)
         return menu_ingreso(st, txt() + "\n\n¿Algo más?") if txt else None
     if oid.startswith("rec:"):
         r = next((r for r in RECURSOS if r["id"] == oid[4:]), None)
@@ -470,7 +474,20 @@ def limpiar(texto):
     return t.strip()[: config.MAX_MESSAGE_CHARS]
 
 
+def _tipo_opcion(oid):
+    return "siu_consulta" if oid.startswith(("sa:", "sd:")) else "opcion"
+
+
 def procesar(sid, ip, texto, option_id=None):
+    """Procesa un mensaje, lo registra en el histórico (convlog) y devuelve la respuesta."""
+    r, tipo, usuario, sensible = _procesar(sid, ip, texto, option_id)
+    fuentes = r.pop("_fuentes", None)  # claves internas: nunca llegan al navegador
+    convlog.registrar(sid, tipo, usuario, r.get("reply", ""), fuentes, r.get("options"), sensible)
+    return r
+
+
+def _procesar(sid, ip, texto, option_id=None):
+    """Devuelve (respuesta, tipo de respuesta, texto a registrar, ¿es dato sensible?)."""
     st = store.cargar_estado(sid)
     texto = limpiar(texto)
     if not st:
@@ -481,48 +498,70 @@ def procesar(sid, ip, texto, option_id=None):
     if config.CLAVE_INICIO and not st.get("activado"):
         if norm(texto) == norm(config.CLAVE_INICIO):
             st["activado"] = True
-            r = menu_main(st, SALUDO)
+            r, usuario = menu_main(st, SALUDO), texto
         else:
             r = {"reply": "Tincho está en período de pruebas. Ingresá la clave de acceso para empezar.", "options": []}
+            usuario = convlog.ANTES_DE_CLAVE if texto else ""
         store.guardar_estado(sid, st)
-        return r
+        # Antes de la clave se registra solo "clave" (acierto) o "sistema" (aviso), sin el texto escrito.
+        return r, ("clave" if st.get("activado") else "sistema"), usuario, False
 
-    r = None
+    r, tipo, usuario, sensible = None, "sistema", texto, False
     if option_id:  # clic en un botón: el id viaja explícito (se valida contra el menú pendiente)
         validos = {o["id"] for o in _opciones_pendientes(st)} | {"main", "desvincular"}
         if option_id in validos:
-            r = opcion(st, sid, option_id)
+            r, tipo, usuario = opcion(st, sid, option_id), _tipo_opcion(option_id), f"[botón] {option_id}"
     if r is None and not texto:
         r = menu_main(st, SALUDO) if not st.get("menu") else None
+        tipo, usuario = "inicio", ""
         if r is None:
             r = {"reply": "Escribime tu consulta o elegí una opción del menú.", "options": _opciones_pendientes(st) or MAIN}
     if r is None:
         t = norm(texto)
         r = comando(st, sid, t)
+        if r is not None:
+            tipo = "comando"
     if r is None and st.get("ask") == "dni_sinid":
-        r = _recibir_dni_sinid(st, sid, ip, texto)
+        r, tipo, sensible = _recibir_dni_sinid(st, sid, ip, texto), "siu_verificacion", True
     if r is None and st.get("ask") == "dni":
-        r = _recibir_dni(st, sid, ip, texto)
+        r, tipo, sensible = _recibir_dni(st, sid, ip, texto), "siu_verificacion", True
     if r is None and st.get("ask") == "otp":
-        r = _recibir_otp(st, sid, texto)
+        r, tipo, sensible = _recibir_otp(st, sid, texto), "siu_verificacion", True
     if r is None:
         oid = _match_opcion(norm(texto), _opciones_pendientes(st))
-        r = opcion(st, sid, oid) if oid else None
+        if oid:
+            r, tipo = opcion(st, sid, oid), _tipo_opcion(oid)
     if r is None:
         r = _texto_libre(st, sid, ip, texto)
+        tipo = r.pop("_tipo")
 
     if not st.get("cerrada"):
         store.guardar_estado(sid, st)
-    return r
+    return r, tipo, usuario, sensible
 
 
 def _texto_libre(st, sid, ip, texto):
     if llm.es_jailbreak(texto):
         store.auditar(sid, "jailbreak")
-        return {"reply": llm.REPLY_JAILBREAK, "options": [VOLVER]}
-    if not store.hit(f"llm-min:{ip}", config.LLM_PER_MIN, 60) or not store.hit(f"llm-h:{ip}", config.LLM_PER_HOUR, 3600) \
-            or not store.hit(f"llm-d:{ip}", config.LLM_PER_DAY, 86400):
-        return {"reply": "Hiciste muchas consultas seguidas. Esperá un momento y volvé a intentar. 🌿", "options": [VOLVER]}
+        return {"reply": llm.REPLY_JAILBREAK, "options": [VOLVER], "_tipo": "jailbreak"}
+    # Calendario académico: las fechas se responden citando la fila de la tabla, sin pasar por el LLM.
+    if calendario.es_pregunta_de_calendario(texto):
+        resp = calendario.responder(texto)
+        if resp:
+            st["menu"] = "main"
+            return {"reply": resp, "options": [opt("ing:cal", "🗓 Ver calendario completo"), VOLVER],
+                    "_tipo": "calendario", "_fuentes": [calendario.URL_PAGINA]}
+    ok, espera = store.hit_all([
+        (f"llm-s-min:{sid}", config.LLM_SID_MIN, 60), (f"llm-s-h:{sid}", config.LLM_SID_HORA, 3600),
+        (f"llm-s-d:{sid}", config.LLM_SID_DIA, 86400),
+        (f"llm-min:{ip}", config.LLM_IP_MIN, 60), (f"llm-h:{ip}", config.LLM_IP_HORA, 3600),
+        (f"llm-d:{ip}", config.LLM_IP_DIA, 86400)])
+    if not ok:
+        store.auditar(sid, "limite_llm", f"espera {int(espera)}s")
+        m = max(1, math.ceil(espera / 60))
+        return {"reply": "Hiciste muchas consultas seguidas. Probá de nuevo en "
+                         + ("un minuto" if m == 1 else f"{m} minutos") + ". 🌿",
+                "options": [VOLVER], "_tipo": "limite"}
     hist = st.setdefault("hist", [])
     texto_resp, fuentes = llm.responder(texto, hist)
     hist += [{"role": "user", "content": texto[:250]}, {"role": "assistant", "content": texto_resp[:250]}]
@@ -530,4 +569,5 @@ def _texto_libre(st, sid, ip, texto):
     store.auditar(sid, "rag", f"{len(fuentes)} fuentes")
     st["menu"] = "main"
     return {"reply": texto_resp, "options": [opt("main", "🏠 Menú principal"), opt("ingreso", "📝 Inscripciones"),
-                                              opt("carreras", "🎓 Carreras")]}
+                                              opt("carreras", "🎓 Carreras")],
+            "_tipo": "rag_sin_dato" if texto_resp == llm.REPLY_SIN_DATO else "rag", "_fuentes": fuentes}

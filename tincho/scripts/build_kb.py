@@ -108,6 +108,11 @@ def main():
     add("ingreso", "Quiénes están exentos del CPU (exenciones)",
         "Pueden quedar eximidos del CPU: " + " ".join(cpu["exenciones"]), url_ing, 2.0)
 
+    # 3b) Calendario académico (estructurado: cada fila "fecha: evento" va junta)
+    from tincho import calendario
+    for titulo, texto in calendario.chunks_para_kb():
+        add("calendario", titulo, texto, calendario.URL_PAGINA, 1.8)
+
     # 4) Recursos y links
     for r in leer("institucional/recursos-undelta.json")["recursos"]:
         add("recursos", r["nombre"], r["texto"].replace("*", ""), None, 1.4)

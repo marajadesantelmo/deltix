@@ -4,6 +4,7 @@ sin tocar el resto de Deltix:
     from tincho.blueprint import tincho_bp
     app.register_blueprint(tincho_bp, url_prefix=tincho.config.PREFIX)
 """
+import ipaddress
 import os
 import secrets
 from urllib.parse import urlparse
@@ -46,6 +47,18 @@ def _set_cookie(resp, sid):
     return resp
 
 
+def _ip_cliente():
+    """IP real del cliente. Detrás del proxy de PythonAnywhere, remote_addr es la del proxy (la misma para todos)
+    y los límites de uso se compartirían entre todas las personas: se usa la cabecera que pone el proxy."""
+    if config.PROXY_HEADER:
+        valor = (request.headers.get(config.PROXY_HEADER) or "").split(",")[0].strip()
+        try:
+            return str(ipaddress.ip_address(valor))
+        except ValueError:
+            pass
+    return request.remote_addr or "?"
+
+
 @tincho_bp.route("/")
 def index():
     st = os.path.join(BASE, "static")
@@ -74,7 +87,7 @@ def chat():
     sid = _sid()
     if not sid:
         sid, nuevo = secrets.token_urlsafe(24), True
-    ip = request.remote_addr or "?"
+    ip = _ip_cliente()
     if not store.hit(f"req:{ip}", 60, 60):  # tope general por IP
         return jsonify({"reply": "Demasiados mensajes seguidos. Esperá un momento. 🌿", "options": []}), 429
     r = flows.procesar(sid, ip, texto, option_id)

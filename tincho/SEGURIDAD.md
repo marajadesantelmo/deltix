@@ -13,7 +13,8 @@ consultas personales al SIU Guaraní previa verificación de identidad.
 | Correo registrado en SIU | Solo en memoria durante el envío del código | No se muestra ni se guarda |
 | Código de verificación | Hash HMAC en SQLite, 10 min, un solo uso | Nunca se devuelve al navegador |
 | Datos académicos del SIU | Se leen en el momento y se muestran | No se almacenan; se formatean con plantillas fijas (sin LLM) |
-| Auditoría | SQLite local | Evento + 8 caracteres del id de sesión; **sin DNI, nombres ni correos** |
+| Auditoría | SQLite local (`tincho.db`) | Evento + HMAC corto de la sesión; **sin DNI, nombres ni correos** |
+| **Histórico de conversaciones** | SQLite local (`conversaciones.db`) | Fecha, sesión anónima (HMAC), tipo, texto de la persona y respuesta del bot, para auditar la calidad de las respuestas. **No se guardan** los pasos de DNI/código, la clave de inicio ni las respuestas del SIU (se reemplazan por marcadores); en el texto libre se enmascaran números largos y correos. **Retención indefinida** por decisión del equipo (hay `convlog.purgar(dias)` para uso manual). La pantalla del bot avisa que las conversaciones se guardan |
 
 ## 3. Verificación de identidad
 1. La persona informa su documento.
@@ -38,7 +39,7 @@ restringe el acceso al bot a quien conozca una clave (modo testing, como `testin
 - Recomendado: un usuario de API de **solo lectura** dedicado a Tincho, y apuntar a producción únicamente tras la validación.
 
 ## 6. Contra abusos
-Límite general por IP, límite específico de consultas al LLM (4/min, 20/h, 40/día), mensajes ≤ 500 caracteres,
+Límite general por IP; límites de preguntas al LLM **por sesión** (5/min, 40/h, 120/día) y **por IP real** (40/min, 300/h, 1000/día, más altos porque un aula o el wifi de la universidad comparten IP), configurables por entorno; al bloquear, el bot dice cuántos minutos esperar. Detrás del proxy de PythonAnywhere se usa la cabecera `X-Real-IP` (si el sitio se expusiera sin ese proxy, la cabecera se podría falsificar: en ese caso `TINCHO_PROXY_HEADER=` la desactiva). Mensajes ≤ 500 caracteres,
 guardia anti-prompt-injection (patrones + instrucciones del sistema que tratan fuentes y mensajes como datos),
 respuesta "no tengo ese dato" ante preguntas sin respaldo en la base (umbral de relevancia).
 
@@ -51,5 +52,7 @@ construye el texto con `textContent` (sin `innerHTML`) y solo enlaza URLs `http(
 - Contenido y exactitud: el RAG puede errar; la interfaz remite a undelta.edu.ar y a la Secretaría.
 - El proveedor de LLM (OpenRouter) procesa el texto libre: definir si es aceptable para la institución o usar un modelo propio.
 - Correo del SIU desactualizado o comprometido → el código llegaría a esa casilla (riesgo inherente a cualquier OTP por mail).
-- Falta una prueba de intrusión formal y revisión de la política de retención de la tabla de auditoría.
+- Falta una prueba de intrusión formal y definir una política de retención del histórico (hoy indefinida).
+- El texto libre puede contener datos personales que escriba la persona (se enmascaran números y correos, pero no nombres u otros datos): el aviso en pantalla lo advierte, y conviene que el acceso al dashboard sea solo para quienes auditan.
+- El dashboard se opera en una PC local con una copia de la base; esa copia y el token de PythonAnywhere (`tincho/dashboard/.env`) deben protegerse.
 - Falta probar los formatos de respuesta reales del SIU y definir con Sistemas el usuario de API de solo lectura.

@@ -1,0 +1,104 @@
+{
+ "titulo": "Calendario académico 2026",
+ "aclaracion": "Cursada 2026. Las fechas resaltadas marcan el comienzo y el cierre de cada cuatrimestre. Ante cualquier diferencia entre esta tabla y una resolución posterior, vale la resolución.",
+ "filas": [
+  {
+   "mes": "Marzo",
+   "fecha": "23/03",
+   "evento": "Inicio del ciclo lectivo 2026",
+   "hito": true
+  },
+  {
+   "mes": "Julio",
+   "fecha": "04/07",
+   "evento": "Finalización del primer cuatrimestre",
+   "hito": true
+  },
+  {
+   "mes": "Julio",
+   "fecha": "07/07 al 10/07",
+   "evento": "Período de solicitudes para cambio de carrera",
+   "hito": false
+  },
+  {
+   "mes": "Julio",
+   "fecha": "07/07 al 11/07",
+   "evento": "Inscripción a exámenes finales de julio",
+   "hito": false
+  },
+  {
+   "mes": "Julio",
+   "fecha": "13/07 al 17/07",
+   "evento": "Período de recepción de solicitudes de equivalencia",
+   "hito": false
+  },
+  {
+   "mes": "Julio",
+   "fecha": "14/07 al 15/07",
+   "evento": "Inscripción a exámenes finales de julio — modalidad libre",
+   "hito": false
+  },
+  {
+   "mes": "Julio",
+   "fecha": "13/07 al 18/07",
+   "evento": "Primer llamado — mesa de finales de julio — modalidad regular",
+   "hito": false
+  },
+  {
+   "mes": "Julio",
+   "fecha": "20/07 al 25/07",
+   "evento": "Segundo llamado — mesa de finales de julio — modalidad regular y libre",
+   "hito": false
+  },
+  {
+   "mes": "Julio",
+   "fecha": "27/07 al 02/08",
+   "evento": "Inscripción a materias del segundo cuatrimestre",
+   "hito": false
+  },
+  {
+   "mes": "Julio",
+   "fecha": "27/07 al 08/08",
+   "evento": "Receso invernal estudiantil",
+   "hito": false
+  },
+  {
+   "mes": "Agosto",
+   "fecha": "10/08",
+   "evento": "Inicio del segundo cuatrimestre",
+   "hito": true
+  },
+  {
+   "mes": "Noviembre",
+   "fecha": "28/11",
+   "evento": "Finalización del segundo cuatrimestre",
+   "hito": true
+  },
+  {
+   "mes": "Diciembre",
+   "fecha": "01/12 al 06/12",
+   "evento": "Inscripción a exámenes finales de diciembre",
+   "hito": false
+  },
+  {
+   "mes": "Diciembre",
+   "fecha": "07/12 al 12/12",
+   "evento": "Primer llamado — mesas de finales de diciembre — modalidad regular",
+   "hito": false
+  },
+  {
+   "mes": "Diciembre",
+   "fecha": "08/12 al 09/12",
+   "evento": "Inscripción a exámenes finales de diciembre — modalidad libre",
+   "hito": false
+  },
+  {
+   "mes": "Diciembre",
+   "fecha": "14/12 al 19/12",
+   "evento": "Segundo llamado — mesa de finales de diciembre — modalidad regular y libre",
+   "hito": false
+  }
+ ],
+ "url": "https://undelta.edu.ar/servicios-academicos/",
+ "obtenido": "2026-11-12"
+}

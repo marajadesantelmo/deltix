@@ -27,3 +27,6 @@ dashboard/.last_sync
 
 # Tincho: base SQLite local (sesiones, OTP, auditoría)
 tincho/var/
+tincho/dashboard/.env
+tincho/dashboard/.last_sync
+tincho/dashboard/sync.log

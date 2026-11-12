@@ -83,6 +83,25 @@ def hit(clave, max_n, ventana_s):
     return True
 
 
+def hit_all(reglas):
+    """reglas: lista de (clave, máximo, ventana_s). Si TODAS permiten, registra un uso en cada una y devuelve
+    (True, 0). Si alguna se pasó, no registra nada y devuelve (False, segundos hasta poder volver a intentar).
+    Es atómico: un intento rechazado no gasta cupo de las otras reglas."""
+    now = time.time()
+    with _lock:
+        espera = 0.0
+        for clave, max_n, ventana in reglas:
+            tss = [r[0] for r in _db().execute("SELECT ts FROM hits WHERE clave=? AND ts>? ORDER BY ts",
+                                                (clave, now - ventana))]
+            if len(tss) >= max_n:
+                espera = max(espera, tss[len(tss) - max_n] + ventana - now)
+        if espera > 0:
+            return False, espera
+        for clave, _, _ in reglas:
+            _db().execute("INSERT INTO hits VALUES(?,?)", (clave, now))
+    return True, 0
+
+
 # ── OTP ──
 def guardar_otp(sid, doc_hash, code, contexto):
     with _lock:
@@ -119,4 +138,4 @@ def verificar_otp(sid, code):
 def auditar(sid, evento, detalle=""):
     with _lock:
         _db().execute("INSERT INTO auditoria VALUES(?,?,?,?)",
-                      (time.time(), (sid or "")[:8], evento, str(detalle)[:200]))
+                      (time.time(), hmac_hex("sesion:" + (sid or ""))[:10], evento, str(detalle)[:200]))

@@ -59,6 +59,15 @@ OTP_MAX_ATTEMPTS = 5
 OTP_MAX_SENDS_PER_DOC_HOUR = 3
 OTP_MAX_SENDS_PER_IP_HOUR = 10
 MAX_MESSAGE_CHARS = 500
-LLM_PER_MIN, LLM_PER_HOUR, LLM_PER_DAY = 4, 20, 40
+# Límites de preguntas libres (las que usan el LLM). Por sesión (cookie) y por IP: la IP tiene topes más altos
+# porque un aula o el wifi de la universidad salen todos con la misma IP pública. Configurables por entorno.
+LLM_SID_MIN = int(_get("TINCHO_LLM_SID_MIN", "5"))
+LLM_SID_HORA = int(_get("TINCHO_LLM_SID_HORA", "40"))
+LLM_SID_DIA = int(_get("TINCHO_LLM_SID_DIA", "120"))
+LLM_IP_MIN = int(_get("TINCHO_LLM_IP_MIN", "40"))
+LLM_IP_HORA = int(_get("TINCHO_LLM_IP_HORA", "300"))
+LLM_IP_DIA = int(_get("TINCHO_LLM_IP_DIA", "1000"))
+# Cabecera con la IP real del cliente cuando hay un proxy (PythonAnywhere usa X-Real-IP). "" = usar la IP de la conexión.
+PROXY_HEADER = _get("TINCHO_PROXY_HEADER", "X-Real-IP")
 
 CONTACTO_ESTUDIANTES = "estudiantes@undelta.edu.ar"
